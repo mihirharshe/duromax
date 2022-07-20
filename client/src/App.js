@@ -4,13 +4,14 @@ import Navbar from './Components/Navbar/Navbar';
 import {
     BrowserRouter,
 } from "react-router-dom";
+import { Box } from '@mui/system'
 
 function App() {
     return (
         <BrowserRouter>
-            <div className="App">
+            <Box>
                 <Navbar />
-            </div>
+            </Box>
         </BrowserRouter>
     );
 }
