@@ -107,7 +107,7 @@ export default function Navbar() {
     };
 
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box>
             <CssBaseline />
             <AppBar position="fixed" open={open}>
                 <Toolbar>
@@ -165,8 +165,7 @@ export default function Navbar() {
             </Drawer>
             {/* <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
              */}
-            <Box component="main" sx={{ p: 3 }}>
-                <DrawerHeader />
+            <Box component="main" sx={{ p: 8 }}>
                 <Routes>
                     <Route path = "/raw-material" element={<RawMaterial />} />
                     <Route path = "/bucket" element={<Bucket />} />

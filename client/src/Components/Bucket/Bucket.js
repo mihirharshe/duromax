@@ -27,18 +27,24 @@ export const Bucket = () => {
     // ];
     const columns = [
         { field: 'name', headerName: 'Name', flex: 1},
-        { field: 'qty', headerName: 'Quantity', },
-        { field: 'alertQty', headerName: 'Alert Quantity'},
+        { field: 'qty', headerName: 'Quantity', flex: 0.25},
+        { field: 'alertQty', headerName: 'Alert Quantity', flex: 0.25},
     ];
 
     return (
-        <Container>
+        <Container maxWidth='lg' sx={{ marginTop: 2 }}>
             <Box>
                 List of buckets :
             </Box>
             <Box style={{ display: 'flex', height: '100%' }}>
                 <Box style={{ flexGrow: 1 }}>
-                    <DataGrid autoHeight getRowId={(buckets) => buckets._id} rows={buckets} columns={columns} />
+                    <DataGrid 
+                        autoHeight 
+                        getRowId={(buckets) => buckets._id} 
+                        rows={buckets} 
+                        columns={columns} 
+                        rowsPerPageOptions={[5, 10, 20, 50]}
+                    />
                 </Box>
             </Box>
         </Container>

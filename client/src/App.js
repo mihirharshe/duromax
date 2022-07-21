@@ -9,9 +9,7 @@ import { Box } from '@mui/system'
 function App() {
     return (
         <BrowserRouter>
-            <Box>
-                <Navbar />
-            </Box>
+            <Navbar />
         </BrowserRouter>
     );
 }
