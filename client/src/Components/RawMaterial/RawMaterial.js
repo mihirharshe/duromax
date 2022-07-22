@@ -95,10 +95,13 @@ export const RawMaterial = () => {
         }
         try {
             const res = await axios.put(`http://localhost:5000/rm/${itemId}`, data);
-            console.log(res);
+            // console.log(res);
             const editedItemId = res.data.rawMaterial._id;
-            const newMaterials = materials.filter(material => material._id !== editedItemId);
-            setMaterials([...newMaterials, res.data.rawMaterial]);
+            const editedItem = materials.find(item => item._id === editedItemId);
+            // const newMaterials = materials.filter(material => material._id !== editedItemId);
+            const newMaterials = materials.slice(0);
+            newMaterials.splice(materials.indexOf(editedItem), 1, res.data.rawMaterial);
+            setMaterials(newMaterials);
             handleEditDialogClose();
         } catch (err) {
             console.log(err);

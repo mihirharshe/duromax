@@ -21,12 +21,14 @@ import { Link, Routes , Route } from 'react-router-dom';
 
 import { RawMaterial } from '../RawMaterial/RawMaterial';
 import { Bucket } from '../Bucket/Bucket';
+import { Boq } from '../BOQ/Boq';
 
 const drawerWidth = 240;
 
 const navigation = [
     { name: 'Raw Material', icon: <ArticleIcon />, href: '/raw-material' },
     { name: 'Bucket', icon: <ArticleIcon />, href: '/bucket' },
+    { name: 'BOQ', icon: <ArticleIcon />, href: '/boq' },
 ];
 
 const openedMixin = (theme) => ({
@@ -137,7 +139,7 @@ export default function Navbar() {
                 <Divider />
                 <List>
                     {navigation.map((item) => (
-                        <Link key={item.name} to={item.href}>
+                        <Link key={item.name} to={item.href} className="navLinks">
                             <ListItem key={item.name} disablePadding sx={{ display: 'block' }}>
                                 <ListItemButton
                                     sx={{
@@ -167,8 +169,9 @@ export default function Navbar() {
              */}
             <Box component="main" sx={{ p: 8 }}>
                 <Routes>
-                    <Route path = "/raw-material" element={<RawMaterial />} />
+                    <Route path = "/raw-material" element={<RawMaterial />}  />
                     <Route path = "/bucket" element={<Bucket />} />
+                    <Route path = "/boq" element={<Boq />} />
                 </Routes>
             </Box>
         </Box>
