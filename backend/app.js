@@ -17,6 +17,7 @@ var usersRouter = require('./routes/users');
 
 const rawMaterialRouter = require('./routes/rawMaterial');
 const bucketRouter = require('./routes/bucket');
+const boqRouter = require('./routes/boqMain');
 
 var app = express();
 
@@ -38,6 +39,7 @@ app.listen(PORT, () => {
 app.use('/', indexRouter);
 app.use('/rm', rawMaterialRouter);
 app.use('/bkt', bucketRouter);
+app.use('/boq', boqRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

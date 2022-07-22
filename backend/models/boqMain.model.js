@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-const boqPartModel = require('./boqPart.model');
 
 const boqMainSchema = Schema({
     name: {
@@ -8,9 +7,18 @@ const boqMainSchema = Schema({
         required: true,
     },
     content: [{
-        type: Schema.Types.ObjectId,
-        ref: 'BoqPart',
-        required: true,
+        name: {
+            type: String,
+            required: true,
+        },
+        qty: {
+            type: Number,
+            required: true,
+        },
+        mixTime : {
+            type: Number,
+            required: true
+        }
     }]
 })
 
