@@ -22,6 +22,7 @@ export const Bucket = () => {
     const [alertQty, setAlertQty] = useState('');
     const [itemId, setItemId] = useState('');
     const [error, setError] = useState(false);
+    const [pageSize, setPageSize] = useState(10);
 
     const handleDialogOpen = () => {
         setOpen(true);
@@ -154,8 +155,8 @@ export const Bucket = () => {
 
     const columns = useMemo(() => [
         { field: 'name', type: 'string', headerName: 'Name', flex: 1 },
-        { field: 'qty', type: 'number', headerName: 'Quantity', flex: 0.25 },
-        { field: 'alertQty', type: 'number', headerName: 'Alert Quantity', flex: 0.25 },
+        { field: 'qty', type: 'number', headerName: 'Quantity', minWidth: 100 },
+        { field: 'alertQty', type: 'number', headerName: 'Alert Quantity', minWidth: 100 },
         {
             field: 'actions',
             type: 'actions',
@@ -184,13 +185,15 @@ export const Bucket = () => {
                     <Box component='span'>List of buckets :</Box>
                     <Button size='small' variant='contained' onClick={handleDialogOpen}>Add item</Button>
                 </Box>
-                <Box style={{ display: 'flex', height: '100%', width: '100%' }}>
+                <Box style={{ display: 'flex', height: '100%', width: '100%', backgroundColor: 'white' }}>
                     <Box style={{ flexGrow: 1 }}>
                         <DataGrid
                             autoHeight
                             getRowId={(buckets) => buckets._id}
                             rows={buckets}
                             columns={columns}
+                            pageSize={pageSize}
+                            onPageSizeChange={(pageSize) => setPageSize(pageSize)}
                             rowsPerPageOptions={[5, 10, 20, 50, 100]}
                         />
                     </Box>

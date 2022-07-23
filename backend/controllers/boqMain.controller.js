@@ -1,6 +1,6 @@
 const boqMainModel = require('../models/boqMain.model');
 
-const getAllBoq = async (req, res) => {
+const getAllBoq = async (_, res) => {
     try {
         const boq = await boqMainModel.find();
         res.status(200).json({
@@ -32,10 +32,11 @@ const getOneBoq = async (req, res) => {
 }
 
 const addBoq = async (req, res) => {
-    const { name, content } = req.body;
+    const { name, batch_size, content } = req.body;
     try {
         const boq = await boqMainModel.create({
             name,
+            batch_size,
             content
         });
         res.status(200).json({
@@ -51,16 +52,16 @@ const addBoq = async (req, res) => {
 }
 
 const updateBoq = async (req, res) => {
-    const { name, content } = req.body;
+    const { name, batch_size, content } = req.body;
     const { id } = req.params;
     try {
-        const boq = await boqMainModel.findByIdAndUpdate(id, {
+        await boqMainModel.findByIdAndUpdate(id, {
             name,
+            batch_size,
             content
         });
         res.status(200).json({
-            message: 'Successfully updated boq',
-            boq
+            message: `Successfully updated BOQ: ${id}`,
         });
     }
     catch(err) {

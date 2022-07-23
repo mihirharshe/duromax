@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAllBoq, addBoq, updateBoq, deleteBoq } = require('../controllers/boqMain.controller');
+const { getAllBoq, getOneBoq, addBoq, updateBoq, deleteBoq } = require('../controllers/boqMain.controller');
 
 router.get('/', async(req, res) => {
     await getAllBoq(req, res);

@@ -22,6 +22,7 @@ import { Link, Routes , Route } from 'react-router-dom';
 import { RawMaterial } from '../RawMaterial/RawMaterial';
 import { Bucket } from '../Bucket/Bucket';
 import { Boq } from '../BOQ/Boq';
+import { AddBoq } from '../BOQ/AddBoq'; 
 
 const drawerWidth = 240;
 
@@ -167,11 +168,12 @@ export default function Navbar() {
             </Drawer>
             {/* <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
              */}
-            <Box component="main" sx={{ p: 8 }}>
+            <Box component="main" sx={{ paddingTop: 8, paddingLeft: 8, backgroundColor: 'whitesmoke', minHeight: '100vh' }}>
                 <Routes>
-                    <Route path = "/raw-material" element={<RawMaterial />}  />
-                    <Route path = "/bucket" element={<Bucket />} />
-                    <Route path = "/boq" element={<Boq />} />
+                    <Route path = "raw-material" element={<RawMaterial />}  />
+                    <Route path = "bucket" element={<Bucket />} />
+                    <Route path = "boq" element={<Boq />} />
+                    <Route path = "boq/add" element={<AddBoq />} />
                 </Routes>
             </Box>
         </Box>

@@ -6,6 +6,10 @@ const boqMainSchema = Schema({
         type: String,
         required: true,
     },
+    batch_size: {
+        type: Number,
+        required: true,
+    },
     content: [{
         name: {
             type: String,
