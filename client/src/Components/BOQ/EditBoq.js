@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios';
 import Container from '@mui/material/Container'
+import Grid from '@mui/material/Grid'
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
@@ -11,12 +12,12 @@ import InputLabel from '@mui/material/InputLabel';
 import FormControl from "@mui/material/FormControl";
 import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider';
+import InputAdornment from '@mui/material/InputAdornment';
 import { styled } from '@mui/material/styles';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { CustomSnackbar } from '../Snackbar/CustomSnackbar';
-import { Grid } from '@mui/material';
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -26,7 +27,7 @@ const Item = styled(Paper)(({ theme }) => ({
     color: theme.palette.text.secondary,
 }));
 
-export const AddBoq = () => {
+export const EditBoq = () => {
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarSeverity, setSnackbarSeverity] = useState('');
@@ -34,7 +35,25 @@ export const AddBoq = () => {
 
     let navigate = useNavigate();
 
+    const [boqContent, setBoqContent] = useState([]);
+    const [boq, setBoq] = useState({});
+
+    const [allRM, setAllRM] = useState([]);
+
+    const params = useParams();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const isDuplicate = searchParams.get('duplicate') === 'true';
+
     useEffect(() => {
+        const fetchBoq = async () => {
+            try {
+                const res = await axios.get(`http://localhost:5000/boq/${params.id}`);
+                setBoq(res.data.boq);
+                setBoqContent(res.data.boq.content);
+            } catch (err) {
+                console.log(err)
+            }
+        }
         const fetchData = async () => {
             try {
                 const res = await axios.get('http://localhost:5000/rm');
@@ -44,23 +63,8 @@ export const AddBoq = () => {
             }
         }
         fetchData();
+        fetchBoq();
     }, []);
-
-    const [boqContent, setBoqContent] = useState([
-        {
-            name: "",
-            qty: "",
-            mixTime: ""
-        },
-    ]);
-
-    const [boq, setBoq] = useState({
-        name: "",
-        batch_size: "",
-        content: boqContent
-    });
-
-    const [allRM, setAllRM] = useState([]);
 
     const handleAddItem = () => {
         setBoqContent([...boqContent, {
@@ -122,7 +126,7 @@ export const AddBoq = () => {
         newBoq.content = boqContent;
         setBoq(newBoq);
         try {
-            const res = await axios.post('http://localhost:5000/boq', newBoq);
+            const res = await axios.put(`http://localhost:5000/boq/${params.id}`, newBoq);
             console.log(res);
             if (res.status === 200) {
                 setOpenSnackbar(true);
@@ -131,6 +135,7 @@ export const AddBoq = () => {
                 setTimeout(() => {
                     navigate('/boq');
                 }, 3000);
+                // navigate('/boq');
             }
         } catch (err) {
             console.log(err);
@@ -139,6 +144,33 @@ export const AddBoq = () => {
             setSnackbarMessage(err.message);
         }
     }
+
+    const handleDuplicate = async () => {
+        try {
+            const newBoq = { ...boq };
+            newBoq.content = boqContent;
+            setBoq(newBoq);
+            const res = await axios.post(`http://localhost:5000/boq`, newBoq);
+            console.log(res);
+            if (res.status === 200) {
+                setOpenSnackbar(true);
+                setSnackbarSeverity('success');
+                setSnackbarMessage(res.data.message);
+                setTimeout(() => {
+                    navigate('/boq');
+                }, 3000);
+                // navigate('/boq');
+            }
+        } catch(err) {
+            console.log(err);
+            setOpenSnackbar(true);
+            setSnackbarSeverity('error');
+            setSnackbarMessage(err.message);
+        }
+    }
+
+
+
 
     return (
         <>
@@ -159,7 +191,7 @@ export const AddBoq = () => {
                                     type="text"
                                     label="Name"
                                     variant="outlined"
-                                    value={boq.name}
+                                    value={boq.name ?? ""}
                                     onChange={handleBoqMainName}
                                     placeholder='Enter Production Name'
                                     sx={{ m: 1 }}
@@ -168,12 +200,13 @@ export const AddBoq = () => {
                                     required
                                     id="boqSize"
                                     type="number"
-                                    label="Batch Size (in kgs)"
+                                    label="Batch Size"
                                     variant="outlined"
-                                    value={boq.batch_size}
+                                    value={boq.batch_size ?? ""}
                                     onChange={handleBoqMainBatchSize}
                                     placeholder='Enter Max Batch Size'
                                     sx={{ m: 1 }}
+                                    InputProps={{ endAdornment: (<InputAdornment position="end">kg</InputAdornment>) }}
                                 />
                             </Item>
                             {boqContent.length < 25 && <Button sx={{ maxWidth: 80, alignSelf: 'flex-end' }} variant='contained' onClick={handleAddItem}>Add</Button>}
@@ -199,8 +232,9 @@ export const AddBoq = () => {
                                                                     // {...provided.dragHandleProps}
                                                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 8 }}
                                                                 >
+
                                                                     {boqContent.length !== 1 && <span {...provided.dragHandleProps}><DragHandleIcon /></span>}
-                                                                    <Grid container alignItems="center" justifyContent="center"> 
+                                                                    <Grid container alignItems="center" justifyContent="center">
                                                                         <Grid item xs={12} md={3}>
                                                                             <FormControl sx={{ m: 1, minWidth: 210 }}>
                                                                                 <InputLabel id="select-rm-label">Raw Material</InputLabel>
@@ -266,8 +300,9 @@ export const AddBoq = () => {
                                 </Droppable>
                             </div>
                         </Stack>
-                        <div style={{ display: 'flex', justifyContent: 'space-around', width: 200, marginLeft: 'auto', marginRight: 'auto', marginTop: 16 }}>
-                            <Button variant='contained' type='submit'>Save</Button>
+                        <div style={{ display: 'flex', justifyContent: 'space-around', width: 300, marginLeft: 'auto', marginRight: 'auto', marginTop: 16 }}>
+                            {isDuplicate && <Button variant='contained' color='secondary' onClick={handleDuplicate}>Duplicate</Button>}
+                            {!isDuplicate && <Button variant='contained' type='submit'>Save</Button>}
                             <Button variant='contained' color='error' onClick={() => navigate(`/boq`)}>Cancel</Button>
                         </div>
                         <CustomSnackbar

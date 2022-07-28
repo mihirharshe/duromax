@@ -18,6 +18,7 @@ var usersRouter = require('./routes/users');
 const rawMaterialRouter = require('./routes/rawMaterial');
 const bucketRouter = require('./routes/bucket');
 const boqRouter = require('./routes/boqMain');
+const adjRMRouter = require('./routes/adjRM');
 
 var app = express();
 
@@ -40,6 +41,7 @@ app.use('/', indexRouter);
 app.use('/rm', rawMaterialRouter);
 app.use('/bkt', bucketRouter);
 app.use('/boq', boqRouter);
+app.use('/adj', adjRMRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -8,11 +8,15 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useNavigate } from 'react-router-dom';
+import { CustomSnackbar } from '../Snackbar/CustomSnackbar';
 
 export const Boq = () => {
 
     const [boq, setBoq] = useState([]);
     const [pageSize, setPageSize] = useState(10);
+    const [open, setOpen] = useState(false);
+    const [severity, setSeverity] = useState('');
+    const [message, setMessage] = useState('');
     
     let navigate = useNavigate();
     useEffect(() => {
@@ -27,9 +31,37 @@ export const Boq = () => {
         fetchData();
     }, []);
 
+    console.log(boq);
+
+    const handleDeleteBoq = async(id) => {
+        try {
+            const res = await axios.delete(`http://localhost:5000/boq/${id}`);
+            if(res.status === 200) {
+                setBoq((newBoq) => newBoq.filter(boq => boq._id !== id));
+                setOpen(true);
+                setSeverity('success');
+                setMessage(res.data.message);
+            }
+        } catch(err) {
+            console.log(err)
+            setOpen(true);
+            setSeverity('error');
+            setMessage(err.message);
+        }
+    }
+
     const columns = useMemo(() => [
         { field: 'name', type: 'string', headerName: 'Name', flex: 1 },
         { field: 'batch_size', type: 'number', headerName: 'Batch size', minWidth: 100 },
+        { 
+            field: 'updatedAt', 
+            type: 'date', 
+            headerName: 'Last updated', 
+            minWidth: 175,
+            valueFormatter: (params) => {
+                return new Date(params.value).toLocaleString().replace(',', '');
+            }
+        },
         {
             field: 'actions',
             type: 'actions',
@@ -40,16 +72,26 @@ export const Boq = () => {
                     icon={<EditIcon />}
                     label="Edit"
                     showInMenu
+                    onClick={() => {  
+                        navigate(`/boq/edit/${params.id}`);
+                    }}
                 />,
                 <GridActionsCellItem
                     icon={<DeleteIcon />}
                     label="Delete"
                     showInMenu
+                    onClick={() => {
+                        handleDeleteBoq(params.id);
+                    }}
                 />,
                 <GridActionsCellItem
                     icon={<ContentCopyIcon />}
                     label="Duplicate"
                     showInMenu
+                    onClick={() => {navigate({
+                        pathname: `/boq/edit/${params.id}`,
+                        search: '?duplicate=true'
+                    })}}
                 />
             ]
         }
@@ -74,6 +116,7 @@ export const Boq = () => {
                         />
                     </Box>
                 </Box>
+                <CustomSnackbar open={open} setOpen={setOpen} severity={severity} message={message} />
             </Container>
         </>
     )

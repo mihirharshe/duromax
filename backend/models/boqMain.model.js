@@ -24,7 +24,7 @@ const boqMainSchema = Schema({
             required: true
         }
     }]
-})
+}, { timestamps: true });
 
 const boqMainModel = mongoose.model('BoqMain', boqMainSchema);
 

@@ -1,4 +1,5 @@
 const boqMainModel = require('../models/boqMain.model');
+const rawMaterialModel = require('../models/rawMaterial.model');
 
 const getAllBoq = async (_, res) => {
     try {
@@ -39,6 +40,13 @@ const addBoq = async (req, res) => {
             batch_size,
             content
         });
+        // content.map(async (item) => {
+        //     const rm = await rawMaterialModel.findOne({ name: item.name });
+        //     if(rm) {
+        //         rm.qty -= item.qty;
+        //         await rm.save();
+        //     }
+        // });
         res.status(200).json({
             message: 'Successfully added BOQ',
             boq
@@ -55,11 +63,12 @@ const updateBoq = async (req, res) => {
     const { name, batch_size, content } = req.body;
     const { id } = req.params;
     try {
-        await boqMainModel.findByIdAndUpdate(id, {
+        const rs = await boqMainModel.findByIdAndUpdate(id, {
             name,
             batch_size,
             content
         });
+        console.log(rs);
         res.status(200).json({
             message: `Successfully updated BOQ: ${id}`,
         });
