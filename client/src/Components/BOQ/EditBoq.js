@@ -39,6 +39,7 @@ export const EditBoq = () => {
     const [boq, setBoq] = useState({});
 
     const [allRM, setAllRM] = useState([]);
+    const [allBoq, setAllBoq] = useState([]);
 
     const params = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -62,8 +63,17 @@ export const EditBoq = () => {
                 console.log(err);
             }
         }
+        const fetchAllBoq = async() => {
+            try {
+                const res = await axios.get('http://localhost:5000/boq');
+                setAllBoq(res.data.boq);
+            } catch(err) {
+                console.log(err);
+            }
+        }
         fetchData();
         fetchBoq();
+        fetchAllBoq();
     }, []);
 
     const handleAddItem = () => {
@@ -122,6 +132,12 @@ export const EditBoq = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if(allBoq.find(item => item.name === boq.name )) { // checking if boq name already exists
+            setSnackbarSeverity('error');
+            setSnackbarMessage(`BOQ ${boq.name} already exists`);
+            setOpenSnackbar(true);
+            return;
+        }
         const newBoq = { ...boq };
         newBoq.content = boqContent;
         setBoq(newBoq);
@@ -146,6 +162,12 @@ export const EditBoq = () => {
     }
 
     const handleDuplicate = async () => {
+        if(allBoq.find(item => item.name === boq.name )) { // checking if boq name already exists
+            setSnackbarSeverity('error');
+            setSnackbarMessage(`BOQ ${boq.name} already exists`);
+            setOpenSnackbar(true);
+            return;
+        }
         try {
             const newBoq = { ...boq };
             newBoq.content = boqContent;

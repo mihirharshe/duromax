@@ -31,8 +31,6 @@ export const Boq = () => {
         fetchData();
     }, []);
 
-    console.log(boq);
-
     const handleDeleteBoq = async(id) => {
         try {
             const res = await axios.delete(`http://localhost:5000/boq/${id}`);

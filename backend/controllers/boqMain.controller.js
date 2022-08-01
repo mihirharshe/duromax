@@ -34,49 +34,58 @@ const getOneBoq = async (req, res) => {
 
 const addBoq = async (req, res) => {
     const { name, batch_size, content } = req.body;
-    try {
-        const boq = await boqMainModel.create({
-            name,
-            batch_size,
-            content
+    const boqExists = await boqMainModel.find({ name }).count() > 0;
+    if(boqExists) {
+        res.status(400).json({
+            message: 'BOQ already exists'
         });
-        // content.map(async (item) => {
-        //     const rm = await rawMaterialModel.findOne({ name: item.name });
-        //     if(rm) {
-        //         rm.qty -= item.qty;
-        //         await rm.save();
-        //     }
-        // });
-        res.status(200).json({
-            message: 'Successfully added BOQ',
-            boq
-        });
-    } 
-    catch(err) {
-        res.status(500).json({
-            message: err.message
-        });
+    }
+    else {
+        try {
+            const boq = await boqMainModel.create({
+                name,
+                batch_size,
+                content
+            });
+            res.status(200).json({
+                message: 'Successfully added BOQ',
+                boq
+            });
+        } 
+        catch(err) {
+            res.status(500).json({
+                message: err.message
+            });
+        }
     }
 }
 
 const updateBoq = async (req, res) => {
     const { name, batch_size, content } = req.body;
     const { id } = req.params;
-    try {
-        const rs = await boqMainModel.findByIdAndUpdate(id, {
-            name,
-            batch_size,
-            content
-        });
-        console.log(rs);
-        res.status(200).json({
-            message: `Successfully updated BOQ: ${id}`,
+    const boqExists = await boqMainModel.find({ name }).count() > 0;
+    if(boqExists) {
+        res.status(400).json({
+            message: 'BOQ already exists'
         });
     }
-    catch(err) {
-        res.status(500).json({
-            message: err.message
-        });
+    else {
+        try {
+            const rs = await boqMainModel.findByIdAndUpdate(id, {
+                name,
+                batch_size,
+                content
+            });
+            console.log(rs);
+            res.status(200).json({
+                message: `Successfully updated BOQ: ${id}`,
+            });
+        }
+        catch(err) {
+            res.status(500).json({
+                message: err.message
+            });
+        }
     }
 }
 

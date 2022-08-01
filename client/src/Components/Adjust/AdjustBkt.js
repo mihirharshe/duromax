@@ -16,13 +16,13 @@ import TextField from '@mui/material/TextField';
 import { CustomSnackbar } from '../Snackbar/CustomSnackbar';
 import { InputLabel } from '@mui/material';
 
-export const AdjustRM = () => {
+export const AdjustBkt = () => {
 
 
 
     const [records, setRecords] = useState([]);
-    const [allRM, setAllRM] = useState([]);
-    const [singleRM, setSingleRM] = useState([]);
+    const [allBkt, setAllBkt] = useState([]);
+    const [singleBkt, setSingleBkt] = useState([]);
     const [pageSize, setPageSize] = useState(10);
     const [open, setOpen] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
@@ -35,22 +35,22 @@ export const AdjustRM = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/adj');
+                const res = await axios.get('http://localhost:5000/adj-bkt');
                 setRecords(res.data.records);
             } catch (err) {
                 console.log(err)
             }
         }
-        const fetchRM = async () => {
+        const fetchBkt = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/rm');
-                setAllRM(res.data.rawMaterials);
+                const res = await axios.get('http://localhost:5000/bkt');
+                setAllBkt(res.data.bucket);
             } catch (err) {
                 console.log(err)
             }
         }
         fetchData();
-        fetchRM();
+        fetchBkt();
     }, []);
 
     const handleDialogOpen = () => {
@@ -60,21 +60,21 @@ export const AdjustRM = () => {
     const handleDialogClose = () => {
         setOpenDialog(false);
         setDesc('');
-        setSingleRM('');
+        setSingleBkt('');
         setQty('');
     }
 
     const handleDialogSubmit = async (e) => {
         e.preventDefault();
         const data = {
-            name: singleRM,
+            name: singleBkt,
             qtyChange: qty,
             action: operation,
             description: desc,
         }
         // setRecords([...records, data])
         try {
-            const res = await axios.post('http://localhost:5000/adj/add', data);
+            const res = await axios.post('http://localhost:5000/adj-bkt/add', data);
             if (res.status === 200) {
                 setOpen(true);
                 setSeverity('success');
@@ -134,23 +134,23 @@ export const AdjustRM = () => {
             <Dialog open={openDialog} onClose={handleDialogClose} aria-labelledby="form-dialog-title">
                 <Box component='form' onSubmit={handleDialogSubmit}>
 
-                    <DialogTitle id="form-dialog-title">Adjust raw material</DialogTitle>
+                    <DialogTitle id="form-dialog-title">Adjust bucket</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
                             Please enter the details of the record.
                         </DialogContentText>
                         <FormControl fullWidth>
-                            <InputLabel id="select-rm-label">Raw material</InputLabel>
+                            <InputLabel id="select-bkt-label">Bucket</InputLabel>
                             <Select
                                 required
-                                labelId='select-rm-label'
-                                id="select-rm-id"
-                                value={singleRM ?? ""}
-                                label="Select Raw Material"
-                                onChange={(e) => { setSingleRM(e.target.value) }}
+                                labelId='select-bkt-label'
+                                id="select-bkt-id"
+                                value={singleBkt ?? ""}
+                                label="Select Bucket"
+                                onChange={(e) => { setSingleBkt(e.target.value) }}
                                 fullWidth
                             >
-                                {allRM.map((item, id) => (
+                                {allBkt.map((item, id) => (
                                     <MenuItem key={id} value={item.name}>{item.name}</MenuItem>
                                 ))}
 
@@ -207,5 +207,3 @@ export const AdjustRM = () => {
         </>
     )
 }
-
-export default AdjustRM

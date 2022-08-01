@@ -34,6 +34,8 @@ export const AddBoq = () => {
 
     let navigate = useNavigate();
 
+    const [allBoq, setAllBoq] = useState([]);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -43,8 +45,18 @@ export const AddBoq = () => {
                 console.log(err);
             }
         }
+        const fetchAllBoq = async() => {
+            try {
+                const res = await axios.get('http://localhost:5000/boq');
+                setAllBoq(res.data.boq);
+            } catch(err) {
+                console.log(err);
+            }
+        }
         fetchData();
+        fetchAllBoq();
     }, []);
+
 
     const [boqContent, setBoqContent] = useState([
         {
@@ -118,6 +130,12 @@ export const AddBoq = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if(allBoq.find(item => item.name === boq.name )) { // checking if boq name already exists
+            setSnackbarSeverity('error');
+            setSnackbarMessage(`BOQ ${boq.name} already exists`);
+            setOpenSnackbar(true);
+            return;
+        }
         const newBoq = { ...boq };
         newBoq.content = boqContent;
         setBoq(newBoq);
