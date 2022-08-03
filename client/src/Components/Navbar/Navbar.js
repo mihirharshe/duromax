@@ -26,6 +26,7 @@ import { AddBoq } from '../BOQ/AddBoq';
 import { EditBoq } from '../BOQ/EditBoq';
 import { AdjustRM } from '../Adjust/AdjustRM';
 import { AdjustBkt } from '../Adjust/AdjustBkt';
+import { Production } from '../Production/Production';
 
 const drawerWidth = 240;
 
@@ -35,6 +36,7 @@ const navigation = [
     { name: 'BOQ', icon: <ArticleIcon />, href: '/boq' },
     { name: 'Adjust Raw Material', icon: <ArticleIcon />, href: '/adjust-rm' },
     { name: 'Adjust Bucket', icon: <ArticleIcon />, href: '/adjust-bkt' },
+    { name: 'Production', icon: <ArticleIcon />, href: '/production' },
 ];
 
 const openedMixin = (theme) => ({
@@ -182,6 +184,7 @@ export default function Navbar() {
                     <Route path = "boq/edit/:id" element={<EditBoq />} />
                     <Route path = "/adjust-rm" element={<AdjustRM />} />
                     <Route path = "/adjust-bkt" element={<AdjustBkt />} />
+                    <Route path = "/production" element={<Production />} />
                 </Routes>
             </Box>
         </Box>

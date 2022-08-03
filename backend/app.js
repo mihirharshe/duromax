@@ -20,6 +20,7 @@ const bucketRouter = require('./routes/bucket');
 const boqRouter = require('./routes/boqMain');
 const adjRMRouter = require('./routes/adjRM');
 const adjBktRouter = require('./routes/adjBkt');
+const productionRouter = require('./routes/productionInsert');
 
 var app = express();
 
@@ -44,6 +45,7 @@ app.use('/bkt', bucketRouter);
 app.use('/boq', boqRouter);
 app.use('/adj-rm', adjRMRouter);
 app.use('/adj-bkt', adjBktRouter);
+app.use('/prod', productionRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
