@@ -106,6 +106,17 @@ export const Production = () => {
         { field: 'pack_size', type: 'number', headerName: 'Pack Size', minWidth: 100 },
         { field: 'desc', type: 'string', headerName: 'Remarks', flex: 1 },
         {
+            field: 'createdAt',
+            type: 'date',
+            headerName: 'Date added',
+            minWidth: 175,
+            valueFormatter: (params) => {
+                return new Date(params.value).toLocaleString().replace(',', '');
+            },
+            headerAlign: 'center', 
+            align: 'center'
+        },
+        {
             field: 'actions',
             type: 'actions',
             headerName: 'Actions',
@@ -144,69 +155,71 @@ export const Production = () => {
             </Container>
 
             <Dialog open={open} onClose={handleDialogClose} aria-labelledby="form-dialog-title">
-                <DialogTitle id="form-dialog-title">Add new production</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>Please enter the details of the production you want to insert</DialogContentText>
-                    <FormControl sx={{ width: '100%', marginBottom: 0.5}}>
-                        <InputLabel id="select-rm-label">Raw Material</InputLabel>
-                        <Select
+                <Box component='form' onSubmit={handleDialogSubmit}>
+                    <DialogTitle id="form-dialog-title">Add new production</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>Please enter the details of the production you want to insert</DialogContentText>
+                        <FormControl sx={{ width: '100%', marginBottom: 0.5 }}>
+                            <InputLabel id="select-rm-label">Select Product</InputLabel>
+                            <Select
+                                required
+                                labelId='select-boq-label'
+                                id="select-boq-id"
+                                value={data.name}
+                                label="Select Product"
+                                onChange={(e) => { handleSelectBOQ(e) }}
+                                fullWidth
+                            >
+                                {allBoq.map((item, id) => (
+                                    <MenuItem key={id} value={item.name}>{item.name}</MenuItem>
+                                ))}
+
+                            </Select>
+                        </FormControl>
+
+                        <TextField
                             required
-                            labelId='select-boq-label'
-                            id="select-boq-id"
-                            value={data.name}
-                            label="Select Product"
-                            onChange={(e) => { handleSelectBOQ(e) }}
+                            margin="dense"
+                            id="qty"
+                            name="qty"
+                            label="Quantity"
+                            type="number"
+                            value={data.qty}
+                            onChange={handleInputChange}
                             fullWidth
-                        >
-                            {allBoq.map((item, id) => (
-                                <MenuItem key={id} value={item.name}>{item.name}</MenuItem>
-                            ))}
-
-                        </Select>
-                    </FormControl>
-
-                    <TextField
-                        required
-                        margin="dense"
-                        id="qty"
-                        name="qty"
-                        label="Quantity"
-                        type="number"
-                        value={data.qty}
-                        onChange={handleInputChange}
-                        fullWidth
-                    />
-                    <TextField
-                        required
-                        margin="dense"
-                        id="pack_size"
-                        name="pack_size"
-                        label="Pack Size"
-                        type="number"
-                        value={data.pack_size}
-                        onChange={handleInputChange}
-                        fullWidth
-                    />
-                    <TextField
-                        required
-                        margin="dense"
-                        id="Remarks"
-                        name="desc"
-                        label="Remarks"
-                        type="text"
-                        value={data.desc}
-                        onChange={handleInputChange}
-                        fullWidth
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleDialogSubmit} color="primary">
-                        Add
-                    </Button>
-                    <Button onClick={handleDialogClose} color="primary">
-                        Cancel
-                    </Button>
-                </DialogActions>
+                        />
+                        <TextField
+                            required
+                            margin="dense"
+                            id="pack_size"
+                            name="pack_size"
+                            label="Pack Size"
+                            type="number"
+                            value={data.pack_size}
+                            onChange={handleInputChange}
+                            fullWidth
+                        />
+                        <TextField
+                            required
+                            margin="dense"
+                            id="Remarks"
+                            name="desc"
+                            label="Remarks"
+                            type="text"
+                            value={data.desc}
+                            onChange={handleInputChange}
+                            fullWidth
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button type='submit' color="primary">
+                            Add
+                        </Button>
+                        <Button onClick={handleDialogClose} color="primary">
+                            Cancel
+                        </Button>
+                    </DialogActions>
+                </Box>
             </Dialog>
 
         </>
