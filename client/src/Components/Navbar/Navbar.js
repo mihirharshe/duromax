@@ -27,7 +27,8 @@ import { EditBoq } from '../BOQ/EditBoq';
 import { AdjustRM } from '../Adjust/AdjustRM';
 import { AdjustBkt } from '../Adjust/AdjustBkt';
 import { Production } from '../Production/Production';
-import { Screen } from '../Screening/Screen';
+import { ScreenMain } from '../Screening/ScreenMain';
+import { ScreenProd } from '../Screening/ScreenProd';
 
 const drawerWidth = 240;
 
@@ -187,7 +188,8 @@ export default function Navbar() {
                     <Route path = "/adjust-rm" element={<AdjustRM />} />
                     <Route path = "/adjust-bkt" element={<AdjustBkt />} />
                     <Route path = "/production" element={<Production />} />
-                    <Route path = "/screen" element={<Screen />} />
+                    <Route path = "/screen" element={<ScreenMain />} />
+                    <Route path = "/screen/:id" element={<ScreenProd />} />
                 </Routes>
             </Box>
         </Box>

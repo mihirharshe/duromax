@@ -2,11 +2,13 @@ import React , { useState, useEffect, useMemo }from 'react';
 import axios from 'axios';
 import Container from '@mui/system/Container';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { useNavigate } from 'react-router-dom';
 
-export const Screen = () => {
+export const ScreenMain = () => {
+
+    let navigate = useNavigate();
 
     const [pageSize, setPageSize] = useState(10);
     const [productions, setProductions] = useState([]);
@@ -50,7 +52,8 @@ export const Screen = () => {
                     icon={<PlayArrowIcon color='success'/>}
                     label="Start"
                     onClick={() => {
-                        console.log(params.id);
+                        console.log(params.row.name);
+                        navigate(`/screen/${params.id}`);
                     }}
                 />,
             ]

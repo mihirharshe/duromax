@@ -20,10 +20,39 @@ const getOneBoq = async (req, res) => {
     const { id } = req.params
     try {
         const boq = await boqMainModel.findById(id);
-        res.status(200).json({
-            message: 'Successfully retrieved BOQ',
-            boq
+        if(boq) {
+            res.status(200).json({
+                message: 'Successfully retrieved BOQ',
+                boq
+            });
+        } else {
+            res.status(404).json({
+                message: 'BOQ not found'
+            });
+        }
+    }
+    catch(err) {
+        res.status(500).json({
+            message: err.message
         });
+    }
+}
+
+const getOneBoqName = async (req, res) => {
+    const { name } = req.params
+    try {
+        const boq = await boqMainModel.findOne({ name });
+        if(boq) {
+            res.status(200).json({
+                message: `Successfully retrieved BOQ with name ${name}`,
+                boq
+            });
+        } else {
+            res.status(404).json({
+                message: `BOQ ${name} not found`
+            });
+        }
+        
     }
     catch(err) {
         res.status(500).json({
@@ -109,6 +138,7 @@ const deleteBoq = async (req, res) => {
 module.exports = {
     getAllBoq,
     getOneBoq,
+    getOneBoqName,
     addBoq,
     updateBoq,
     deleteBoq
