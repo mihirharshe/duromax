@@ -89,10 +89,47 @@ const deleteProductionInsert = async (req, res) => {
     }
 }
 
+const addBatch = async (req, res) => {
+    const { id } = req.params;
+    const batch = req.body;
+    try {
+        const production = await productionModel.findById(id);
+        console.log(batch);
+        production.batches.push(batch);
+        await production.save();
+        res.status(200).json({
+            message: 'Successfully added batch',
+            production
+        });
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+const getSingleBatch = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const production = await productionModel.findById(id);
+        const batches = production.batches;
+        res.status(200).json({
+            message: 'Successfully retrieved batches',
+            batches
+        });
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
 module.exports = {
     getAllProductionInserts,
     getOneProductionInsert,
     addProductionInsert,
     updateProductionInsert,
-    deleteProductionInsert
+    deleteProductionInsert,
+    addBatch,
+    getSingleBatch
 }

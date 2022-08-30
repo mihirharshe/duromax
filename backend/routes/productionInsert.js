@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { getAllProductionInserts, getOneProductionInsert, addProductionInsert, updateProductionInsert, deleteProductionInsert } = require('../controllers/production.controller');
+const { 
+    getAllProductionInserts, 
+    getOneProductionInsert, 
+    addProductionInsert, 
+    updateProductionInsert, 
+    deleteProductionInsert,
+    addBatch,
+    getSingleBatch} = require('../controllers/production.controller');
 
 router.get('/', async(req, res) => {
     await getAllProductionInserts(req, res);
@@ -20,6 +27,14 @@ router.put('/:id', async(req, res) => {
 
 router.delete('/:id', async(req, res) => {
     await deleteProductionInsert(req, res);
+});
+
+router.get('/batch/:id', async(req, res) => {
+    await getSingleBatch(req, res);
+});
+
+router.post('/batch/:id', async(req, res) => {
+    await addBatch(req, res);
 });
 
 module.exports = router;

@@ -17,6 +17,8 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useParams } from 'react-router-dom';
 import Countdown from 'react-countdown';
 
+import { CustomSnackbar } from '../Snackbar/CustomSnackbar';
+
 export const ScreenProd = () => {
 
     const { id } = useParams();
@@ -37,6 +39,7 @@ export const ScreenProd = () => {
         mixTime: '',
         _id: ''
     });
+
 
     // const handleSelectBatch = (batchNumber) => {
     //     setSelectedBatch(batchNumber);
@@ -77,7 +80,7 @@ export const ScreenProd = () => {
     const prodQty = selectedProduct.qty;
     const batchCount = Math.ceil(prodQty / batch_size);
     const generateBatchArray = (batchCount) => {
-        return batchCount ? (new Array(batchCount).fill({ success: false, content: prodBoq.content })) : [];
+        return batchCount ? (new Array(batchCount).fill({ success: false, currentIdx: 0, content: prodBoq.content })) : [];
     }
 
     const batchArray = useMemo(() => generateBatchArray(batchCount), [batchCount]);
@@ -88,14 +91,20 @@ export const ScreenProd = () => {
 
     console.log(allBatches);
 
+    // const batchCompletionArray = (new Array(batchCount).fill({ completed: false }));
+
     const handleSelectElement = () => {
-        setCurrElement(batchArray[selectedBatch].content[idx]);
+        setCurrElement(allBatches[selectedBatch].content[idx]);
     }
 
     const [value, setValue] = useState('1');
     const handleTabChange = (e, newValue) => {
         setValue(newValue);
         setSelectedBatch(newValue - 1);
+        setIdx(allBatches[newValue - 1].currentIdx);
+        const newBatchElementIdx = allBatches[newValue - 1].currentIdx;
+        setCurrElement(prodBoq.content[newBatchElementIdx]);
+        console.log(currElement);
     }
 
     const handleCompletion = () => {
@@ -103,12 +112,12 @@ export const ScreenProd = () => {
             setCompletedElements([...completedElements, currElement]);
             console.log(idx);
             handleClose();
-            console.log(allBatches[selectedBatch].content.length, 'length');
+            console.log(allBatches[selectedBatch].currentIdx);
             if (idx >= allBatches[selectedBatch].content.length) {
                 console.log("success");
-                setIdx(0);
+                // setIdx(0);
                 const updatedBatch = [...allBatches];
-                updatedBatch.splice(selectedBatch, 1, { success: true, content: prodBoq.content });
+                updatedBatch.splice(selectedBatch, 1, { success: true, currentIdx: idx, content: prodBoq.content });
                 setAllBatches(updatedBatch);
                 setCurrElement({
                     name: '',
@@ -133,10 +142,20 @@ export const ScreenProd = () => {
         );
     }
 
+    const updateIdx = () => {
+        const newArr = [...allBatches];
+        newArr.splice(selectedBatch, 1, { success: false, currentIdx: idx + 1, content: prodBoq.content });
+        setAllBatches(newArr);
+    }
+
     const handleStart = () => {
         setBackdropOpen(!backdropOpen);
         setTime(Date.now());
         setIdx(idx + 1);
+        // const updatedIdx = [...allBatches];
+        // updatedIdx.splice(selectedBatch, 1, { success: false, currentIdx: idx, content: prodBoq.content });
+        // setAllBatches(updatedIdx);
+        updateIdx();
         setTimeout(() => {
             countdownRef.current.api.start();
         }, 1);
@@ -177,11 +196,13 @@ export const ScreenProd = () => {
                 <TabContext value={`${value}`}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <TabList aria-label='tabs-example' onChange={handleTabChange} variant='scrollable' scrollButtons='auto'>
-                            {batchArray.map((batch, i) => (
-                                batch.success === true ? 
-                                <Tab key={i} label={`Batch ${i + 1}`} value={`${i + 1}`} disabled /> 
-                                :
-                                <Tab key={i} label={`Batch ${i + 1}`} value={`${i + 1}`} />
+                            {allBatches.map((batch, i) => (
+                                <Tab
+                                    key={i}
+                                    label={`Batch ${i + 1}`}
+                                    value={`${i + 1}`}
+                                // disabled={batch.success} 
+                                />
                             ))}
                             {/* <Tab label='Tab One' value='1'/>
                             <Tab label='Tab Two' value='2'/>
@@ -190,58 +211,75 @@ export const ScreenProd = () => {
                     </Box>
                     {batchArray.map((batch, i) => (
                         <TabPanel key={i} value={`${i + 1}`}>
-                            Batch {i + 1}
-                            <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                                <Paper>
-                                    <Box p={2}>
-                                        <Stack spacing={0.5}>
+                            <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }} >
+                                <Grid item xs={3}>
+                                    <Paper align='center'>
+                                        <Box p={2}>
                                             <Typography gutterBottom variant='h6' component='div'>
                                                 Composition
                                             </Typography>
+                                            <Divider />
                                             {batch.content.map((materials, element) => (
                                                 <div key={element}>
                                                     <span>{materials.name}</span>
                                                     <Divider />
                                                 </div>
                                             ))}
-                                        </Stack>
-                                    </Box>
-                                </Paper>
-                                <Paper>
-                                    <Box p={2}>
-                                        <Typography gutterBottom variant='h6' component='div'>
-                                            Current Element
-                                        </Typography>
-                                        {currElement && currElement.name}
-                                        <Divider />
-                                    </Box>
-                                </Paper>
-                                <Paper>
-                                    <Box p={2}>
-                                        <Typography gutterBottom variant='h6' component='div'>
-                                            Completed
-                                        </Typography>
-                                        {completedElements && completedElements.map((element, i) => (
-                                            <div key={i}>
-                                                <span>{element.name}</span>
-                                                <Divider />
-                                            </div>
-                                        ))}
-                                    </Box>
-                                </Paper>
+                                        </Box>
+                                    </Paper>
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <Paper align='center'>
+                                        <Box p={2}>
+                                            <Typography gutterBottom variant='h6' component='div'>
+                                                Current Element
+                                            </Typography>
+                                            <Divider />
+                                            {currElement &&
+                                                <div>
+                                                    <Typography gutterBottom variant='h4' component='div' fontWeight={500}>
+                                                        {currElement.name}
+                                                    </Typography>
+                                                    <Divider />
+                                                </div>
+                                            }
+                                        </Box>
+                                    </Paper>
+                                </Grid>
+                                <Grid item xs={3}>
+                                    <Paper align='center'>
+                                        <Box p={2}>
+                                            <Typography gutterBottom variant='h6' component='div'>
+                                                Completed
+                                            </Typography>
+                                            <Divider />
+                                            {completedElements && completedElements.map((element, i) => (
+                                                <div key={i}>
+                                                    <span>{element.name}</span>
+                                                    <Divider />
+                                                </div>
+                                            ))}
+                                        </Box>
+                                    </Paper>
+                                </Grid>
                             </Grid>
-                            <Button variant='contained' sx={{ marginTop: 2 }} onClick={handleStart}>
+                            <Button
+                                variant='contained'
+                                sx={{ marginTop: 2 }}
+                                onClick={handleStart}
+                                disabled={allBatches[selectedBatch]?.success}
+                            >
                                 Start
                             </Button>
                             <Backdrop open={backdropOpen} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                    <Countdown 
-                                        date={time + 3000} 
-                                        onComplete={handleCompletion} 
+                                    <Countdown
+                                        date={time + 3000}
+                                        onComplete={handleCompletion}
                                         autoStart={false}
-                                        key={time} 
-                                        ref={countdownRef} 
-                                        renderer={renderer} 
+                                        key={time}
+                                        ref={countdownRef}
+                                        renderer={renderer}
                                     />
                                 </Box>
                             </Backdrop>
