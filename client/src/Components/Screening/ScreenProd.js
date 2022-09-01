@@ -31,6 +31,7 @@ export const ScreenProd = () => {
     const [selectedBatch, setSelectedBatch] = useState(0);
     const [idx, setIdx] = useState(0);
     const [allBatches, setAllBatches] = useState([]);
+    const [batchDetails, setBatchDetails] = useState([]);
 
     const [completedElements, setCompletedElements] = useState([]);
     const [currElement, setCurrElement] = useState({
@@ -56,8 +57,31 @@ export const ScreenProd = () => {
                 console.log(err);
             }
         }
+        const fetchBatchDetails = async () => {
+            try {
+                console.log("fetching batch details")
+                const res = await axios.get(`http://localhost:5000/prod/batch/all/${id}`);
+                setBatchDetails(res.data.batches);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+        const fetchCompletedElements = async () => {
+            try {
+                console.log("fetching completed elements")
+                const res = await axios.get(`http://localhost:5000/prod/completed/${id}`);
+                setCompletedElements(res.data.materials);
+            } catch(err) {
+                console.log(err);
+            }
+        }
         fetchProd();
+        fetchBatchDetails();
+        fetchCompletedElements();
     }, []);
+
+    console.log("batchDetails: " , batchDetails);
 
     useEffect(() => {
         if (selectedProduct.name) {
@@ -66,7 +90,7 @@ export const ScreenProd = () => {
                     console.log("fetching boq")
                     const res = await axios.get(`http://localhost:5000/boq/name/${selectedProduct.name}`);
                     setProdBoq(res.data.boq);
-                    setCurrElement(res.data.boq.content[0]);
+                    setCurrElement(res.data.boq.content[idx]);
                 }
                 catch (err) {
                     console.log(err);
@@ -80,7 +104,9 @@ export const ScreenProd = () => {
     const prodQty = selectedProduct.qty;
     const batchCount = Math.ceil(prodQty / batch_size);
     const generateBatchArray = (batchCount) => {
-        return batchCount ? (new Array(batchCount).fill({ success: false, currentIdx: 0, content: prodBoq.content })) : [];
+        const gen = batchCount ? (new Array(batchCount-batchDetails.length).fill({ completed: false, currentIdx: 0 })) : [];
+        const newArr = [...batchDetails, ...gen]
+        return newArr;
     }
 
     const batchArray = useMemo(() => generateBatchArray(batchCount), [batchCount]);
@@ -94,10 +120,25 @@ export const ScreenProd = () => {
     // const batchCompletionArray = (new Array(batchCount).fill({ completed: false }));
 
     const handleSelectElement = () => {
-        setCurrElement(allBatches[selectedBatch].content[idx]);
+        setCurrElement(prodBoq.content[idx]);
+    }
+
+    const saveCompletedElements = () => {
+        axios.post(`http://localhost:5000/prod/completed/${id}`, {
+            materials: {...currElement, batch: selectedBatch+1 }
+        });
+    }
+
+    const addBatchDetails = () => {
+        const updatedBatches = [...allBatches];
+        updatedBatches[selectedBatch] = {...updatedBatches[selectedBatch], completed: true, currentIdx: idx};
+        axios.post(`http://localhost:5000/prod/batch/all/${id}`, {
+            batches: updatedBatches
+        });
     }
 
     const [value, setValue] = useState('1');
+    
     const handleTabChange = (e, newValue) => {
         setValue(newValue);
         setSelectedBatch(newValue - 1);
@@ -107,29 +148,39 @@ export const ScreenProd = () => {
         console.log(currElement);
     }
 
-    const handleCompletion = () => {
-        if (!allBatches[selectedBatch].success) {
-            setCompletedElements([...completedElements, currElement]);
+    const handleCompletion = () => { // ON COMPLETE ADD TO DB -> whole batchDetails array. Need to look into completedElements as well
+        if (!allBatches[selectedBatch].completed) {
+            // setCompletedElements([...completedElements, currElement]);
+            setCompletedElements([...completedElements, {...currElement, batch: selectedBatch+1 }]);
             console.log(idx);
+            // console.log("check1",currElement);
+            saveCompletedElements();
+            handleSelectElement();
             handleClose();
+            setSelectedProduct({...selectedProduct, completedMaterials: [...completedElements, {...currElement, batch: selectedBatch+1 }] })
             console.log(allBatches[selectedBatch].currentIdx);
-            if (idx >= allBatches[selectedBatch].content.length) {
-                console.log("success");
+            if (idx >= prodBoq.content.length) {
+                console.log("completed");
                 // setIdx(0);
                 const updatedBatch = [...allBatches];
-                updatedBatch.splice(selectedBatch, 1, { success: true, currentIdx: idx, content: prodBoq.content });
+                // const single = {...updatedBatch[selectedBatch], completed: true, currentIdx: idx}
+                updatedBatch[selectedBatch] = {...updatedBatch[selectedBatch], completed: true, currentIdx: idx}
+                console.log("updatedBatch: ",updatedBatch)
+                // updatedBatch.splice(selectedBatch, 1, { completed: true, currentIdx: idx });
                 setAllBatches(updatedBatch);
+                addBatchDetails();
                 setCurrElement({
                     name: '',
                     qty: '',
                     mixTime: '',
                     _id: ''
-                })
+                });
                 return;
             }
-            handleSelectElement();
         }
     };
+
+    console.log(selectedProduct)
 
     const renderer = ({ api, formatted }) => {
         const { minutes, seconds } = formatted;
@@ -144,7 +195,8 @@ export const ScreenProd = () => {
 
     const updateIdx = () => {
         const newArr = [...allBatches];
-        newArr.splice(selectedBatch, 1, { success: false, currentIdx: idx + 1, content: prodBoq.content });
+        console.log(selectedBatch)
+        newArr[selectedBatch] = {...newArr[selectedBatch], currentIdx: idx + 1}
         setAllBatches(newArr);
     }
 
@@ -154,7 +206,7 @@ export const ScreenProd = () => {
         setIdx(idx + 1);
         // const updatedIdx = [...allBatches];
         // updatedIdx.splice(selectedBatch, 1, { success: false, currentIdx: idx, content: prodBoq.content });
-        // setAllBatches(updatedIdx);
+        // setAllBatches(updatedIdx);    
         updateIdx();
         setTimeout(() => {
             countdownRef.current.api.start();
@@ -219,7 +271,7 @@ export const ScreenProd = () => {
                                                 Composition
                                             </Typography>
                                             <Divider />
-                                            {batch.content.map((materials, element) => (
+                                            {prodBoq.content.map((materials, element) => (
                                                 <div key={element}>
                                                     <span>{materials.name}</span>
                                                     <Divider />
@@ -235,14 +287,12 @@ export const ScreenProd = () => {
                                                 Current Element
                                             </Typography>
                                             <Divider />
-                                            {currElement &&
                                                 <div>
                                                     <Typography gutterBottom variant='h4' component='div' fontWeight={500}>
-                                                        {currElement.name}
+                                                        {currElement ? (currElement.name ? currElement.name : '-') : '-'}
                                                     </Typography>
                                                     <Divider />
                                                 </div>
-                                            }
                                         </Box>
                                     </Paper>
                                 </Grid>
@@ -255,7 +305,7 @@ export const ScreenProd = () => {
                                             <Divider />
                                             {completedElements && completedElements.map((element, i) => (
                                                 <div key={i}>
-                                                    <span>{element.name}</span>
+                                                    <span>{element.name} - {`Batch ${element.batch}`}</span>
                                                     <Divider />
                                                 </div>
                                             ))}
@@ -267,7 +317,7 @@ export const ScreenProd = () => {
                                 variant='contained'
                                 sx={{ marginTop: 2 }}
                                 onClick={handleStart}
-                                disabled={allBatches[selectedBatch]?.success}
+                                disabled={allBatches[selectedBatch]?.completed}
                             >
                                 Start
                             </Button>

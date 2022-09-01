@@ -1,4 +1,4 @@
-const productionModel = require('../models/production.model');
+const { productionModel, batchModel } = require('../models/production.model');
 
 const getAllProductionInserts = async (req, res) => {
     try {
@@ -94,7 +94,7 @@ const addBatch = async (req, res) => {
     const batch = req.body;
     try {
         const production = await productionModel.findById(id);
-        console.log(batch);
+        // console.log(batch);
         production.batches.push(batch);
         await production.save();
         res.status(200).json({
@@ -108,7 +108,28 @@ const addBatch = async (req, res) => {
     }
 }
 
-const getSingleBatch = async (req, res) => {
+const addAllBatches = async(req, res) => {
+    const { id } = req.params;
+    const { batches } = req.body;
+    console.log(req.body);
+    try {
+        // const production = await productionModel.findById(id);
+        // console.log(production);
+        // production.batches = [...batches];
+        // await production.batches.update();
+        const production = await productionModel.findByIdAndUpdate(id, { $set: { batches } });
+        res.status(200).json({
+            message: 'Successfully added all batches',
+            production
+        });
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+const getAllBatches = async (req, res) => {
     const { id } = req.params;
     try {
         const production = await productionModel.findById(id);
@@ -124,6 +145,74 @@ const getSingleBatch = async (req, res) => {
     }
 }
 
+const updateBatch = async(req, res) => {
+    const { id } = req.params;
+    const { batch, quality, bkt, completed, currentIdx } = req.body;
+    try {
+        const production = await productionModel.findById(id);
+        const batches = production.batches.find(b => b.batch === batch);
+        // console.log(batches);
+        if(quality) {
+            batches.quality = quality;
+        }
+        if(bkt) {
+            batches.bkt = bkt;
+        }
+        if(completed) {
+            batches.completed = completed;
+        }
+        if(currentIdx) {
+            batches.currentIdx = currentIdx;
+        }
+        await production.save();
+        res.status(200).json({
+            message: 'Successfully updated batch',
+            production
+        });
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+const addCompletedMaterials = async(req, res) => {
+    const { id } = req.params;
+    const { materials } = req.body;
+    // console.log(materials);
+    try {
+        const production = await productionModel.findById(id);
+        production.completedMaterials.push(materials);
+        // production.completedMaterials = [...production.completedMaterials, ...materials];
+        await production.save();
+        res.status(200).json({
+            message: 'Successfully saved completed materials',
+            production
+        });
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+
+const getCompletedMaterails = async(req, res) => {
+    const { id } = req.params;
+    try {
+        const production = await productionModel.findById(id);
+        const materials = production.completedMaterials;
+        res.status(200).json({
+            message: 'Successfully retrieved completed materials',
+            materials
+        });
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
 module.exports = {
     getAllProductionInserts,
     getOneProductionInsert,
@@ -131,5 +220,9 @@ module.exports = {
     updateProductionInsert,
     deleteProductionInsert,
     addBatch,
-    getSingleBatch
+    addAllBatches,
+    getAllBatches,
+    updateBatch,
+    addCompletedMaterials,
+    getCompletedMaterails
 }
