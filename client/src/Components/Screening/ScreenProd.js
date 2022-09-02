@@ -9,12 +9,14 @@ import { Divider } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Backdrop from '@mui/material/Backdrop';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import CircularProgress from '@mui/material/CircularProgress';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tab from '@mui/material/Tab';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Countdown from 'react-countdown';
 
 import { CustomSnackbar } from '../Snackbar/CustomSnackbar';
@@ -23,6 +25,7 @@ export const ScreenProd = () => {
 
     const { id } = useParams();
     const countdownRef = useRef();
+    let navigate = useNavigate();
     const [time, setTime] = useState(Date.now());
 
     const [backdropOpen, setBackdropOpen] = useState(false);
@@ -38,7 +41,8 @@ export const ScreenProd = () => {
         name: '',
         qty: '',
         mixTime: '',
-        _id: ''
+        _id: '',
+        totalQty: ''
     });
 
 
@@ -90,7 +94,7 @@ export const ScreenProd = () => {
                     console.log("fetching boq")
                     const res = await axios.get(`http://localhost:5000/boq/name/${selectedProduct.name}`);
                     setProdBoq(res.data.boq);
-                    setCurrElement(res.data.boq.content[idx]);
+                    // setCurrElement({...res.data.boq.content[idx], totalQty: res.data.boq.content[idx].qty * batchQty});
                 }
                 catch (err) {
                     console.log(err);
@@ -100,9 +104,20 @@ export const ScreenProd = () => {
         }
     }, [selectedProduct]);
 
+    useEffect(() => {
+        if(prodBoq.content) {
+            setCurrElement({...prodBoq.content[idx], totalQty: (prodBoq.content[idx]?.qty * batchQty).toFixed(2)});
+        }
+    }, [prodBoq]);
+
+
+
     const batch_size = prodBoq.batch_size;
     const prodQty = selectedProduct.qty;
     const batchCount = Math.ceil(prodQty / batch_size);
+    const batchQty = prodQty / batchCount;
+    console.log(batch_size, prodQty, batchCount, batchQty);
+    console.log(prodBoq);
     const generateBatchArray = (batchCount) => {
         const gen = batchCount ? (new Array(batchCount-batchDetails.length).fill({ completed: false, currentIdx: 0 })) : [];
         const newArr = [...batchDetails, ...gen]
@@ -115,27 +130,49 @@ export const ScreenProd = () => {
         setAllBatches(batchArray);
     }, [batchArray]);
 
+    useEffect(() => {
+        if(batchArray.length > 0) {
+            setIdx(batchArray[selectedBatch].currentIdx);
+        }
+    }, [batchArray, selectedBatch])
+
     console.log(allBatches);
 
     // const batchCompletionArray = (new Array(batchCount).fill({ completed: false }));
 
     const handleSelectElement = () => {
-        setCurrElement(prodBoq.content[idx]);
+        if(prodBoq.content) {
+            setCurrElement({...prodBoq.content[idx], totalQty: (prodBoq.content[idx].qty * batchQty).toFixed(2)});
+        }
     }
 
     const saveCompletedElements = () => {
         axios.post(`http://localhost:5000/prod/completed/${id}`, {
-            materials: {...currElement, batch: selectedBatch+1 }
+            materials: {...currElement, batch: selectedBatch+1, totalQty: currElement.qty * batchQty }
         });
     }
 
-    const addBatchDetails = () => {
+    const updateSingleBatch = () => {
         const updatedBatches = [...allBatches];
-        updatedBatches[selectedBatch] = {...updatedBatches[selectedBatch], completed: true, currentIdx: idx};
-        axios.post(`http://localhost:5000/prod/batch/all/${id}`, {
-            batches: updatedBatches
-        });
+        if(updatedBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
+            updatedBatches[selectedBatch].completed = true;
+        }
+        axios.post(`http://localhost:5000/prod/batch/${id}`, {
+            batchIdx: selectedBatch,
+            batchDetails: {
+                completed: updatedBatches[selectedBatch].completed,
+                currentIdx: updatedBatches[selectedBatch].currentIdx
+            }
+        }); 
     }
+
+    // const addBatchDetails = () => {
+    //     const updatedBatches = [...allBatches];
+    //     updatedBatches[selectedBatch] = {...updatedBatches[selectedBatch], completed: true, currentIdx: idx};
+    //     axios.post(`http://localhost:5000/prod/batch/all/${id}`, {
+    //         batches: updatedBatches
+    //     });
+    // }
 
     const [value, setValue] = useState('1');
     
@@ -144,22 +181,24 @@ export const ScreenProd = () => {
         setSelectedBatch(newValue - 1);
         setIdx(allBatches[newValue - 1].currentIdx);
         const newBatchElementIdx = allBatches[newValue - 1].currentIdx;
-        setCurrElement(prodBoq.content[newBatchElementIdx]);
+        setCurrElement({...prodBoq.content[newBatchElementIdx], totalQty: (prodBoq.content[newBatchElementIdx]?.qty * batchQty).toFixed(2)});
         console.log(currElement);
     }
 
     const handleCompletion = () => { // ON COMPLETE ADD TO DB -> whole batchDetails array. Need to look into completedElements as well
         if (!allBatches[selectedBatch].completed) {
             // setCompletedElements([...completedElements, currElement]);
-            setCompletedElements([...completedElements, {...currElement, batch: selectedBatch+1 }]);
+            setCompletedElements([...completedElements, {...currElement, batch: selectedBatch+1, totalQty: (currElement.qty * batchQty).toFixed(2) }]);
             console.log(idx);
             // console.log("check1",currElement);
+            setIdx(idx + 1);
             saveCompletedElements();
+            updateSingleBatch();
             handleSelectElement();
             handleClose();
-            setSelectedProduct({...selectedProduct, completedMaterials: [...completedElements, {...currElement, batch: selectedBatch+1 }] })
+            setSelectedProduct({...selectedProduct, completedMaterials: [...completedElements, {...currElement, batch: selectedBatch+1, totalQty: (currElement?.qty * batchQty).toFixed(2) }] })
             console.log(allBatches[selectedBatch].currentIdx);
-            if (idx >= prodBoq.content.length) {
+            if (allBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
                 console.log("completed");
                 // setIdx(0);
                 const updatedBatch = [...allBatches];
@@ -168,14 +207,15 @@ export const ScreenProd = () => {
                 console.log("updatedBatch: ",updatedBatch)
                 // updatedBatch.splice(selectedBatch, 1, { completed: true, currentIdx: idx });
                 setAllBatches(updatedBatch);
-                addBatchDetails();
-                setCurrElement({
-                    name: '',
-                    qty: '',
-                    mixTime: '',
-                    _id: ''
-                });
-                return;
+                // addBatchDetails();
+                // setCurrElement({
+                //     name: '',
+                //     qty: '',
+                //     mixTime: '',
+                //     _id: '',
+                //     totalQty: ''
+                // });
+                navigate(`/screen/${id}/test/${selectedBatch+1}`);
             }
         }
     };
@@ -203,7 +243,7 @@ export const ScreenProd = () => {
     const handleStart = () => {
         setBackdropOpen(!backdropOpen);
         setTime(Date.now());
-        setIdx(idx + 1);
+        // setIdx(idx + 1);
         // const updatedIdx = [...allBatches];
         // updatedIdx.splice(selectedBatch, 1, { success: false, currentIdx: idx, content: prodBoq.content });
         // setAllBatches(updatedIdx);    
@@ -292,12 +332,15 @@ export const ScreenProd = () => {
                                                         {currElement ? (currElement.name ? currElement.name : '-') : '-'}
                                                     </Typography>
                                                     <Divider />
+                                                    <Typography gutterBottom variant='h4' component='div' fontWeight={500}>
+                                                        {currElement.totalQty ? (currElement.totalQty==='NaN' ? null : currElement.totalQty) : '-'} 
+                                                    </Typography>
                                                 </div>
                                         </Box>
                                     </Paper>
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <Paper align='center'>
+                                    <Paper >
                                         <Box p={2}>
                                             <Typography gutterBottom variant='h6' component='div'>
                                                 Completed
@@ -305,7 +348,7 @@ export const ScreenProd = () => {
                                             <Divider />
                                             {completedElements && completedElements.map((element, i) => (
                                                 <div key={i}>
-                                                    <span>{element.name} - {`Batch ${element.batch}`}</span>
+                                                    <span>{element.name} - {`Batch ${element.batch}`} - {element.totalQty}</span>
                                                     <Divider />
                                                 </div>
                                             ))}
@@ -319,7 +362,8 @@ export const ScreenProd = () => {
                                 onClick={handleStart}
                                 disabled={allBatches[selectedBatch]?.completed}
                             >
-                                Start
+                                <span>Start</span>
+                                {allBatches[selectedBatch]?.completed ? <CheckCircleIcon sx={{ marginLeft: 1 }} /> : <PlayCircleOutlineIcon sx={{ marginLeft: 1 }} />}
                             </Button>
                             <Backdrop open={backdropOpen} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

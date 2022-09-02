@@ -29,6 +29,7 @@ import { AdjustBkt } from '../Adjust/AdjustBkt';
 import { Production } from '../Production/Production';
 import { ScreenMain } from '../Screening/ScreenMain';
 import { ScreenProd } from '../Screening/ScreenProd';
+import { QualityTest } from '../Screening/QualityTest';
 
 const drawerWidth = 240;
 
@@ -190,6 +191,7 @@ export default function Navbar() {
                     <Route path = "/production" element={<Production />} />
                     <Route path = "/screen" element={<ScreenMain />} />
                     <Route path = "/screen/:id" element={<ScreenProd />} />
+                    <Route path = '/screen/:id/test/:batchId' element={<QualityTest />} />
                 </Routes>
             </Box>
         </Box>

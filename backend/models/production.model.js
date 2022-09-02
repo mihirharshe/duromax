@@ -13,6 +13,7 @@ const batchSchema = Schema({
     },
     quality: {
         hegmen: Number,
+        viscosity: Number,
         density: Number,
     },
     bkt: Number
@@ -32,6 +33,10 @@ const completedSchema = Schema({
         required: true
     },
     batch: {
+        type: Number,
+        required: true
+    },
+    totalQty: {
         type: Number,
         required: true
     },

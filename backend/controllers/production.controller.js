@@ -91,11 +91,11 @@ const deleteProductionInsert = async (req, res) => {
 
 const addBatch = async (req, res) => {
     const { id } = req.params;
-    const batch = req.body;
+    const { batchIdx, batchDetails } = req.body;
+    console.log(req.body);
     try {
-        const production = await productionModel.findById(id);
+        const production = await productionModel.findByIdAndUpdate(id, { $set: { [`batches.${batchIdx}`]: {...batchDetails, batch: batchIdx+1 }} });
         // console.log(batch);
-        production.batches.push(batch);
         await production.save();
         res.status(200).json({
             message: 'Successfully added batch',
@@ -147,11 +147,12 @@ const getAllBatches = async (req, res) => {
 
 const updateBatch = async(req, res) => {
     const { id } = req.params;
+    console.log(req.body);
     const { batch, quality, bkt, completed, currentIdx } = req.body;
     try {
         const production = await productionModel.findById(id);
         const batches = production.batches.find(b => b.batch === batch);
-        // console.log(batches);
+        console.log(batches);
         if(quality) {
             batches.quality = quality;
         }
