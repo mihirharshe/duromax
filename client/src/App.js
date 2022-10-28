@@ -1,15 +1,20 @@
 import './App.css';
 import React from 'react';
-import Navbar from './Components/Navbar/Navbar';
+import Navbar from './components/Navbar/Navbar';
 import {
-    BrowserRouter,
+    BrowserRouter, Routes, Route
 } from "react-router-dom";
 import { Box } from '@mui/system'
+import Login from './components/Auth/Login';
+import Dashboard from './components/Dashboard/Dashboard';
+import { AuthProvider } from './context/AuthProvider';
 
 function App() {
     return (
         <BrowserRouter>
-            <Navbar />
+            <AuthProvider>
+                <Dashboard />
+            </AuthProvider>
         </BrowserRouter>
     );
 }

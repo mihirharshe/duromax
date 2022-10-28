@@ -30,6 +30,7 @@ import { Production } from '../Production/Production';
 import { ScreenMain } from '../Screening/ScreenMain';
 import { ScreenProd } from '../Screening/ScreenProd';
 import { QualityTest } from '../Screening/QualityTest';
+import RequireAuth from '../Auth/RequireAuth';
 
 const drawerWidth = 240;
 
@@ -181,17 +182,22 @@ export default function Navbar() {
              */}
             <Box component="main" sx={{ paddingTop: 8, paddingLeft: 8, backgroundColor: 'whitesmoke', minHeight: '100vh' }}>
                 <Routes>
-                    <Route path = "raw-material" element={<RawMaterial />}  />
-                    <Route path = "bucket" element={<Bucket />} />
-                    <Route path = "boq" element={<Boq />} />
-                    <Route path = "boq/add" element={<AddBoq />} />
-                    <Route path = "boq/edit/:id" element={<EditBoq />} />
-                    <Route path = "/adjust-rm" element={<AdjustRM />} />
-                    <Route path = "/adjust-bkt" element={<AdjustBkt />} />
-                    <Route path = "/production" element={<Production />} />
                     <Route path = "/screen" element={<ScreenMain />} />
                     <Route path = "/screen/:id" element={<ScreenProd />} />
                     <Route path = '/screen/:id/test/:batchId' element={<QualityTest />} />
+                    
+                    <Route element={<RequireAuth allowedRoles={['Admin']}/>} >
+                        <Route path = "/raw-material" element={<RawMaterial />}  />
+                        <Route path = "/bucket" element={<Bucket />} />
+                        <Route path = "/boq" element={<Boq />} />
+                        <Route path = "/boq/add" element={<AddBoq />} />
+                        <Route path = "/boq/edit/:id" element={<EditBoq />} />
+                        <Route path = "/adjust-rm" element={<AdjustRM />} />
+                        <Route path = "/adjust-bkt" element={<AdjustBkt />} />
+                        <Route path = "/production" element={<Production />} />
+                    </Route>
+
+
                 </Routes>
             </Box>
         </Box>

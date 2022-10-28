@@ -4,28 +4,35 @@ import axios from 'axios';
 import Container from '@mui/system/Container';
 import Box from '@mui/material/Box';
 
-
 import { useParams } from 'react-router-dom';
 import { Grid, FormControl, Stack, TextField, Button } from '@mui/material';
+
+import { CustomSnackbar } from '../Snackbar/CustomSnackbar'
 
 export const QualityTest = () => {
 
     const { id, batchId } = useParams();
     const [productDetails, setProductDetails] = useState({});
-    const [batchDetails, setBatchDetails] = useState({});
+    // const [batchDetails, setBatchDetails] = useState({});
     const [quality, setQuality] = useState({
         hegmen: '',
         viscosity: '',
         density: ''
     });
 
+    const [open , setOpen] = useState(false);
+
     console.log(batchId);
     useEffect(() => {
         const fetchProd = async () => {
-            const res = await axios.get(`http://localhost:5000/prod/${id}`)
+            const res = await axios.get(`http://localhost:5000/api/v1/prod/${id}`)
             setProductDetails(res.data.production);
             console.log(res);
-            setBatchDetails(res.data.production.batches[batchId - 1]);
+            if(res.data.production.batches[batchId - 1].quality) {
+                setQuality(res.data.production.batches[batchId - 1].quality);
+            }
+            // setBatchDetails(res.data.production.batches[batchId - 1]);
+            // console.log(batchDetails);
         }
         fetchProd();
     }, [])
@@ -39,10 +46,11 @@ export const QualityTest = () => {
 
     const handleSubmit = async () => {
         try {
-            await axios.put(`http://localhost:5000/prod/batch/${id}`, {
+            await axios.put(`http://localhost:5000/api/v1/prod/batch/${id}`, {
                 batch: batchId - 0,
                 quality
-            })
+            });
+            setOpen(true);
         } catch(err) {
             console.log(err);
         }
@@ -71,6 +79,7 @@ export const QualityTest = () => {
                                     value={quality.hegmen}
                                     onChange={handleChange}
                                     required
+                                    sx={{ backgroundColor: 'white'}}
                                 />
                             </FormControl>
                         </Grid>
@@ -84,6 +93,7 @@ export const QualityTest = () => {
                                     value={quality.viscosity}
                                     onChange={handleChange}
                                     required
+                                    sx={{ backgroundColor: 'white'}}
                                 />
                             </FormControl>
                         </Grid>
@@ -97,6 +107,7 @@ export const QualityTest = () => {
                                     value={quality.density}
                                     onChange={handleChange}
                                     required
+                                    sx={{ backgroundColor: 'white'}}
                                 />
                             </FormControl>
                         </Grid>
@@ -104,6 +115,7 @@ export const QualityTest = () => {
                     <Button variant='contained' color='info' onClick={handleSubmit} sx={{ width: 80 }}>Save</Button>
                 </Stack>
             </Container>
+            <CustomSnackbar open={open} setOpen={setOpen} severity="success" message="Quality Test saved successfully" />
         </>
     )
 }

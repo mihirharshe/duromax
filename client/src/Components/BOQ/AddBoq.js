@@ -39,7 +39,7 @@ export const AddBoq = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/rm');
+                const res = await axios.get('http://localhost:5000/api/v1/rm');
                 setAllRM(res.data.rawMaterials);
             } catch (err) {
                 console.log(err);
@@ -47,7 +47,7 @@ export const AddBoq = () => {
         }
         const fetchAllBoq = async() => {
             try {
-                const res = await axios.get('http://localhost:5000/boq');
+                const res = await axios.get('http://localhost:5000/api/v1/boq');
                 setAllBoq(res.data.boq);
             } catch(err) {
                 console.log(err);
@@ -140,7 +140,7 @@ export const AddBoq = () => {
         newBoq.content = boqContent;
         setBoq(newBoq);
         try {
-            const res = await axios.post('http://localhost:5000/boq', newBoq);
+            const res = await axios.post('http://localhost:5000/api/v1/boq', newBoq);
             console.log(res);
             if (res.status === 200) {
                 setOpenSnackbar(true);

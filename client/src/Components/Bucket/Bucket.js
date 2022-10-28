@@ -69,7 +69,7 @@ export const Bucket = () => {
             alertQty: alertQty
         }
         try {
-            const res = await axios.post('http://localhost:5000/bkt', data);
+            const res = await axios.post('http://localhost:5000/api/v1/bkt', data);
             setBuckets([...buckets, res.data.bucket]);
             handleDialogClose();
         } catch (err) {
@@ -95,7 +95,7 @@ export const Bucket = () => {
             alertQty: alertQty
         }
         try {
-            const res = await axios.put(`http://localhost:5000/bkt/${itemId}`, data);
+            const res = await axios.put(`http://localhost:5000/api/v1/bkt/${itemId}`, data);
             // console.log(res);
             const editedItemId = res.data.bucket._id;
             const editedItem = buckets.find(item => item._id === editedItemId);
@@ -114,7 +114,7 @@ export const Bucket = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/bkt');
+                const res = await axios.get('http://localhost:5000/api/v1/bkt');
                 setBuckets(res.data.bucket);
             } catch (err) {
                 console.log(err);
@@ -145,7 +145,7 @@ export const Bucket = () => {
     const deleteItem = useCallback((id) => async () => {
         console.log(id);
         try {
-            await axios.delete(`http://localhost:5000/bkt/${id}`);
+            await axios.delete(`http://localhost:5000/api/v1/bkt/${id}`);
             setBuckets((buckets) => buckets.filter((row) => row._id !== id));
         }
         catch (err) {

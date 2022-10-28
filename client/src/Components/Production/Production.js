@@ -55,7 +55,7 @@ export const Production = () => {
 
     const deleteItem = useCallback((id) => async () => {
         try {
-            await axios.delete(`http://localhost:5000/prod/${id}`);
+            await axios.delete(`http://localhost:5000/api/v1/prod/${id}`);
             setProductions((productions) => productions.filter(row => row._id !== id));
         } catch (err) {
             console.log(err);
@@ -64,7 +64,7 @@ export const Production = () => {
 
     const handleDialogSubmit = async () => {
         try {
-            const res = await axios.post('http://localhost:5000/prod/add', data);
+            const res = await axios.post('http://localhost:5000/api/v1/prod/add', data);
             setProductions([...productions, res.data.production]);
             handleDialogClose();
         } catch (err) {
@@ -82,7 +82,7 @@ export const Production = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/prod');
+                const response = await axios.get('http://localhost:5000/api/v1/prod');
                 setProductions(response.data.productions);
             } catch (err) {
                 console.log(err);
@@ -90,7 +90,7 @@ export const Production = () => {
         }
         const fetchBoq = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/boq');
+                const response = await axios.get('http://localhost:5000/api/v1/boq');
                 setAllBoq(response.data.boq);
             } catch (err) {
                 console.log(err);
