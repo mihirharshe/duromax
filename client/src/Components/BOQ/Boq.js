@@ -22,7 +22,7 @@ export const Boq = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/v1/boq');
+                const res = await axios.get('http://localhost:5124/api/v1/boq');
                 setBoq(res.data.boq);
             } catch(err) {
                 console.log(err)
@@ -33,7 +33,7 @@ export const Boq = () => {
 
     const handleDeleteBoq = async(id) => {
         try {
-            const res = await axios.delete(`http://localhost:5000/api/v1/boq/${id}`);
+            const res = await axios.delete(`http://localhost:5124/api/v1/boq/${id}`);
             if(res.status === 200) {
                 setBoq((newBoq) => newBoq.filter(boq => boq._id !== id));
                 setOpen(true);

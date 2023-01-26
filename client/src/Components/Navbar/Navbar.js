@@ -17,12 +17,12 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ArticleIcon from '@mui/icons-material/Article';
-import { Link, Routes , Route } from 'react-router-dom';
+import { Link, Routes, Route } from 'react-router-dom';
 
 import { RawMaterial } from '../RawMaterial/RawMaterial';
 import { Bucket } from '../Bucket/Bucket';
 import { Boq } from '../BOQ/Boq';
-import { AddBoq } from '../BOQ/AddBoq'; 
+import { AddBoq } from '../BOQ/AddBoq';
 import { EditBoq } from '../BOQ/EditBoq';
 import { AdjustRM } from '../Adjust/AdjustRM';
 import { AdjustBkt } from '../Adjust/AdjustBkt';
@@ -30,7 +30,9 @@ import { Production } from '../Production/Production';
 import { ScreenMain } from '../Screening/ScreenMain';
 import { ScreenProd } from '../Screening/ScreenProd';
 import { QualityTest } from '../Screening/QualityTest';
+import { BucketFill } from '../Screening/BucketFill';
 import RequireAuth from '../Auth/RequireAuth';
+import Label from '../Screening/Label';
 
 const drawerWidth = 240;
 
@@ -182,19 +184,21 @@ export default function Navbar() {
              */}
             <Box component="main" sx={{ paddingTop: 8, paddingLeft: 8, backgroundColor: 'whitesmoke', minHeight: '100vh' }}>
                 <Routes>
-                    <Route path = "/screen" element={<ScreenMain />} />
-                    <Route path = "/screen/:id" element={<ScreenProd />} />
-                    <Route path = '/screen/:id/test/:batchId' element={<QualityTest />} />
-                    
-                    <Route element={<RequireAuth allowedRoles={['Admin']}/>} >
-                        <Route path = "/raw-material" element={<RawMaterial />}  />
-                        <Route path = "/bucket" element={<Bucket />} />
-                        <Route path = "/boq" element={<Boq />} />
-                        <Route path = "/boq/add" element={<AddBoq />} />
-                        <Route path = "/boq/edit/:id" element={<EditBoq />} />
-                        <Route path = "/adjust-rm" element={<AdjustRM />} />
-                        <Route path = "/adjust-bkt" element={<AdjustBkt />} />
-                        <Route path = "/production" element={<Production />} />
+                    <Route path="/screen" element={<ScreenMain />} />
+                    <Route path="/screen/:id" element={<ScreenProd />} />
+                    <Route path='/screen/:id/test/:batchId' element={<QualityTest />} />
+                    <Route path="/screen/:id/bktFill/:batchId" element={<BucketFill />} />
+                    <Route path="/screen/:id/label/:batchId" element={<Label />} />
+
+                    <Route element={<RequireAuth allowedRoles={['Admin']} />} >
+                        <Route path="/raw-material" element={<RawMaterial />} />
+                        <Route path="/bucket" element={<Bucket />} />
+                        <Route path="/boq" element={<Boq />} />
+                        <Route path="/boq/add" element={<AddBoq />} />
+                        <Route path="/boq/edit/:id" element={<EditBoq />} />
+                        <Route path="/adjust-rm" element={<AdjustRM />} />
+                        <Route path="/adjust-bkt" element={<AdjustBkt />} />
+                        <Route path="/production" element={<Production />} />
                     </Route>
 
 

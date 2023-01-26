@@ -35,7 +35,7 @@ export const AdjustBkt = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/v1/adj-bkt');
+                const res = await axios.get('http://localhost:5124/api/v1/adj-bkt');
                 setRecords(res.data.records);
             } catch (err) {
                 console.log(err)
@@ -43,7 +43,7 @@ export const AdjustBkt = () => {
         }
         const fetchBkt = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/v1/bkt');
+                const res = await axios.get('http://localhost:5124/api/v1/bkt');
                 setAllBkt(res.data.bucket);
             } catch (err) {
                 console.log(err)
@@ -57,6 +57,7 @@ export const AdjustBkt = () => {
         setOpenDialog(true);
     }
 
+    console.log(singleBkt);
     const handleDialogClose = () => {
         setOpenDialog(false);
         setDesc('');
@@ -74,7 +75,7 @@ export const AdjustBkt = () => {
         }
         // setRecords([...records, data])
         try {
-            const res = await axios.post('http://localhost:5000/api/v1/adj-bkt/add', data);
+            const res = await axios.post('http://localhost:5124/api/v1/adj-bkt/add', data);
             if (res.status === 200) {
                 setOpen(true);
                 setSeverity('success');

@@ -69,7 +69,7 @@ export const RawMaterial = () => {
             alertQty: alertQty
         }
         try {
-            const res = await axios.post('http://localhost:5000/api/v1/rm', data);
+            const res = await axios.post('http://localhost:5124/api/v1/rm', data);
             setMaterials([...materials, res.data.rawMaterial]);
             handleDialogClose();
         } catch (err) {
@@ -95,7 +95,7 @@ export const RawMaterial = () => {
             alertQty: alertQty
         }
         try {
-            const res = await axios.put(`http://localhost:5000/api/v1/rm/${itemId}`, data);
+            const res = await axios.put(`http://localhost:5124/api/v1/rm/${itemId}`, data);
             // console.log(res);
             const editedItemId = res.data.rawMaterial._id;
             const editedItem = materials.find(item => item._id === editedItemId);
@@ -114,7 +114,7 @@ export const RawMaterial = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/v1/rm');
+                const res = await axios.get('http://localhost:5124/api/v1/rm');
                 setMaterials(res.data.rawMaterials);
             } catch (err) {
                 console.log(err);
@@ -125,7 +125,7 @@ export const RawMaterial = () => {
 
     // const deleteItem = useCallback(async (id) => {
     //     try {
-    //         await axios.delete(`http://localhost:5000/rm/${id}`);
+    //         await axios.delete(`http://localhost:5124/rm/${id}`);
     //         setMaterials(materials.filter(material => material._id !== id));
     //     } catch(err) {
     //         console.log(err);
@@ -145,7 +145,7 @@ export const RawMaterial = () => {
     const deleteItem = useCallback((id) => async () => {
         console.log(id);
         try {
-            await axios.delete(`http://localhost:5000/api/v1/rm/${id}`);
+            await axios.delete(`http://localhost:5124/api/v1/rm/${id}`);
             setMaterials((materials) => materials.filter((row) => row._id !== id));
         }
         catch (err) {

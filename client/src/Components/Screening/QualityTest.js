@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { useNavigate } from 'react-router-dom';
 import Container from '@mui/system/Container';
 import Box from '@mui/material/Box';
 
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { Grid, FormControl, Stack, TextField, Button } from '@mui/material';
 
 import { CustomSnackbar } from '../Snackbar/CustomSnackbar'
@@ -20,15 +20,16 @@ export const QualityTest = () => {
         density: ''
     });
 
-    const [open , setOpen] = useState(false);
+    const [open, setOpen] = useState(false);
 
-    console.log(batchId);
+    let navigate = useNavigate();
+
     useEffect(() => {
         const fetchProd = async () => {
-            const res = await axios.get(`http://localhost:5000/api/v1/prod/${id}`)
+            const res = await axios.get(`http://localhost:5124/api/v1/prod/${id}`)
             setProductDetails(res.data.production);
             console.log(res);
-            if(res.data.production.batches[batchId - 1].quality) {
+            if (res.data.production.batches[batchId - 1].quality) {
                 setQuality(res.data.production.batches[batchId - 1].quality);
             }
             // setBatchDetails(res.data.production.batches[batchId - 1]);
@@ -46,18 +47,16 @@ export const QualityTest = () => {
 
     const handleSubmit = async () => {
         try {
-            await axios.put(`http://localhost:5000/api/v1/prod/batch/${id}`, {
+            await axios.put(`http://localhost:5124/api/v1/prod/batch/${id}`, {
                 batch: batchId - 0,
                 quality
             });
             setOpen(true);
-        } catch(err) {
+            navigate(`/screen/${id}/bktFill/${batchId}`);
+        } catch (err) {
             console.log(err);
         }
     }
-
-    console.log(quality);
-
 
     return (
         <>
@@ -79,7 +78,7 @@ export const QualityTest = () => {
                                     value={quality.hegmen}
                                     onChange={handleChange}
                                     required
-                                    sx={{ backgroundColor: 'white'}}
+                                    sx={{ backgroundColor: 'white' }}
                                 />
                             </FormControl>
                         </Grid>
@@ -93,7 +92,7 @@ export const QualityTest = () => {
                                     value={quality.viscosity}
                                     onChange={handleChange}
                                     required
-                                    sx={{ backgroundColor: 'white'}}
+                                    sx={{ backgroundColor: 'white' }}
                                 />
                             </FormControl>
                         </Grid>
@@ -107,7 +106,7 @@ export const QualityTest = () => {
                                     value={quality.density}
                                     onChange={handleChange}
                                     required
-                                    sx={{ backgroundColor: 'white'}}
+                                    sx={{ backgroundColor: 'white' }}
                                 />
                             </FormControl>
                         </Grid>

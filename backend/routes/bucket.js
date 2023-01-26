@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getBuckets, addBucket, updateBucket, deleteBucket } = require('../controllers/bucket.controller');
+const { getBuckets, addBucket, updateBucket, deleteBucket, getSingleBucket } = require('../controllers/bucket.controller');
 
 
 router.get('/', async (req, res) => {
     await getBuckets(req, res);
+})
+
+router.get('/:id', async (req, res) => {
+    await getSingleBucket(req, res);
 })
 
 router.post('/', async (req, res) => {

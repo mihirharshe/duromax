@@ -35,7 +35,7 @@ export const AdjustRM = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/v1/adj-rm');
+                const res = await axios.get('http://localhost:5124/api/v1/adj-rm');
                 setRecords(res.data.records);
             } catch (err) {
                 console.log(err)
@@ -43,7 +43,7 @@ export const AdjustRM = () => {
         }
         const fetchRM = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/v1/rm');
+                const res = await axios.get('http://localhost:5124/api/v1/rm');
                 setAllRM(res.data.rawMaterials);
             } catch (err) {
                 console.log(err)
@@ -74,7 +74,7 @@ export const AdjustRM = () => {
         }
         // setRecords([...records, data])
         try {
-            const res = await axios.post('http://localhost:5000/api/v1/adj-rm/add', data);
+            const res = await axios.post('http://localhost:5124/api/v1/adj-rm/add', data);
             if (res.status === 200) {
                 setOpen(true);
                 setSeverity('success');

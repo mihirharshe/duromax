@@ -54,7 +54,7 @@ export const ScreenProd = () => {
         const fetchProd = async () => {
             try {
                 console.log("fetching prod")
-                const res = await axios.get(`http://localhost:5000/api/v1/prod/${id}`);
+                const res = await axios.get(`http://localhost:5124/api/v1/prod/${id}`);
                 setSelectedProduct(res.data.production);
             }
             catch (err) {
@@ -64,7 +64,7 @@ export const ScreenProd = () => {
         const fetchBatchDetails = async () => {
             try {
                 console.log("fetching batch details")
-                const res = await axios.get(`http://localhost:5000/api/v1/prod/batch/all/${id}`);
+                const res = await axios.get(`http://localhost:5124/api/v1/prod/batch/all/${id}`);
                 setBatchDetails(res.data.batches);
             }
             catch (err) {
@@ -74,7 +74,7 @@ export const ScreenProd = () => {
         const fetchCompletedElements = async () => {
             try {
                 console.log("fetching completed elements")
-                const res = await axios.get(`http://localhost:5000/api/v1/prod/completed/${id}`);
+                const res = await axios.get(`http://localhost:5124/api/v1/prod/completed/${id}`);
                 setCompletedElements(res.data.materials);
             } catch(err) {
                 console.log(err);
@@ -92,7 +92,7 @@ export const ScreenProd = () => {
             const fetchBoq = async () => {
                 try {
                     console.log("fetching boq")
-                    const res = await axios.get(`http://localhost:5000/api/v1/boq/name/${selectedProduct.name}`);
+                    const res = await axios.get(`http://localhost:5124/api/v1/boq/name/${selectedProduct.name}`);
                     setProdBoq(res.data.boq);
                     // setCurrElement({...res.data.boq.content[idx], totalQty: res.data.boq.content[idx].qty * batchQty});
                 }
@@ -147,7 +147,7 @@ export const ScreenProd = () => {
     }
 
     const saveCompletedElements = () => {
-        axios.post(`http://localhost:5000/api/v1/prod/completed/${id}`, {
+        axios.post(`http://localhost:5124/api/v1/prod/completed/${id}`, {
             materials: {...currElement, batch: selectedBatch+1, totalQty: currElement.qty * batchQty }
         });
     }
@@ -157,7 +157,7 @@ export const ScreenProd = () => {
         if(updatedBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
             updatedBatches[selectedBatch].completed = true;
         }
-        axios.post(`http://localhost:5000/api/v1/prod/batch/${id}`, {
+        axios.post(`http://localhost:5124/api/v1/prod/batch/${id}`, {
             batchIdx: selectedBatch,
             batchDetails: {
                 completed: updatedBatches[selectedBatch].completed,
@@ -169,7 +169,7 @@ export const ScreenProd = () => {
     // const addBatchDetails = () => {
     //     const updatedBatches = [...allBatches];
     //     updatedBatches[selectedBatch] = {...updatedBatches[selectedBatch], completed: true, currentIdx: idx};
-    //     axios.post(`http://localhost:5000/prod/batch/all/${id}`, {
+    //     axios.post(`http://localhost:5124/prod/batch/all/${id}`, {
     //         batches: updatedBatches
     //     });
     // }

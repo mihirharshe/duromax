@@ -1,4 +1,6 @@
 const { productionModel, batchModel } = require('../models/production.model');
+const bucketModel = require("../models/bucket.model");
+const { generateUID } = require("../utils/generateUID");
 
 const getAllProductionInserts = async (req, res) => {
     try {
@@ -214,6 +216,59 @@ const getCompletedMaterails = async(req, res) => {
     }
 }
 
+const addBucketDetails = async(req, res) => {
+    const { id, batchId } = req.params;
+    const { bucketDetails } = req.body;
+    try {
+        // const production = await productionModel.findByIdAndUpdate(id, { $set: { bucketDetails } });
+        const production = await productionModel.findById(id);
+        const batch = production.batches.find(b => b.batch == batchId);
+        batch.bucketDetails = bucketDetails;
+        await production.save();
+        bucketDetails.forEach(async (bucket) => {
+            await bucketModel.findByIdAndUpdate(bucket.bktId, 
+                {
+                    $inc: { qty: -bucket.bktNo }
+                }
+            );
+        });
+        res.status(200).json({
+            message: "Successfully added bucket details",
+            production
+        });
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
+const saveLabelDetails = async (req, res) => { // hit once for each batch 
+    const { id, batchId } = req.params;
+    const { labelDetails } = req.body;
+    try {
+        const labelId = generateUID();
+        labelDetails.labelId = labelId;
+        const production = await productionModel.findById(id);
+        const batch = production.batches.find(x => x.batch == batchId);
+        batch.labelDetails = labelDetails;
+        console.log(batch);
+        await production.save();
+        res.status(200).json({
+            message: "Successfully saved label details",
+            labelDetails: batch.labelDetails
+        })
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
+const findBatchByLabelId = async (req, res) => {
+
+}
+
 module.exports = {
     getAllProductionInserts,
     getOneProductionInsert,
@@ -225,5 +280,8 @@ module.exports = {
     getAllBatches,
     updateBatch,
     addCompletedMaterials,
-    getCompletedMaterails
+    getCompletedMaterails,
+    addBucketDetails,
+    saveLabelDetails,
+    findBatchByLabelId
 }

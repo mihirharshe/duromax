@@ -16,7 +16,7 @@ export const ScreenMain = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/v1/prod');
+                const res = await axios.get('http://localhost:5124/api/v1/prod');
                 setProductions(res.data.productions);
             } catch(err) {
                 console.log(err);

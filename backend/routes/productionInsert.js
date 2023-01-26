@@ -11,7 +11,9 @@ const {
     getAllBatches,
     updateBatch,
     getCompletedMaterails,
-    addCompletedMaterials } = require('../controllers/production.controller');
+    addCompletedMaterials, 
+    addBucketDetails, 
+    saveLabelDetails} = require('../controllers/production.controller');
 
 router.get('/', async(req, res) => {
     await getAllProductionInserts(req, res);
@@ -55,6 +57,14 @@ router.get('/completed/:id', async(req, res) => {
 
 router.post('/completed/:id', async(req, res) => {
     await addCompletedMaterials(req, res);
+});
+
+router.put('/add-bkts/:id/:batchId', async(req, res) => {
+    await addBucketDetails(req, res);
+});
+
+router.post('/generate-label/:id/:batchId', async(req, res) => {
+    await saveLabelDetails(req, res);
 });
 
 module.exports = router;

@@ -16,7 +16,17 @@ const batchSchema = Schema({
         viscosity: Number,
         density: Number,
     },
-    bkt: Number
+    bucketDetails: [{
+        bktId: String,
+        bktNo: Number,
+        bktQty: Number
+    }],
+    labelDetails: {
+        labelId: String,
+        qtyKg: Number,
+        qtyL: Number,
+        colorShade: String,
+    }
 }, { timestamps: true });
 
 const completedSchema = Schema({

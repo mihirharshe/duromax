@@ -2,15 +2,30 @@ const bucketModel = require('../models/bucket.model');
 
 const getBuckets = async (req, res) => {
     try {
-        const bucket = await bucketModel.find({});
+        const buckets = await bucketModel.find({});
         res.status(200).json({
             message: 'Successfully retrieved buckets',
-            bucket
+            buckets
         });
     } catch(err) {
         res.status(500).json({
             message: err.message
         });
+    }
+}
+
+const getSingleBucket = async(req, res) => {
+    const { id } = req.params;
+    try {
+        const bucket = await bucketModel.findById(id);
+        res.status(200).json({
+            message: `Successfully retrieved bucket with id ${id}`,
+            bucket
+        })
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        })
     }
 }
 
@@ -39,9 +54,12 @@ const updateBucket = async (req, res) => {
     try {
         const bucket = await bucketModel.findById(id);
         const { name, qty, alertQty } = req.body;
-        bucket.name = name;
-        bucket.qty = qty;
-        bucket.alertQty = alertQty;
+        if(name)
+            bucket.name = name;
+        if(qty)
+            bucket.qty = qty;
+        if(alertQty)
+            bucket.alertQty = alertQty;
         await bucket.save();
         res.status(200).json({
             message: 'Successfully updated a bucket',
@@ -73,6 +91,7 @@ const deleteBucket = async (req, res) => {
 
 module.exports = {
     getBuckets,
+    getSingleBucket,
     addBucket,
     updateBucket,
     deleteBucket
