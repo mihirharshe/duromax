@@ -254,6 +254,20 @@ const saveLabelDetails = async (req, res) => { // hit once for each batch
         batch.labelDetails = labelDetails;
         console.log(batch);
         await production.save();
+
+        const savedBatch = await batchModel.findOneAndUpdate(
+            { productionId: id, batch: batchId },
+            {
+                batch: batch.batch,
+                currentIdx: batch.currentIdx,
+                completed: batch.completed,
+                quality: batch.quality,
+                bucketDetails: batch.bucketDetails,
+                labelDetails: batch.labelDetails
+            },
+            { upsert: true, new: true }
+        );
+
         res.status(200).json({
             message: "Successfully saved label details",
             labelDetails: batch.labelDetails
@@ -266,7 +280,24 @@ const saveLabelDetails = async (req, res) => { // hit once for each batch
 }
 
 const findBatchByLabelId = async (req, res) => {
-
+    const { labelId } = req.body;
+    try {
+        const foundBatch = await batchModel.findOne({ 'labelDetails.labelId': labelId });
+        if(!foundBatch)
+            res.status(404).json({
+                message: `No batch found with the given label ID ${labelId}`
+            });
+        else
+            res.status(200).json({
+                message: `Successfully found a batch with label ID ${labelId}`,
+                batch: foundBatch
+            });
+        
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        })
+    }
 }
 
 module.exports = {

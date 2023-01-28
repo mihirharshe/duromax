@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { styled } from '@mui/material/styles';
 import { Container, Paper, FormControl, Grid, TextField, Box, Stack, Typography, Button } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useBarcode } from 'next-barcode';
 import FinalLabel from './FinalLabel';
+import ReactToPrint from 'react-to-print'
 
 const Label = () => {
 
@@ -71,6 +72,8 @@ const Label = () => {
     //     value: labelDetails.labelId
     // })
 
+    const componentRef = useRef();
+
     return (
         <>
             <Container maxWidth='lg' sx={{ marginTop: 2 }} >
@@ -97,7 +100,20 @@ const Label = () => {
                     </Item>
                     <Button type="submit" variant="contained">SUBMIT</Button>
                 </Box>
-                {isLoaded && <FinalLabel labelDetails={labelDetails} batchId={batchId} />}
+                <div>
+                    {isLoaded && 
+                        <>
+                            <FinalLabel ref={componentRef} labelDetails={labelDetails} batchId={batchId} />
+                            <div style={{display: 'flex', justifyContent: 'center', marginTop: '10px'}}>
+                                <ReactToPrint
+                                    trigger={() => <Button variant="contained">Print</Button>}
+                                    content={() => componentRef.current}
+                                    
+                                />
+                            </div>
+                        </>
+                    }
+                </div>
                 {/* <svg ref={inputRef} /> */}
             </Container>
         </>

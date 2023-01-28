@@ -3,6 +3,7 @@ const { Schema } = mongoose;
 
 const batchSchema = Schema({
     batch : Number,
+    productionId: String,
     currentIdx: { 
         type: Number, 
         default: 0 
