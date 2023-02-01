@@ -30,11 +30,12 @@ const getSingleBucket = async(req, res) => {
 }
 
 const addBucket = async (req, res) => {
-    const { name, qty, alertQty } = req.body;
+    const { name, qty, capacity, alertQty } = req.body;
     try {
         const bucket = new bucketModel({
             name,
             qty,
+            capacity,
             alertQty
         });
         await bucket.save();
@@ -53,11 +54,13 @@ const updateBucket = async (req, res) => {
     const { id } = req.params;
     try {
         const bucket = await bucketModel.findById(id);
-        const { name, qty, alertQty } = req.body;
+        const { name, qty, capacity, alertQty } = req.body;
         if(name)
             bucket.name = name;
         if(qty)
             bucket.qty = qty;
+        if(capacity)
+            bucket.capacity = capacity;
         if(alertQty)
             bucket.alertQty = alertQty;
         await bucket.save();

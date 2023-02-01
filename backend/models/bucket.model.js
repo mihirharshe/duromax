@@ -10,6 +10,10 @@ const bucketSchema = Schema({
         type: Number,
         required: true,
     },
+    capacity: {
+        type: Number,
+        required: true,
+    },
     alertQty: {
         type: Number,
         required: true,

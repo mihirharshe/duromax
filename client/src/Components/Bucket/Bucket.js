@@ -19,6 +19,7 @@ export const Bucket = () => {
     const [editOpen, setEditOpen] = useState(false);
     const [name, setName] = useState('');
     const [qty, setQty] = useState('');
+    const [capacity, setCapacity] = useState('');
     const [alertQty, setAlertQty] = useState('');
     const [itemId, setItemId] = useState('');
     const [error, setError] = useState(false);
@@ -32,6 +33,7 @@ export const Bucket = () => {
         setOpen(false);
         setName('');
         setQty('');
+        setCapacity('');
         setAlertQty('');
         setError(false);
     }
@@ -44,6 +46,7 @@ export const Bucket = () => {
         setEditOpen(false);
         setName('');
         setQty('');
+        setCapacity('');
         setAlertQty('');
         setError(false);
     }
@@ -53,6 +56,8 @@ export const Bucket = () => {
             setName(e.target.value);
         } else if (e.target.id === 'qty') {
             setQty(e.target.value);
+        } else if (e.target.id === 'capacity'){
+            setCapacity(e.target.value);
         } else {
             setAlertQty(e.target.value);
         }
@@ -66,6 +71,7 @@ export const Bucket = () => {
         const data = {
             name: name,
             qty: qty,
+            capacity: capacity,
             alertQty: alertQty
         }
         try {
@@ -78,7 +84,7 @@ export const Bucket = () => {
     }
 
     const validationCheck = () => {
-        if (name === '' || qty === '' || alertQty === '') {
+        if (name === '' || qty === '' || alertQty === '' || capacity === '') {
             return false;
         }
         return true;
@@ -92,6 +98,7 @@ export const Bucket = () => {
         const data = {
             name: name,
             qty: qty,
+            capacity: capacity,
             alertQty: alertQty
         }
         try {
@@ -115,7 +122,7 @@ export const Bucket = () => {
         const fetchData = async () => {
             try {
                 const res = await axios.get('http://localhost:5124/api/v1/bkt');
-                setBuckets(res.data.bucket);
+                setBuckets(res.data.buckets);
             } catch (err) {
                 console.log(err);
             }
@@ -138,6 +145,7 @@ export const Bucket = () => {
         console.log(row);
         setName(row.name);
         setQty(row.qty);
+        setCapacity(row.capacity);
         setAlertQty(row.alertQty);
         setItemId(row._id);
     }, []);
@@ -156,6 +164,7 @@ export const Bucket = () => {
     const columns = useMemo(() => [
         { field: 'name', type: 'string', headerName: 'Name', flex: 1 },
         { field: 'qty', type: 'number', headerName: 'Quantity', minWidth: 100 },
+        { field: 'capacity', type: 'number', headerName: 'Capacity', minWidth: 100 },
         { field: 'alertQty', type: 'number', headerName: 'Alert Quantity', minWidth: 100 },
         {
             field: 'actions',
@@ -230,6 +239,19 @@ export const Bucket = () => {
                         helperText={error && qty === '' ? 'Please enter a quantity' : ''}
                         fullWidth
                     />
+                    <TextField 
+                        required
+                        autoFocus
+                        margin="dense"
+                        id="capacity"
+                        label="Capacity"
+                        type="number"
+                        value={capacity}
+                        onChange={handleInputChange}
+                        error={error && capacity === ''}
+                        helperText={error && capacity === '' ? 'Please enter capacity' : ''}
+                        fullWidth
+                    />
                     <TextField
                         required
                         margin="dense"
@@ -278,6 +300,18 @@ export const Bucket = () => {
                         onChange={handleInputChange}
                         error={qty === ''}
                         helperText={qty === '' ? 'Please fill this field' : ''}
+                        fullWidth
+                    />
+                    <TextField
+                        required
+                        margin="dense"
+                        id="capacity"
+                        label="Capacity"
+                        type="number"
+                        value={capacity}
+                        onChange={handleInputChange}
+                        error={capacity === ''}
+                        helperText={capacity === '' ? 'Please fill this field' : ''}
                         fullWidth
                     />
                     <TextField
