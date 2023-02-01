@@ -20,8 +20,9 @@ const batchSchema = Schema({
     bucketDetails: [{
         bktId: String,
         bktNo: Number,
-        bktQty: Number
-    }],
+        bktQty: Number,
+        bktLabel: String,
+    }], 
     labelDetails: {
         labelId: String,
         qtyKg: Number,

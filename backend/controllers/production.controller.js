@@ -221,10 +221,18 @@ const addBucketDetails = async(req, res) => {
     const { bucketDetails } = req.body;
     try {
         // const production = await productionModel.findByIdAndUpdate(id, { $set: { bucketDetails } });
+        if(!bucketDetails || bucketDetails.length == 0) throw new Error("Bucket details cannot be empty");
         const production = await productionModel.findById(id);
         const batch = production.batches.find(b => b.batch == batchId);
+
+        for(let i = 0; i < bucketDetails.length; i++) {
+            const bucket = await bucketModel.findById(bucketDetails[i].bktId, { capacity: 1, _id: 0 });
+            bucketDetails[i].bktLabel = `${bucket.capacity}${String.fromCharCode(65 + i)}`; // appends capacity (5/10) and bucket char (A/B/C) to bktLabel
+        }
         batch.bucketDetails = bucketDetails;
+
         await production.save();
+
         bucketDetails.forEach(async (bucket) => {
             await bucketModel.findByIdAndUpdate(bucket.bktId, 
                 {
