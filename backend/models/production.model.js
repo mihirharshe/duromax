@@ -1,12 +1,24 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+const bucketDetailsSchema = Schema({
+    _id: Object,
+    bktId: String,
+    bktNo: Number,
+    bktQty: Number,
+    bktLabelDetails: {
+        labelId: String,
+        qtyKg: Number,
+        qtyL: Number,
+    }
+})
+
 const batchSchema = Schema({
-    batch : Number,
+    batch: Number,
     productionId: String,
-    currentIdx: { 
-        type: Number, 
-        default: 0 
+    currentIdx: {
+        type: Number,
+        default: 0
     },
     completed: {
         type: Boolean,
@@ -17,16 +29,10 @@ const batchSchema = Schema({
         viscosity: Number,
         density: Number,
     },
-    bucketDetails: [{
-        bktId: String,
-        bktNo: Number,
-        bktQty: Number,
-        bktLabel: String,
-    }], 
+    bucketDetails: {
+        type: [bucketDetailsSchema],
+    },
     labelDetails: {
-        labelId: String,
-        qtyKg: Number,
-        qtyL: Number,
         colorShade: String,
     }
 }, { timestamps: true });
@@ -40,7 +46,7 @@ const completedSchema = Schema({
         type: Number,
         required: true,
     },
-    mixTime : {
+    mixTime: {
         type: Number,
         required: true
     },
@@ -84,10 +90,12 @@ const productionSchema = Schema({
     }
 }, { timestamps: true });
 
+const bucketDetailsModel = mongoose.model('bucketDetails', bucketDetailsSchema);
 const batchModel = mongoose.model('batch', batchSchema);
 const productionModel = mongoose.model('production', productionSchema);
 
 module.exports = {
+    bucketDetailsModel,
     batchModel,
     productionModel
 };
