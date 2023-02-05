@@ -1,4 +1,4 @@
-const { productionModel, batchModel } = require('../models/production.model');
+const { productionModel, batchModel, bucketDetailsModel } = require('../models/production.model');
 const bucketModel = require("../models/bucket.model");
 const { generateUID } = require("../utils/generateUID");
 
@@ -218,28 +218,60 @@ const getCompletedMaterails = async(req, res) => {
 
 const addBucketDetails = async(req, res) => {
     const { id, batchId } = req.params;
-    const { bucketDetails } = req.body;
+    let { bucketDetails } = req.body;
     try {
         // const production = await productionModel.findByIdAndUpdate(id, { $set: { bucketDetails } });
         if(!bucketDetails || bucketDetails.length == 0) throw new Error("Bucket details cannot be empty");
+        bucketDetails = bucketDetails.filter((item, index, array) => {
+            return array.indexOf(item) == index;
+        });
         const production = await productionModel.findById(id);
         const batch = production.batches.find(b => b.batch == batchId);
-
+        let density = batch.quality.density;
+        let batchLabelId = generateUID();
+        console.log(bucketDetails);
         for(let i = 0; i < bucketDetails.length; i++) {
             const bucket = await bucketModel.findById(bucketDetails[i].bktId, { capacity: 1, _id: 0 });
-            bucketDetails[i].bktLabel = `${bucket.capacity}${String.fromCharCode(65 + i)}`; // appends capacity (5/10) and bucket char (A/B/C) to bktLabel
+            // bucketDetails[i].bktLabelDetails.labelId = `${batchLabelId}${bucket.capacity}${String.fromCharCode(65 + i)}`; // appends capacity (5/10) and bucket char (A/B/C) to bktLabel
+            // bucketDetails[i].bktLabelDetails.qtyKg = bucketDetails[i].bktQty;
+            // bucketDetails[i].bktLabelDetails.qtyL = bucketDetails[i].bktQty / density;
+
+            bucketDetails[i].bktLabelDetails = {
+                labelId: `${batchLabelId}${bucket.capacity}${String.fromCharCode(65 + i)}`, // appends capacity (5/10) and bucket char (A/B/C) to bktLabel
+                qtyKg: bucketDetails[i].bktQty,
+                qtyL: bucketDetails[i].bktQty / density
+            }
         }
         batch.bucketDetails = bucketDetails;
-
-        await production.save();
-
         bucketDetails.forEach(async (bucket) => {
+            await bucketDetailsModel.findByIdAndUpdate(
+                { 'bktLabelDetails.labelId': bucket.labelId },
+                bucket,
+                { upsert: true, new: true }
+            );
+
             await bucketModel.findByIdAndUpdate(bucket.bktId, 
                 {
                     $inc: { qty: -bucket.bktNo }
                 }
             );
         });
+
+        await production.save();
+
+        await batchModel.findOneAndUpdate(
+            { productionId: id, batch: batchId },
+            {
+                batch: batch.batch,
+                currentIdx: batch.currentIdx,
+                completed: batch.completed,
+                quality: batch.quality,
+                bucketDetails: batch.bucketDetails,
+                labelDetails: batch.labelDetails
+            },
+            { upsert: true, new: true }
+        );
+
         res.status(200).json({
             message: "Successfully added bucket details",
             production
@@ -251,7 +283,7 @@ const addBucketDetails = async(req, res) => {
     }
 }
 
-const saveLabelDetails = async (req, res) => { // hit once for each batch 
+const saveLabelDetails = async (req, res) => { // not in use rn
     const { id, batchId } = req.params;
     const { labelDetails } = req.body;
     try {
@@ -280,6 +312,27 @@ const saveLabelDetails = async (req, res) => { // hit once for each batch
             message: "Successfully saved label details",
             labelDetails: batch.labelDetails
         })
+    } catch(err) {
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
+const _getAllBktLabels = async (req, res) => {
+    const { id, batchId } = req.params;
+    const { labelDetails } = req.body;
+    try {
+        const production = await productionModel.findById(id);
+        const batch = production.batches.find(x => x.batch == batchId);
+        batch.labelDetails = labelDetails; // saving colorShade
+        await production.save();
+        res.status(200).json({
+            bucketDetails: batch.bucketDetails,
+            batchNo: batch.bucketDetails[0].bktLabelDetails.labelId.substring(0, 12) ?? null,
+            colorShade: labelDetails.colorShade
+        });
+
     } catch(err) {
         res.status(500).json({
             message: err.message
@@ -322,5 +375,6 @@ module.exports = {
     getCompletedMaterails,
     addBucketDetails,
     saveLabelDetails,
-    findBatchByLabelId
+    findBatchByLabelId,
+    _getAllBktLabels
 }
