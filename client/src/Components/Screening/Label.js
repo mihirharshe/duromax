@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
 import { Container, Paper, FormControl, Grid, TextField, Box, Stack, Typography, Button } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useBarcode } from 'next-barcode';
 import FinalLabel from './FinalLabel';
-import ReactToPrint from 'react-to-print'
 
 const Label = () => {
 
@@ -33,7 +32,8 @@ const Label = () => {
     const [isLoading, setLoading] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    const [labelDetails, setLabelDetails] = useState({});
+    const [labelDetails, setLabelDetails] = useState([{}]);
+    const [commonLabel, setCommonLabel] = useState({});
 
     const handleChange = (e) => {
         setColorShade(e.target.value);
@@ -43,36 +43,43 @@ const Label = () => {
         e.preventDefault();
         console.log("submitted");
         setLoading(true);
-        let bktQty = prod.batches[batchId - 1].bucketDetails[batchId - 1].bktQty;
-        let density = prod.batches[batchId - 1].quality.density;
-        const res = await axios.post(`http://localhost:5124/api/v1/prod/generate-label/${id}/${batchId}`, {
+        // let bktQty = prod.batches[batchId - 1].bucketDetails[batchId - 1].bktQty;
+        // let density = prod.batches[batchId - 1].quality.density;
+        const res = await axios.post(`http://localhost:5124/api/v1/prod/bktlabels/${id}/${batchId}`, {
             labelDetails: {
-                qtyKg: bktQty ?? null,
-                qtyL: bktQty / density,
+                // qtyKg: bktQty ?? null,
+                // qtyL: bktQty / density,
                 colorShade
             }
         })
         if (res.status === 200) {
             setLoading(false);
-            // let bktQty = prod.batches[batchId-1].bucketDetails.bktQty;
-            // let density = prod.batches[batchId-1].quality.density; 
             setIsLoaded(true);
-            setLabelDetails({
-                labelId: res.data.labelDetails.labelId,
-                product: prod.name,
-                colorShade: res.data.labelDetails.colorShade,
-                qtyKg: res.data.labelDetails.qtyKg,
-                qtyL: res.data.labelDetails.qtyL,
+            // setLabelDetails({
+            //     labelId: res.data.labelDetails.labelId,
+            //     product: prod.name,
+            //     colorShade: res.data.labelDetails.colorShade,
+            //     qtyKg: res.data.labelDetails.qtyKg,
+            //     qtyL: res.data.labelDetails.qtyL,
+            // });
+            let reducedBktDetails = res.data.bucketDetails.reduce((acc, curr) => {
+                acc.push(curr.bktLabelDetails);
+                return acc;
+            }, [])
+            setLabelDetails(reducedBktDetails);
+            setCommonLabel({
+                name: prod.name,
+                colorShade: res.data.colorShade,
+                batchNo: res.data.batchNo
             });
-            console.log(labelDetails);
         }
     }
 
     // const { inputRef } = useBarcode({
     //     value: labelDetails.labelId
     // })
-
-    const componentRef = useRef();
+    console.log(labelDetails)
+    // const componentRef = useRef();
 
     return (
         <>
@@ -101,18 +108,17 @@ const Label = () => {
                     <Button type="submit" variant="contained">SUBMIT</Button>
                 </Box>
                 <div>
-                    {isLoaded && 
-                        <>
-                            <FinalLabel ref={componentRef} labelDetails={labelDetails} batchId={batchId} />
-                            <div style={{display: 'flex', justifyContent: 'center', marginTop: '10px'}}>
-                                <ReactToPrint
-                                    trigger={() => <Button variant="contained">Print</Button>}
-                                    content={() => componentRef.current}
-                                    
-                                />
-                            </div>
-                        </>
-                    }
+                    <Grid container alignItems="center" justifyContent="space-around">
+                        {isLoaded &&
+                            labelDetails.map((label, index) => {
+                                return (
+                                    <div>
+                                        <FinalLabel key={index} labelDetails={label} batchId={batchId} commonLabel={commonLabel} />
+                                    </div>
+                                )
+                            })
+                        }
+                    </Grid>
                 </div>
                 {/* <svg ref={inputRef} /> */}
             </Container>

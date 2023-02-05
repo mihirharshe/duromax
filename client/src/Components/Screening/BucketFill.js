@@ -57,11 +57,13 @@ export const BucketFill = () => {
 
         Object.entries(bucketData).map(data => {
             if(!data[1]["bktNo"] || !data[1]["bktQty"]) return;
-            updates.push({
+            let obj = {
                 bktId: data[0],
                 bktNo: parseInt(data[1]["bktNo"]),
                 bktQty: parseInt(data[1]["bktQty"])
-            })
+            };
+            if(!updates.some(el => el.bktId === obj.bktId))
+                updates.push(obj);
         });
 
         console.log(updates);
@@ -96,6 +98,11 @@ export const BucketFill = () => {
                                             variant="outlined"
                                             defaultValue={bucketData[item._id]?.bktNo || ""}
                                             onBlur={e => handleBlur(e, item._id)}
+                                            InputProps={{
+                                                inputProps: {
+                                                    min: 0
+                                                }
+                                            }}
                                         />
                                     </FormControl>
                                     <FormControl sx={{ m: 1 }}>

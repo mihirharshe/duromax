@@ -1,11 +1,14 @@
-import React, { useEffect } from 'react'
+import React, { useRef } from 'react'
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button'
 import { useBarcode } from 'next-barcode';
+import ReactToPrint from 'react-to-print'
+import Barcode from 'react-barcode';
 
-const FinalLabel = React.forwardRef(({ labelDetails, batchId }, ref) => {
+const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel }, ref) => {
 
     const tableStyle = {
         backgroundColor: "white",
@@ -18,6 +21,7 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId }, ref) => {
         backgroundColor: "white",
         margin: "0 auto",
         border: "1px solid black",
+        whiteSpace: "nowrap"
     }
 
     const barcodeStyle = {
@@ -26,24 +30,26 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId }, ref) => {
         margin: "0 auto",
     }
 
-    const { inputRef } = useBarcode({
-        value: labelDetails.labelId
-    })
+    // const { inputRef } = useBarcode({
+    //     value: labelDetails.labelId
+    // })
+
+    const componentRef = useRef();
 
     const card = (
         <>
             <CardContent>
                 <Typography variant="h6" component="div">
-                    PRODUCT - {labelDetails.product}
+                    PRODUCT - {commonLabel.product}
                 </Typography>
                 <Typography variant="h6">
-                    COLOR SHADE - {labelDetails.colorShade}
+                    COLOR SHADE - {commonLabel.colorShade}
                 </Typography>
                 <Typography variant="h6" component="div">
                     QTY - {labelDetails.qtyKg?.toFixed(2)} Kg / {labelDetails.qtyL?.toFixed(2)} Ltr
                 </Typography>
                 <Typography variant="h6" component="div">
-                    BATCH NO. - {batchId}
+                    BATCH NO. - {commonLabel.batchNo}
                 </Typography>
             </CardContent>
         </>
@@ -58,18 +64,18 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId }, ref) => {
         //     </Box>
         // </div>
         <section>
-            <div ref={ref} style={divStyle}>
+            <div ref={componentRef} style={divStyle}>
                 <table style={tableStyle}>
                     <tbody>
                         <tr>
                             <td>PRODUCT</td>
                             <td width="10%">:</td>
-                            <td>{labelDetails.product}</td>
+                            <td>{commonLabel.name}</td>
                         </tr>
                         <tr>
                             <td>COLOUR SHADE</td>
                             <td>:</td>
-                            <td>{labelDetails.colorShade}</td>
+                            <td>{commonLabel.colorShade}</td>
                         </tr>
                         <tr>
                             <td>QUANTITY</td>
@@ -79,13 +85,22 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId }, ref) => {
                         <tr>
                             <td>BATCH NO.</td>
                             <td>:</td>
-                            <td>{batchId}</td>
+                            <td>{commonLabel.batchNo}</td>
                         </tr>
                     </tbody>
                 </table>
-                <div style={barcodeStyle}>
+                {/* <div style={barcodeStyle}>
                     <svg ref={inputRef}></svg>
+                </div> */}
+                <div style={barcodeStyle}>
+                    <Barcode value={labelDetails.labelId} />
                 </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+                <ReactToPrint
+                    trigger={() => <Button variant="contained">Print</Button>}
+                    content={() => componentRef.current}
+                />
             </div>
         </section>
     )
