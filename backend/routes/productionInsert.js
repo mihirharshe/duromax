@@ -14,7 +14,8 @@ const {
     addCompletedMaterials, 
     addBucketDetails, 
     saveLabelDetails,
-    _getAllBktLabels} = require('../controllers/production.controller');
+    _getAllBktLabels,
+    findBucketByLabelId} = require('../controllers/production.controller');
 
 router.get('/', async(req, res) => {
     await getAllProductionInserts(req, res);
@@ -71,5 +72,9 @@ router.post('/generate-label/:id/:batchId', async(req, res) => {
 router.post('/bktlabels/:id/:batchId', async(req, res) => {
     await _getAllBktLabels(req, res);
 });
+
+router.get('/stock-out/:bktLabelId', async(req, res) => {
+    await findBucketByLabelId(req, res);
+})
 
 module.exports = router;

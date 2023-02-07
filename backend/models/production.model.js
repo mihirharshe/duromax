@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const bucketDetailsSchema = Schema({
-    _id: Object,
     bktId: String,
     bktNo: Number,
     bktQty: Number,
@@ -10,6 +9,13 @@ const bucketDetailsSchema = Schema({
         labelId: String,
         qtyKg: Number,
         qtyL: Number,
+    },
+    saleDetails: {
+        sold: {
+            type: Boolean,
+            default: false
+        },
+        soldTo: String
     }
 })
 

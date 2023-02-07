@@ -9,14 +9,14 @@ const getAllProductionInserts = async (req, res) => {
             message: 'Successfully retrieved productions',
             productions
         });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         });
     }
 }
 
-const getOneProductionInsert = async(req, res) => {
+const getOneProductionInsert = async (req, res) => {
     const { id } = req.params;
     try {
         const production = await productionModel.findById(id);
@@ -24,7 +24,7 @@ const getOneProductionInsert = async(req, res) => {
             message: 'Successfully retrieved a production',
             production
         });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         });
@@ -45,7 +45,7 @@ const addProductionInsert = async (req, res) => {
             message: 'Successfully added production',
             production
         });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         });
@@ -66,7 +66,7 @@ const updateProductionInsert = async (req, res) => {
             message: 'Successfully updated production',
             production
         });
-    } catch(err) {
+    } catch (err) {
         res.status(404).json({
             message: 'Production not found',
             error: err.message
@@ -83,7 +83,7 @@ const deleteProductionInsert = async (req, res) => {
             message: 'Successfully deleted production',
             production
         });
-    } catch(err) {
+    } catch (err) {
         res.status(404).json({
             message: 'Production not found',
             error: err.message
@@ -96,21 +96,21 @@ const addBatch = async (req, res) => {
     const { batchIdx, batchDetails } = req.body;
     console.log(req.body);
     try {
-        const production = await productionModel.findByIdAndUpdate(id, { $set: { [`batches.${batchIdx}`]: {...batchDetails, batch: batchIdx+1 }} });
+        const production = await productionModel.findByIdAndUpdate(id, { $set: { [`batches.${batchIdx}`]: { ...batchDetails, batch: batchIdx + 1 } } });
         // console.log(batch);
         await production.save();
         res.status(200).json({
             message: 'Successfully added batch',
             production
         });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         });
     }
 }
 
-const addAllBatches = async(req, res) => {
+const addAllBatches = async (req, res) => {
     const { id } = req.params;
     const { batches } = req.body;
     console.log(req.body);
@@ -124,7 +124,7 @@ const addAllBatches = async(req, res) => {
             message: 'Successfully added all batches',
             production
         });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         });
@@ -140,14 +140,14 @@ const getAllBatches = async (req, res) => {
             message: 'Successfully retrieved batches',
             batches
         });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         });
     }
 }
 
-const updateBatch = async(req, res) => {
+const updateBatch = async (req, res) => {
     const { id } = req.params;
     console.log(req.body);
     const { batch, quality, bkt, completed, currentIdx } = req.body;
@@ -155,16 +155,16 @@ const updateBatch = async(req, res) => {
         const production = await productionModel.findById(id);
         const batches = production.batches.find(b => b.batch === batch);
         console.log(batches);
-        if(quality) {
+        if (quality) {
             batches.quality = quality;
         }
-        if(bkt) {
+        if (bkt) {
             batches.bkt = bkt;
         }
-        if(completed) {
+        if (completed) {
             batches.completed = completed;
         }
-        if(currentIdx) {
+        if (currentIdx) {
             batches.currentIdx = currentIdx;
         }
         await production.save();
@@ -172,14 +172,14 @@ const updateBatch = async(req, res) => {
             message: 'Successfully updated batch',
             production
         });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         });
     }
 }
 
-const addCompletedMaterials = async(req, res) => {
+const addCompletedMaterials = async (req, res) => {
     const { id } = req.params;
     const { materials } = req.body;
     // console.log(materials);
@@ -192,7 +192,7 @@ const addCompletedMaterials = async(req, res) => {
             message: 'Successfully saved completed materials',
             production
         });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         });
@@ -200,7 +200,7 @@ const addCompletedMaterials = async(req, res) => {
 }
 
 
-const getCompletedMaterails = async(req, res) => {
+const getCompletedMaterails = async (req, res) => {
     const { id } = req.params;
     try {
         const production = await productionModel.findById(id);
@@ -209,19 +209,19 @@ const getCompletedMaterails = async(req, res) => {
             message: 'Successfully retrieved completed materials',
             materials
         });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         });
     }
 }
 
-const addBucketDetails = async(req, res) => {
+const addBucketDetails = async (req, res) => {
     const { id, batchId } = req.params;
     let { bucketDetails } = req.body;
     try {
         // const production = await productionModel.findByIdAndUpdate(id, { $set: { bucketDetails } });
-        if(!bucketDetails || bucketDetails.length == 0) throw new Error("Bucket details cannot be empty");
+        if (!bucketDetails || bucketDetails.length == 0) throw new Error("Bucket details cannot be empty");
         bucketDetails = bucketDetails.filter((item, index, array) => {
             return array.indexOf(item) == index;
         });
@@ -230,7 +230,7 @@ const addBucketDetails = async(req, res) => {
         let density = batch.quality.density;
         let batchLabelId = generateUID();
         console.log(bucketDetails);
-        for(let i = 0; i < bucketDetails.length; i++) {
+        for (let i = 0; i < bucketDetails.length; i++) {
             const bucket = await bucketModel.findById(bucketDetails[i].bktId, { capacity: 1, _id: 0 });
             // bucketDetails[i].bktLabelDetails.labelId = `${batchLabelId}${bucket.capacity}${String.fromCharCode(65 + i)}`; // appends capacity (5/10) and bucket char (A/B/C) to bktLabel
             // bucketDetails[i].bktLabelDetails.qtyKg = bucketDetails[i].bktQty;
@@ -244,13 +244,13 @@ const addBucketDetails = async(req, res) => {
         }
         batch.bucketDetails = bucketDetails;
         bucketDetails.forEach(async (bucket) => {
-            await bucketDetailsModel.findByIdAndUpdate(
+            await bucketDetailsModel.findOneAndUpdate(
                 { 'bktLabelDetails.labelId': bucket.labelId },
                 bucket,
                 { upsert: true, new: true }
             );
 
-            await bucketModel.findByIdAndUpdate(bucket.bktId, 
+            await bucketModel.findByIdAndUpdate(bucket.bktId,
                 {
                     $inc: { qty: -bucket.bktNo }
                 }
@@ -276,7 +276,7 @@ const addBucketDetails = async(req, res) => {
             message: "Successfully added bucket details",
             production
         });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         })
@@ -312,7 +312,7 @@ const saveLabelDetails = async (req, res) => { // not in use rn
             message: "Successfully saved label details",
             labelDetails: batch.labelDetails
         })
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         })
@@ -327,34 +327,60 @@ const _getAllBktLabels = async (req, res) => {
         const batch = production.batches.find(x => x.batch == batchId);
         batch.labelDetails = labelDetails; // saving colorShade
         await production.save();
+        await batchModel.findOneAndUpdate(
+            { productionId: id, batch: batchId },
+            {
+                batch: batch.batch,
+                currentIdx: batch.currentIdx,
+                completed: batch.completed,
+                quality: batch.quality,
+                bucketDetails: batch.bucketDetails,
+                labelDetails: batch.labelDetails
+            },
+            { upsert: true, new: true }
+        );
+
         res.status(200).json({
             bucketDetails: batch.bucketDetails,
             batchNo: batch.bucketDetails[0].bktLabelDetails.labelId.substring(0, 12) ?? null,
             colorShade: labelDetails.colorShade
         });
 
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         })
     }
 }
 
-const findBatchByLabelId = async (req, res) => {
-    const { labelId } = req.body;
+const findBucketByLabelId = async (req, res) => {
+    const { bktLabelId } = req.params;
+    const { soldTo } = req.body;
+    if(!soldTo)
+        res.status(400).json({
+            message: 'soldTo is mandatory'
+        });
+
     try {
-        const foundBatch = await batchModel.findOne({ 'labelDetails.labelId': labelId });
-        if(!foundBatch)
+        const foundBucket = await bucketDetailsModel.findOne({ 'bktLabelDetails.labelId': bktLabelId }, { __v: 0 });
+        if (!foundBucket)
             res.status(404).json({
-                message: `No batch found with the given label ID ${labelId}`
+                message: `No bucket found with the given label ID ${bktLabelId}`
             });
-        else
+        else {
+            foundBucket.saleDetails = {
+                sold: true,
+                soldTo
+            }
+            await foundBucket.save();
+            
             res.status(200).json({
-                message: `Successfully found a batch with label ID ${labelId}`,
-                batch: foundBatch
+                message: `Successfully found a bucket with label ID ${bktLabelId}`,
+                batch: foundBucket
             });
-        
-    } catch(err) {
+        }
+
+    } catch (err) {
         res.status(500).json({
             message: err.message
         })
@@ -375,6 +401,6 @@ module.exports = {
     getCompletedMaterails,
     addBucketDetails,
     saveLabelDetails,
-    findBatchByLabelId,
+    findBucketByLabelId,
     _getAllBktLabels
 }
