@@ -343,7 +343,8 @@ const _getAllBktLabels = async (req, res) => {
         res.status(200).json({
             bucketDetails: batch.bucketDetails,
             batchNo: batch.bucketDetails[0].bktLabelDetails.labelId.substring(0, 12) ?? null,
-            colorShade: labelDetails.colorShade
+            colorShade: labelDetails.colorShade,
+            productLabelName: labelDetails.productLabelName
         });
 
     } catch (err) {

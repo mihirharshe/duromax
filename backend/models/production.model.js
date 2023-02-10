@@ -40,6 +40,7 @@ const batchSchema = Schema({
     },
     labelDetails: {
         colorShade: String,
+        productLabelName: String
     }
 }, { timestamps: true });
 

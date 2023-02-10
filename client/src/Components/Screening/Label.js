@@ -10,13 +10,13 @@ const Label = () => {
 
     const { id, batchId } = useParams();
 
-    const Item = styled(Paper)(({ theme }) => ({
-        backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-        ...theme.typography.body2,
-        padding: theme.spacing(1),
-        textAlign: 'center',
-        color: theme.palette.text.secondary,
-    }));
+    // const Item = styled(Paper)(({ theme }) => ({
+    //     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+    //     ...theme.typography.body2,
+    //     padding: theme.spacing(1),
+    //     textAlign: 'center',
+    //     color: theme.palette.text.secondary,
+    // }));
 
     const [prod, setProd] = useState({});
 
@@ -27,30 +27,37 @@ const Label = () => {
         }
         fetchProd();
     }, [])
-
-    const [colorShade, setColorShade] = useState("");
+    const [inputLabelDetails, setInputLabelDetails] = useState({
+        colorShade: '',
+        productLabelName: ''
+    });
+    // const [colorShade, setColorShade] = useState("");
+    // const [productLabelName, setProductLabelName] = useState("");
     const [isLoading, setLoading] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
 
     const [labelDetails, setLabelDetails] = useState([{}]);
     const [commonLabel, setCommonLabel] = useState({});
 
+    // const handleChange = (e) => {
+    //     setColorShade(e.target.value);
+    // }
+
     const handleChange = (e) => {
-        setColorShade(e.target.value);
+        setInputLabelDetails(prev => ({
+            ...prev,
+            [e.target.name]: e.target.value
+        }));
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("submitted");
+        console.log(inputLabelDetails);
         setLoading(true);
         // let bktQty = prod.batches[batchId - 1].bucketDetails[batchId - 1].bktQty;
         // let density = prod.batches[batchId - 1].quality.density;
         const res = await axios.post(`http://localhost:5124/api/v1/prod/bktlabels/${id}/${batchId}`, {
-            labelDetails: {
-                // qtyKg: bktQty ?? null,
-                // qtyL: bktQty / density,
-                colorShade
-            }
+            labelDetails: inputLabelDetails
         })
         if (res.status === 200) {
             setLoading(false);
@@ -68,7 +75,7 @@ const Label = () => {
             }, [])
             setLabelDetails(reducedBktDetails);
             setCommonLabel({
-                name: prod.name,
+                name: res.data.productLabelName,
                 colorShade: res.data.colorShade,
                 batchNo: res.data.batchNo
             });
@@ -88,23 +95,40 @@ const Label = () => {
                     <Box component='span'>Enter details for the label: </Box>
                 </Box>
                 <Box component='form' onSubmit={(e) => handleSubmit(e)}>
-                    <Item elevation={3}>
+                    <Paper elevation={3}>
                         <Grid container alignItems="center" justifyContent="space-around">
+                            <Typography variant='h6'>Product Name </Typography>
+                            <FormControl sx={{ m: 1 }}>
+                                <TextField
+                                    // autoFocus="autoFocus"
+                                    key="nameField"
+                                    name="productLabelName"
+                                    id="productLabelName"
+                                    label="Product Name"
+                                    type="text"
+                                    variant="outlined"
+                                    required
+                                    defaultValue={inputLabelDetails.productLabelName || ""}
+                                    onChange={e => handleChange(e)}
+                                />
+                            </FormControl>
                             <Typography variant='h6'>Color Shade</Typography>
                             <FormControl sx={{ m: 1 }}>
                                 <TextField
-                                    autoFocus="autoFocus"
+                                    // autoFocus="autoFocus"
+                                    key="colorField"
                                     name="colorShade"
+                                    id="colorShade"
                                     label="Color Shade"
                                     type="text"
                                     variant="outlined"
                                     required
-                                    defaultValue={colorShade || ""}
+                                    defaultValue={inputLabelDetails.colorShade || ""}
                                     onChange={e => handleChange(e)}
                                 />
                             </FormControl>
                         </Grid>
-                    </Item>
+                    </Paper>
                     <Button type="submit" variant="contained">SUBMIT</Button>
                 </Box>
                 <div>
