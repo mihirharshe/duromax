@@ -170,7 +170,7 @@ export const AddBoq = () => {
                     </Box>
                     <Box component='form' onSubmit={handleSubmit}>
                         <Stack spacing={1}>
-                            <Item elevation={3}>`x`
+                            <Item elevation={3}>
                                 <TextField
                                     required
                                     id="boqName"
