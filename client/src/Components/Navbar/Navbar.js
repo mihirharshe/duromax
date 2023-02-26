@@ -33,7 +33,7 @@ import { QualityTest } from '../Screening/QualityTest';
 import { BucketFill } from '../Screening/BucketFill';
 import RequireAuth from '../Auth/RequireAuth';
 import Label from '../Screening/Label';
-import ProductionReport from '../Reports/ProductionReport';
+import { BatchReportPrintHelper } from '../Reports/BatchReport';
 
 const drawerWidth = 240;
 
@@ -191,7 +191,7 @@ export default function Navbar() {
                     <Route path="/screen/:id/bktFill/:batchId" element={<BucketFill />} />
                     <Route path="/screen/:id/label/:batchId" element={<Label />} />
 
-                    <Route path="/reports/prod/:id" element={<ProductionReport />} />
+                    <Route path="/reports/prod/:id/:batchId" element={<BatchReportPrintHelper />} />
 
                     <Route element={<RequireAuth allowedRoles={['Admin']} />} >
                         <Route path="/raw-material" element={<RawMaterial />} />

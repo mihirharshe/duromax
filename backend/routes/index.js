@@ -12,6 +12,7 @@ router.use('/boq', require('./boqMain'));
 router.use('/adj-rm', require('./adjRM'));
 router.use('/adj-bkt', require('./adjBkt'));
 router.use('/prod', require('./productionInsert'));
+router.use('/reports', require('./reports'));
 
 router.use('/users', require('./users'));
 router.use('/auth', require('./auth'));
