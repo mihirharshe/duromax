@@ -15,7 +15,8 @@ const {
     addBucketDetails, 
     saveLabelDetails,
     _getAllBktLabels,
-    findBucketByLabelId} = require('../controllers/production.controller');
+    findBucketByLabelId,
+    getBatch} = require('../controllers/production.controller');
 
 router.get('/', async(req, res) => {
     await getAllProductionInserts(req, res);
@@ -40,6 +41,10 @@ router.delete('/:id', async(req, res) => {
 router.get('/batch/all/:id', async(req, res) => {
     await getAllBatches(req, res);
 });
+
+router.get('/batch/:id/:batchNo', async (req, res) => {
+    await getBatch(req, res);
+})
 
 router.post('/batch/:id', async(req, res) => {
     await addBatch(req, res);

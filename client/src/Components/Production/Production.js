@@ -22,6 +22,7 @@ export const Production = () => {
     const [productions, setProductions] = useState([]);
     const [data, setData] = useState({
         name: '',
+        boqId: '',
         qty: '',
         pack_size: '',
         desc: ''
@@ -31,6 +32,7 @@ export const Production = () => {
     const resetValues = () => {
         setData({
             name: '',
+            boqId: '',
             qty: '',
             pack_size: '',
             desc: ''
@@ -62,10 +64,11 @@ export const Production = () => {
         }
     }, []);
 
-    const handleDialogSubmit = async () => {
+    const handleDialogSubmit = async (e) => {
         try {
             const res = await axios.post('http://localhost:5124/api/v1/prod/add', data);
             setProductions([...productions, res.data.production]);
+            e.preventDefault();
             handleDialogClose();
         } catch (err) {
             console.log(err);
@@ -73,9 +76,11 @@ export const Production = () => {
     }
 
     const handleSelectBOQ = (e) => {
+        const selectedItem = allBoq.find(item => item.name == e.target.value)
         setData({
             ...data,
-            name: e.target.value
+            name: e.target.value,
+            boqId: selectedItem._id.toString()
         });
     }
 
@@ -155,7 +160,7 @@ export const Production = () => {
             </Container>
 
             <Dialog open={open} onClose={handleDialogClose} aria-labelledby="form-dialog-title">
-                <Box component='form' onSubmit={handleDialogSubmit}>
+                <Box component='form' onSubmit={(e) => handleDialogSubmit(e)}>
                     <DialogTitle id="form-dialog-title">Add new production</DialogTitle>
                     <DialogContent>
                         <DialogContentText>Please enter the details of the production you want to insert</DialogContentText>
@@ -170,8 +175,8 @@ export const Production = () => {
                                 onChange={(e) => { handleSelectBOQ(e) }}
                                 fullWidth
                             >
-                                {allBoq.map((item, id) => (
-                                    <MenuItem key={id} value={item.name}>{item.name}</MenuItem>
+                                {allBoq.map((item) => (
+                                    <MenuItem key={item._id} value={item.name}>{item.name}</MenuItem>
                                 ))}
 
                             </Select>
@@ -221,7 +226,6 @@ export const Production = () => {
                     </DialogActions>
                 </Box>
             </Dialog>
-
         </>
     )
 }

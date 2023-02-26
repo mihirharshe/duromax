@@ -39,6 +39,7 @@ const batchSchema = Schema({
         type: [bucketDetailsSchema],
     },
     labelDetails: {
+        labelId: String,
         colorShade: String,
         productLabelName: String
     }
@@ -74,6 +75,10 @@ const productionSchema = Schema({
     name: {
         type: String,
         required: true,
+    },
+    boqId: {
+        type: String,
+        required: true
     },
     qty: {
         type: Number,

@@ -1,6 +1,8 @@
 const { productionModel, batchModel, bucketDetailsModel } = require('../models/production.model');
+const boqMainModel = require('../models/boqMain.model');
 const bucketModel = require("../models/bucket.model");
 const { generateUID } = require("../utils/generateUID");
+const { saveStockInventory } = require('./stockInventory.controller');
 
 const getAllProductionInserts = async (req, res) => {
     try {
@@ -32,10 +34,18 @@ const getOneProductionInsert = async (req, res) => {
 }
 
 const addProductionInsert = async (req, res) => {
-    const { name, qty, pack_size, desc } = req.body;
+    const { name, boqId, qty, pack_size, desc } = req.body;
     try {
+        let boq = await boqMainModel.findById(boqId);
+        if(!boq) {
+            res.status(400).json({
+                message: 'Invalid boqId'
+            });
+        }
+
         const production = new productionModel({
             name,
+            boqId,
             qty,
             pack_size,
             desc
@@ -147,6 +157,26 @@ const getAllBatches = async (req, res) => {
     }
 }
 
+const getBatch = async (req, res) => {
+    const { id, batchNo } = req.params;
+    try {
+        const batch = await batchModel.findOne({ productionId: id, batch: parseInt(batchNo) });
+        if(!batch)
+            res.status(404).json({
+                message: 'No batch found'
+            });
+        else
+            res.status(200).json({
+                message: 'Successfully found batch',
+                batch
+            });
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
 const updateBatch = async (req, res) => {
     const { id } = req.params;
     console.log(req.body);
@@ -229,7 +259,8 @@ const addBucketDetails = async (req, res) => {
         const batch = production.batches.find(b => b.batch == batchId);
         let density = batch.quality.density;
         let batchLabelId = generateUID();
-        console.log(bucketDetails);
+        let newLabelDetails = { ...batch.labelDetails, labelId: batchLabelId };
+        batch.labelDetails = newLabelDetails;
         for (let i = 0; i < bucketDetails.length; i++) {
             const bucket = await bucketModel.findById(bucketDetails[i].bktId, { capacity: 1, _id: 0 });
             // bucketDetails[i].bktLabelDetails.labelId = `${batchLabelId}${bucket.capacity}${String.fromCharCode(65 + i)}`; // appends capacity (5/10) and bucket char (A/B/C) to bktLabel
@@ -257,6 +288,8 @@ const addBucketDetails = async (req, res) => {
             );
         });
 
+        await saveStockInventory(production.boqId, production._id.toString(), bucketDetails);
+
         await production.save();
 
         await batchModel.findOneAndUpdate(
@@ -267,7 +300,7 @@ const addBucketDetails = async (req, res) => {
                 completed: batch.completed,
                 quality: batch.quality,
                 bucketDetails: batch.bucketDetails,
-                labelDetails: batch.labelDetails
+                labelDetails: newLabelDetails
             },
             { upsert: true, new: true }
         );
@@ -397,6 +430,7 @@ module.exports = {
     addBatch,
     addAllBatches,
     getAllBatches,
+    getBatch,
     updateBatch,
     addCompletedMaterials,
     getCompletedMaterails,
