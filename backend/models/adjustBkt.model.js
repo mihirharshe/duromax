@@ -17,7 +17,8 @@ const adjustBktSchema = Schema({
     },
     description: {
         type: String,
-    }
+    },
+    bktId: String
 }, { timestamps: true });
 
 const adjustBktModel = mongoose.model('adjustBkt', adjustBktSchema);

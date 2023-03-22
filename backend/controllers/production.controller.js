@@ -3,6 +3,8 @@ const boqMainModel = require('../models/boqMain.model');
 const bucketModel = require("../models/bucket.model");
 const { generateUID } = require("../utils/generateUID");
 const { saveStockInventory } = require('./stockInventory.controller');
+const { stockInventoryBucketsModel } = require('../models/stockInventory.model');
+const rawMaterialModel = require('../models/rawMaterial.model');
 
 const getAllProductionInserts = async (req, res) => {
     try {
@@ -215,6 +217,10 @@ const addCompletedMaterials = async (req, res) => {
     // console.log(materials);
     try {
         const production = await productionModel.findById(id);
+        for(const material of materials) {
+            let totalUsed = material.totalQty / 1000;
+            await rawMaterialModel.findOneAndUpdate({ name: material.name }, { $inc: { usedQty: totalUsed, qty: -totalUsed } });
+        }
         production.completedMaterials.push(materials);
         // production.completedMaterials = [...production.completedMaterials, ...materials];
         await production.save();
@@ -283,10 +289,28 @@ const addBucketDetails = async (req, res) => {
 
             await bucketModel.findByIdAndUpdate(bucket.bktId,
                 {
-                    $inc: { qty: -bucket.bktNo }
+                    $inc: { qty: -bucket.bktNo, usedQty: bucket.bktNo }
                 }
             );
         });
+
+        ////////////////////
+
+        let out = [];
+
+        bucketDetails.forEach(obj => {
+            for(let i = 0; i<obj.bktNo; i++) {
+                out.push(new stockInventoryBucketsModel({
+                    "bktId": obj.bktId,
+                    "bktQty": obj.bktQty,
+                    "batchId": batchLabelId ?? null,
+                    "boqName": production.name ?? null
+                }));
+            }
+        });
+
+        await stockInventoryBucketsModel.create(out);
+
 
         await saveStockInventory(production.boqId, production._id.toString(), bucketDetails);
 
@@ -358,7 +382,11 @@ const _getAllBktLabels = async (req, res) => {
     try {
         const production = await productionModel.findById(id);
         const batch = production.batches.find(x => x.batch == batchId);
-        batch.labelDetails = labelDetails; // saving colorShade
+        // updating for stock inventory
+        let prodName = labelDetails.productLabelName ?? "";
+        await stockInventoryBucketsModel.updateMany({ "batchId": batch.labelDetails.labelId }, { $set: { "prodName": prodName } });
+        batch.labelDetails = Object.assign(batch.labelDetails, labelDetails); // saving colorShade
+
         await production.save();
         await batchModel.findOneAndUpdate(
             { productionId: id, batch: batchId },
@@ -372,6 +400,8 @@ const _getAllBktLabels = async (req, res) => {
             },
             { upsert: true, new: true }
         );
+
+        
 
         res.status(200).json({
             bucketDetails: batch.bucketDetails,

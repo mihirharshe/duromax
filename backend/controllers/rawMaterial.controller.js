@@ -20,7 +20,8 @@ const addRawMaterial = async (req, res) => {
         const rawMaterial = new rawMaterialModel({
             name,
             qty,
-            alertQty
+            alertQty,
+            initialQty: qty
         });
         await rawMaterial.save();
         res.status(200).json({

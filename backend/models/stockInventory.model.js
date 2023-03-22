@@ -17,6 +17,22 @@ const stockInventorySchema = Schema({
     }]
 }, { timestamps: true });
 
+const stockInventoryBuckets = Schema({
+    bktQty: Number,
+    boqId: String,
+    boqName: String,
+    productionId: String,
+    prodName: String,
+    batchId: String,
+    sold: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    soldTime: Date
+}, { timestamps: true });
+
+const stockInventoryBucketsModel = mongoose.model('stockInventoryBuckets', stockInventoryBuckets);
 const stockInventoryModel = mongoose.model('stockInventory', stockInventorySchema);
 
-module.exports = { stockInventoryModel };
+module.exports = { stockInventoryModel, stockInventoryBucketsModel };

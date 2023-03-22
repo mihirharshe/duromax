@@ -17,7 +17,7 @@ const bucketDetailsSchema = Schema({
         },
         soldTo: String
     }
-})
+}, { timestamps: true });
 
 const batchSchema = Schema({
     batch: Number,

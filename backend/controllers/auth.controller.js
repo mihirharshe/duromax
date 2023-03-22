@@ -29,8 +29,8 @@ const handleLogin = async (req, res) => {
                 }
             }, 
             process.env.ACCESS_TOKEN_SECRET, 
-            { expiresIn: '15s' }
-        ); 
+            { expiresIn: '10s' }
+        );
         const refreshToken = jwt.sign( 
             { email: user.email },  
             process.env.REFRESH_TOKEN_SECRET, 
@@ -39,7 +39,7 @@ const handleLogin = async (req, res) => {
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true, // prevents client side javascript from reading the cookie
-            sameSite: 'none', // prevents CSRF attacks
+            // sameSite: 'None', // prevents CSRF attacks
             // secure: true, // only send the cookie over https
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
@@ -77,7 +77,15 @@ const handleRefreshToken = async (req, res) => {
                 process.env.ACCESS_TOKEN_SECRET, 
                 { expiresIn: '15s' }
             );
-            res.status(200).json({ accessToken });
+            res.status(200).json({ 
+                user: {
+                    accessToken: accessToken,
+                    id: user._id,
+                    name: user.name,
+                    email: user.email
+                }, 
+                roles: user.roles 
+            });
         });
     } catch (err) {
         res.status(500).json(err);
@@ -87,12 +95,13 @@ const handleRefreshToken = async (req, res) => {
 const handleLogout = async (req, res) => {
     try {
         const cookies = req.cookies;
+        console.log(cookies);
         if(!cookies?.refreshToken) {
             return res.sendStatus(204);
         }
         res.clearCookie('refreshToken', {
             httpOnly: true, 
-            sameSite: 'none', 
+            // sameSite: 'None', 
             // secure: true 
         });
         res.status(200).json({ message: 'Logged out' });

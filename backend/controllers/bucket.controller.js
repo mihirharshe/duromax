@@ -36,7 +36,8 @@ const addBucket = async (req, res) => {
             name,
             qty,
             capacity,
-            alertQty
+            alertQty,
+            initialQty: qty
         });
         await bucket.save();
         res.status(200).json({

@@ -1,4 +1,9 @@
+const adjustRMModel = require('../models/adjustRM.model');
+const bucketModel = require('../models/bucket.model');
 const { productionModel, batchModel } = require('../models/production.model');
+const rawMaterialModel = require('../models/rawMaterial.model');
+const adjustBktModel = require('../models/adjustBkt.model');
+const { stockInventoryBucketsModel } = require('../models/stockInventory.model');
 
 const getBatchReportDetails = async (prodId, batchNo) => {
     let aggregationPipeline = [
@@ -16,6 +21,19 @@ const getBatchReportDetails = async (prodId, batchNo) => {
                 pipeline: [
                     {
                         $addFields: {
+                            boqObjectId: { $toObjectId: "$boqId" }
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "boqmains",
+                            localField: "boqObjectId",
+                            foreignField: "_id",
+                            as: "batchSize"
+                        },
+                    },
+                    {
+                        $addFields: {
                             totalBatches: { $size: "$batches" }
                         }
                     },
@@ -24,6 +42,9 @@ const getBatchReportDetails = async (prodId, batchNo) => {
                             name: 1,
                             totalBatches: 1,
                             qty: 1,
+                            batchSize: {
+                                $arrayElemAt: ["$batchSize", 0]
+                            },
                             _id: 0
                         }
                     }],
@@ -44,10 +65,10 @@ const getBatchReportDetails = async (prodId, batchNo) => {
 }
 
 const fetchBatchReportAsync = async (req, res) => {
-    const {prodId, batchNo} = req.params;
+    const { prodId, batchNo } = req.params;
     try {
         const reportDetails = await getBatchReportDetails(prodId, parseInt(batchNo));
-        if(!reportDetails)
+        if (!reportDetails)
             res.status(404).json({
                 message: 'No batch report found'
             });
@@ -63,4 +84,144 @@ const fetchBatchReportAsync = async (req, res) => {
     }
 }
 
-module.exports = { fetchBatchReportAsync }
+// sales report
+
+const getSales = async (req, res) => {
+    const { date } = req.query;
+    try {
+        let formattedDate = new Date(date);
+        const results = await stockInventoryBucketsModel.find({
+            $expr: {
+                $and: [
+                    { $eq: [{ $year: "$soldTime" }, formattedDate.getFullYear()] },
+                    { $eq: [{ $month: "$soldTime" }, formattedDate.getMonth() + 1] },
+                    { $eq: [{ $dayOfMonth: "$soldTime" }, formattedDate.getDate()] }
+                ]
+            }
+        });
+        if (!results || results.length == 0) {
+            res.status(404).json({
+                message: `No sales found for the date ${date}`,
+                sales: results
+            });
+        } else {
+            res.status(200).json({
+                message: `Sales found for the given date ${date}`,
+                sales: results
+            })
+        }
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        })
+    }
+}
+
+// rm report
+
+const getRMReport = async (req, res) => {
+    try {
+        const rawMaterialsResponse = await rawMaterialModel.aggregate([
+            {
+                $project: {
+                    name: 1,
+                    totalQty: { $add: ["$initialQty", "$addedQty"] },
+                    usedQty: { $add: ["$usedQty", "$subtractedQty"] }
+                }
+            },
+            {
+                $addFields: {
+                    stockQty: { $subtract: ["$totalQty", "$usedQty"] }
+                }
+            }
+        ]);
+
+        res.status(200).json({
+            message: `Successfully fetched raw material report`,
+            rmReport: rawMaterialsResponse
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        })
+    }
+}
+
+const getAdjRMReport = async (req, res) => {
+    const { name } = req.params;
+    try {
+        const adjRMDetails = await adjustRMModel.find({ name });
+        if (!adjRMDetails)
+            res.status(404).json({
+                message: `Raw material ${name} adjustments not found`,
+                rm: adjRMDetails
+            })
+        else
+            res.status(200).json({
+                message: `Adjustments of raw material ${name} found successfully`,
+                rm: adjRMDetails
+            });
+    } catch(err) {
+        res.status(500).json({
+            error: err.message
+        })
+    }
+}
+
+// bkt report
+
+const getBktReport = async (req, res) => {
+    try {
+        const bktResponse = await bucketModel.aggregate([
+            {
+                $project: {
+                    name: 1,
+                    totalQty: { $add: ["$initialQty", "$addedQty"] },
+                    usedQty: { $add: ["$usedQty", "$subtractedQty"] }
+                }
+            },
+            {
+                $addFields: {
+                    stockQty: { $subtract: ["$totalQty", "$usedQty"] }
+                }
+            }
+        ]);
+
+        res.status(200).json({
+            message: `Successfully fetched buckets report`,
+            bktReport: bktResponse
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        })
+    }
+}
+
+const getAdjBktReport = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const adjBktDetails = await adjustBktModel.find({ bktId: id })
+        if (!adjBktDetails || adjBktDetails.length == 0)
+            res.status(404).json({
+                message: `Bucket with id ${id} adjustments not found`,
+                bkt: adjBktDetails
+            })
+        else
+            res.status(200).json({
+                message: `Adjustments of bucket with id ${id} found successfully`,
+                bkt: adjBktDetails
+            });
+    } catch(err) {
+        res.status(500).json({
+            error: err.message
+        })
+    }
+}
+
+
+
+
+module.exports = { fetchBatchReportAsync, getSales, getRMReport, getAdjRMReport, getBktReport, getAdjBktReport }

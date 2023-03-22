@@ -20,9 +20,9 @@ const addRecord = async (req, res) => {
     const { name, qtyChange, action, description } = req.body;
     try {
         if(action === 'Addition') {
-            await rawMaterialModel.findOneAndUpdate({ name }, { $inc: { qty: qtyChange } });
+            await rawMaterialModel.findOneAndUpdate({ name }, { $inc: { qty: qtyChange, addedQty: qtyChange } });
         } else if(action === 'Subtraction') {
-            await rawMaterialModel.findOneAndUpdate({ name }, { $inc: { qty: -qtyChange } });
+            await rawMaterialModel.findOneAndUpdate({ name }, { $inc: { qty: -qtyChange, subtractedQty: qtyChange } });
         }
         const record = await adjustRMModel.create({
             name,

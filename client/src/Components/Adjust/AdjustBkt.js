@@ -44,7 +44,7 @@ export const AdjustBkt = () => {
         const fetchBkt = async () => {
             try {
                 const res = await axios.get('http://localhost:5124/api/v1/bkt');
-                setAllBkt(res.data.bucket);
+                setAllBkt(res.data.buckets);
             } catch (err) {
                 console.log(err)
             }
@@ -57,7 +57,7 @@ export const AdjustBkt = () => {
         setOpenDialog(true);
     }
 
-    console.log(singleBkt);
+    // console.log(singleBkt);
     const handleDialogClose = () => {
         setOpenDialog(false);
         setDesc('');
@@ -67,12 +67,15 @@ export const AdjustBkt = () => {
 
     const handleDialogSubmit = async (e) => {
         e.preventDefault();
+        let bktDetails = JSON.parse(singleBkt);
         const data = {
-            name: singleBkt,
+            name: bktDetails.name,
+            id: bktDetails._id,
             qtyChange: qty,
             action: operation,
             description: desc,
         }
+        console.log(data)
         // setRecords([...records, data])
         try {
             const res = await axios.post('http://localhost:5124/api/v1/adj-bkt/add', data);
@@ -91,6 +94,8 @@ export const AdjustBkt = () => {
         }
         handleDialogClose();
     }
+
+    console.log(records);
 
     const columns = useMemo(() => [
         { field: 'name', type: 'string', headerName: 'Name', flex: 0.25, headerAlign: 'center', align: 'center'},
@@ -152,7 +157,7 @@ export const AdjustBkt = () => {
                                 fullWidth
                             >
                                 {allBkt.map((item, id) => (
-                                    <MenuItem key={id} value={item.name}>{item.name}</MenuItem>
+                                    <MenuItem key={id} value={JSON.stringify(item)}>{item.name}</MenuItem>
                                 ))}
 
                             </Select>

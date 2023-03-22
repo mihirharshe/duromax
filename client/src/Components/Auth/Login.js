@@ -83,13 +83,14 @@ export const Login = () => {
                 user: userDetails,
                 roles: decoded?.UserInfo?.roles
             });
-            console.log(response);
+            // localStorage.setItem('token', accessToken);
+            // console.log(response);
             console.log(decoded);
             setSuccess(true);
             setError({ email: '', password: '' });
             setErrMsg('');
             setUser({ email: '', password: '' });
-            console.log(user);
+            // console.log(user);
             navigate(from, { replace: true });
         } catch(err) {
             setErrMsg(err?.response?.data?.message);

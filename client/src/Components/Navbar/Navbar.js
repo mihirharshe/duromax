@@ -7,6 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
 import CssBaseline from '@mui/material/CssBaseline';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -17,7 +18,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ArticleIcon from '@mui/icons-material/Article';
-import { Link, Routes, Route } from 'react-router-dom';
+import { Link, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 import { RawMaterial } from '../RawMaterial/RawMaterial';
 import { Bucket } from '../Bucket/Bucket';
@@ -32,8 +33,16 @@ import { ScreenProd } from '../Screening/ScreenProd';
 import { QualityTest } from '../Screening/QualityTest';
 import { BucketFill } from '../Screening/BucketFill';
 import RequireAuth from '../Auth/RequireAuth';
+import PersistLogin from '../Auth/PersistLogin';
 import Label from '../Screening/Label';
 import { BatchReportPrintHelper } from '../Reports/BatchReport';
+import { StockInventory } from '../Reports/StockInventory';
+import SalesReport from '../Reports/SalesReport';
+import RawMaterialReport from '../Reports/RawMaterialReport';
+import AdjRMReport from '../Reports/AdjRMReport';
+import BucketReport from '../Reports/BucketReport';
+import AdjBktReport from '../Reports/AdjBktReport';
+import useLogout from '../../hooks/useLogout';
 
 const drawerWidth = 240;
 
@@ -45,6 +54,10 @@ const navigation = [
     { name: 'Adjust Bucket', icon: <ArticleIcon />, href: '/adjust-bkt' },
     { name: 'Production', icon: <ArticleIcon />, href: '/production' },
     { name: 'Screening', icon: <ArticleIcon />, href: '/screen' },
+    { name: 'Stock Inventory', icon: <ArticleIcon />, href: '/inventory' },
+    { name: 'Sales Report', icon: <ArticleIcon />, href: '/reports/sales' },
+    { name: 'RM Report', icon: <ArticleIcon />, href: '/reports/raw-materials' },
+    { name: 'Buckets Report', icon: <ArticleIcon />, href: '/reports/buckets' },
 ];
 
 const openedMixin = (theme) => ({
@@ -115,6 +128,8 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 export default function Navbar() {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
+    const logout = useLogout();
+    const navigate = useNavigate();
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -123,6 +138,12 @@ export default function Navbar() {
     const handleDrawerClose = () => {
         setOpen(false);
     };
+
+    const handleLogout = async () => {
+        await logout();
+        // localStorage.removeItem('token'); 
+        navigate('/');
+    }
 
     return (
         <Box>
@@ -141,10 +162,12 @@ export default function Navbar() {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap component="div">
+                    <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
                         Duromax
                     </Typography>
+                    <Button variant="contained" color="info" onClick={handleLogout}>LOGOUT</Button>
                 </Toolbar>
+
             </AppBar>
             <Drawer variant="permanent" open={open}>
                 <DrawerHeader>
@@ -185,25 +208,34 @@ export default function Navbar() {
              */}
             <Box component="main" sx={{ paddingTop: 8, paddingLeft: 8, backgroundColor: 'whitesmoke', minHeight: '100vh' }}>
                 <Routes>
-                    <Route path="/screen" element={<ScreenMain />} />
-                    <Route path="/screen/:id" element={<ScreenProd />} />
-                    <Route path='/screen/:id/test/:batchId' element={<QualityTest />} />
-                    <Route path="/screen/:id/bktFill/:batchId" element={<BucketFill />} />
-                    <Route path="/screen/:id/label/:batchId" element={<Label />} />
+                    {/* <Route element={<PersistLogin />}> */}
 
-                    <Route path="/reports/prod/:id/:batchId" element={<BatchReportPrintHelper />} />
+                        <Route path="/screen" element={<ScreenMain />} />
+                        <Route path="/screen/:id" element={<ScreenProd />} />
+                        <Route path='/screen/:id/test/:batchId' element={<QualityTest />} />
+                        <Route path="/screen/:id/bktFill/:batchId" element={<BucketFill />} />
+                        <Route path="/screen/:id/label/:batchId" element={<Label />} />
 
-                    <Route element={<RequireAuth allowedRoles={['Admin']} />} >
-                        <Route path="/raw-material" element={<RawMaterial />} />
-                        <Route path="/bucket" element={<Bucket />} />
-                        <Route path="/boq" element={<Boq />} />
-                        <Route path="/boq/add" element={<AddBoq />} />
-                        <Route path="/boq/edit/:id" element={<EditBoq />} />
-                        <Route path="/adjust-rm" element={<AdjustRM />} />
-                        <Route path="/adjust-bkt" element={<AdjustBkt />} />
-                        <Route path="/production" element={<Production />} />
-                    </Route>
+                        <Route path="/reports/prod/:id/:batchId" element={<BatchReportPrintHelper />} />
+                        <Route path="/reports/sales" element={<SalesReport />} />
+                        <Route path="/reports/raw-materials" element={<RawMaterialReport />} />
+                        <Route path="/reports/raw-materials/:name" element={<AdjRMReport />} />
+                        <Route path="/reports/buckets" element={<BucketReport />} />
+                        <Route path="/reports/buckets/:id" element={<AdjBktReport />} />
 
+                        <Route path="/inventory" element={<StockInventory />} />
+
+                        <Route element={<RequireAuth allowedRoles={['Admin']} />} >
+                            <Route path="/raw-material" element={<RawMaterial />} />
+                            <Route path="/bucket" element={<Bucket />} />
+                            <Route path="/boq" element={<Boq />} />
+                            <Route path="/boq/add" element={<AddBoq />} />
+                            <Route path="/boq/edit/:id" element={<EditBoq />} />
+                            <Route path="/adjust-rm" element={<AdjustRM />} />
+                            <Route path="/adjust-bkt" element={<AdjustBkt />} />
+                            <Route path="/production" element={<Production />} />
+                        </Route>
+                    {/* </Route> */}
 
                 </Routes>
             </Box>

@@ -17,18 +17,19 @@ const getRecords = async (req, res) => {
 }
 
 const addRecord = async (req, res) => {
-    const { name, qtyChange, action, description } = req.body;
+    const { name, qtyChange, action, description, id } = req.body;
     try {
         if(action === 'Addition') {
-            await bucketModel.findOneAndUpdate({ name }, { $inc: { qty: qtyChange } });
+            await bucketModel.findOneAndUpdate({ name }, { $inc: { qty: qtyChange, addedQty: qtyChange } });
         } else if(action === 'Subtraction') {
-            await bucketModel.findOneAndUpdate({ name }, { $inc: { qty: -qtyChange } });
+            await bucketModel.findOneAndUpdate({ name }, { $inc: { qty: -qtyChange, subtractedQty: qtyChange } });
         }
         const record = await adjustBktModel.create({
             name,
             qtyChange,
             action,
-            description
+            description,
+            bktId: id
         });
         res.status(200).json({
             message: 'Successfully added record',

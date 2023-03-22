@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import { Box } from '@mui/material';
 import axios from 'axios';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import useRefreshToken from '../../hooks/useRefreshToken';
 import { Container } from '@mui/system';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,6 +25,9 @@ export const RawMaterial = () => {
     const [itemId, setItemId] = useState('');
     const [error, setError] = useState(false);
     const [pageSize, setPageSize] = useState(10);
+
+    const axiosPrivate = useAxiosPrivate();
+    const refresh = useRefreshToken();
 
     const handleDialogOpen = () => {
         setOpen(true);
@@ -49,9 +54,9 @@ export const RawMaterial = () => {
     }
 
     const handleInputChange = (e) => {
-        if(e.target.id === 'name') {
+        if (e.target.id === 'name') {
             setName(e.target.value);
-        } else if(e.target.id === 'qty') {
+        } else if (e.target.id === 'qty') {
             setQty(e.target.value);
         } else {
             setAlertQty(e.target.value);
@@ -59,7 +64,7 @@ export const RawMaterial = () => {
     }
 
     const handleDialogSubmit = async () => {
-        if(!validationCheck()) {
+        if (!validationCheck()) {
             setError(true);
             return;
         }
@@ -69,23 +74,23 @@ export const RawMaterial = () => {
             alertQty: alertQty
         }
         try {
-            const res = await axios.post('http://localhost:5124/api/v1/rm', data);
+            const res = await axiosPrivate.post('http://localhost:5124/api/v1/rm', data);
             setMaterials([...materials, res.data.rawMaterial]);
             handleDialogClose();
         } catch (err) {
             console.log(err);
         }
     }
-    
+
     const validationCheck = () => {
-        if(name === '' || qty === '' || alertQty === '') {
+        if (name === '' || qty === '' || alertQty === '') {
             return false;
         }
         return true;
     }
 
     const handleEditDialogSubmit = async () => {
-        if(!validationCheck()) {
+        if (!validationCheck()) {
             setError(true);
             return;
         }
@@ -95,7 +100,7 @@ export const RawMaterial = () => {
             alertQty: alertQty
         }
         try {
-            const res = await axios.put(`http://localhost:5124/api/v1/rm/${itemId}`, data);
+            const res = await axiosPrivate.put(`http://localhost:5124/api/v1/rm/${itemId}`, data);
             // console.log(res);
             const editedItemId = res.data.rawMaterial._id;
             const editedItem = materials.find(item => item._id === editedItemId);
@@ -114,7 +119,7 @@ export const RawMaterial = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5124/api/v1/rm');
+                const res = await axiosPrivate.get('http://localhost:5124/api/v1/rm');
                 setMaterials(res.data.rawMaterials);
             } catch (err) {
                 console.log(err);
@@ -145,7 +150,7 @@ export const RawMaterial = () => {
     const deleteItem = useCallback((id) => async () => {
         console.log(id);
         try {
-            await axios.delete(`http://localhost:5124/api/v1/rm/${id}`);
+            await axiosPrivate.delete(`http://localhost:5124/api/v1/rm/${id}`);
             setMaterials((materials) => materials.filter((row) => row._id !== id));
         }
         catch (err) {
@@ -154,7 +159,7 @@ export const RawMaterial = () => {
     }, []);
 
     const columns = useMemo(() => [
-        { field: 'name', type: 'string', headerName: 'Name', flex: 1},
+        { field: 'name', type: 'string', headerName: 'Name', flex: 1 },
         { field: 'qty', type: 'number', headerName: 'Quantity', minWidth: 100 },
         { field: 'alertQty', type: 'number', headerName: 'Alert Quantity', minWidth: 100 },
         {
@@ -163,7 +168,7 @@ export const RawMaterial = () => {
             headerName: 'Actions',
             width: 100,
             getActions: (params) => [
-                <GridActionsCellItem 
+                <GridActionsCellItem
                     icon={<EditIcon />}
                     label="Edit"
                     onClick={handleEdit(params.row)}
@@ -301,6 +306,7 @@ export const RawMaterial = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            {/* <Button onClick={() => refresh()}>REFRESH</Button> */}
         </>
     );
 }
