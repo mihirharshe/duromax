@@ -12,11 +12,12 @@ export const ScreenMain = () => {
 
     const [pageSize, setPageSize] = useState(10);
     const [productions, setProductions] = useState([]);
+    const baseUrl = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5124/api/v1/prod');
+                const res = await axios.get(`${baseUrl}/api/v1/prod`);
                 setProductions(res.data.productions);
             } catch(err) {
                 console.log(err);
@@ -26,10 +27,10 @@ export const ScreenMain = () => {
     }, []);
 
     const columns = useMemo(() => [
-        { field: 'name', type: 'string', headerName: 'Product Name', minWidth: 150, flex: 0.25 },
-        { field: 'qty', type: 'number', headerName: 'Quantity', minWidth: 100 },
-        { field: 'pack_size', type: 'number', headerName: 'Pack Size', minWidth: 100 },
-        { field: 'desc', type: 'string', headerName: 'Remarks', flex: 1 },
+        { field: 'name', type: 'string', headerName: 'Product Name', minWidth: 150, flex: 0.25, headerAlign: 'center', align: 'center' },
+        { field: 'qty', type: 'number', headerName: 'Quantity', minWidth: 100, headerAlign: 'center', align: 'center' },
+        { field: 'pack_size', type: 'number', headerName: 'Pack Size', minWidth: 100, headerAlign: 'center', align: 'center' },
+        { field: 'desc', type: 'string', headerName: 'Remarks', flex: 1, headerAlign: 'center', align: 'center' },
         {
             field: 'createdAt',
             type: 'date',

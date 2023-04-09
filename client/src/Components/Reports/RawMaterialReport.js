@@ -11,10 +11,11 @@ const RawMaterialReport = () => {
     const [pageSize, setPageSize] = useState(10);
     const [rawMaterials, setRawMaterials] = useState([]);
     // const [selectedRM, setSelectedRM] = useState();
+    const baseUrl = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         const fetchRMReport = async () => {
-            let res = await axios.get(`http://localhost:5124/api/v1/reports/raw-materials`);
+            let res = await axios.get(`${baseUrl}/api/v1/reports/raw-materials`);
             setRawMaterials(res.data.rmReport);
         }
 
@@ -27,10 +28,10 @@ const RawMaterialReport = () => {
     }
 
     const columns = [
-        { field: 'name', type: 'string', headerName: 'RM', flex: 1 },
-        { field: 'totalQty', type: 'number', headerName: 'Total Qty', flex: 1 },
-        { field: 'usedQty', type: 'number', headerName: 'Used Qty', flex: 1 },
-        { field: 'stockQty', type: 'number', headerName: 'Stock Qty', flex: 1 },
+        { field: 'name', type: 'string', headerName: 'RM', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'totalQty', type: 'number', headerName: 'Total Qty(kg)', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'usedQty', type: 'number', headerName: 'Used Qty(kg)', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'stockQty', type: 'number', headerName: 'Stock Qty(kg)', flex: 1, headerAlign: 'center', align: 'center' },
         {
             field: 'actions',
             type: 'actions',
@@ -45,7 +46,8 @@ const RawMaterialReport = () => {
                 };
 
                 return <Button variant='contained' onClick={onClick}>Adjustments</Button>
-            }
+            },
+            headerAlign: 'center', align: 'center'
         }
     ]
 
@@ -53,20 +55,7 @@ const RawMaterialReport = () => {
         <Container maxWidth='lg' sx={{ marginTop: 2 }}>
             <Box display='flex' alignItems='center' justifyContent='space-between' marginBottom={1}>
                 <Box component='span'>RAW MATERIALS REPORT</Box>
-                {/* <Button size='small' variant='contained' onClick={handleDialogOpen}>Add item</Button> */}
             </Box>
-            {/* <Box style={{ display: 'flex', width: '100%', height: '100%', backgroundColor: 'white', margin: '0 auto' }}>
-                <Box style={{ display: 'flex', flexGrow: 1 }} >
-
-                    <DatePicker
-                        label="Pick a date"
-                        value={value}
-                        onChange={(newValue) => pickDate(newValue)}
-                    />
-                    <Button variant="contained" onClick={findSales}>SUBMIT</Button>
-                </Box>
-            </Box> */}
-
             <DataGrid
                 autoHeight
                 getRowId={(rawMaterials) => rawMaterials._id}
@@ -77,8 +66,6 @@ const RawMaterialReport = () => {
                 rowsPerPageOptions={[5, 10, 20, 50, 100]}
                 sx={{ backgroundColor: 'white' }}
             />
-
-
         </Container>
     )
 }

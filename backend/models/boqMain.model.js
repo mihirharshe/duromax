@@ -9,6 +9,7 @@ const boqMainSchema = Schema({
     batch_size: {
         type: Number,
         required: true,
+        min: 0
     },
     content: [{
         name: {
@@ -18,10 +19,12 @@ const boqMainSchema = Schema({
         qty: {
             type: Number,
             required: true,
+            min: 0
         },
         mixTime : {
             type: Number,
-            required: true
+            required: true,
+            min: 0
         }
     }]
 }, { timestamps: true });

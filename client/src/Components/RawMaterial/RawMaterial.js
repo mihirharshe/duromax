@@ -26,6 +26,8 @@ export const RawMaterial = () => {
     const [error, setError] = useState(false);
     const [pageSize, setPageSize] = useState(10);
 
+    const baseUrl = process.env.REACT_APP_API_URL;
+
     const axiosPrivate = useAxiosPrivate();
     const refresh = useRefreshToken();
 
@@ -74,7 +76,7 @@ export const RawMaterial = () => {
             alertQty: alertQty
         }
         try {
-            const res = await axiosPrivate.post('http://localhost:5124/api/v1/rm', data);
+            const res = await axiosPrivate.post(`${baseUrl}/api/v1/rm`, data);
             setMaterials([...materials, res.data.rawMaterial]);
             handleDialogClose();
         } catch (err) {
@@ -100,7 +102,7 @@ export const RawMaterial = () => {
             alertQty: alertQty
         }
         try {
-            const res = await axiosPrivate.put(`http://localhost:5124/api/v1/rm/${itemId}`, data);
+            const res = await axiosPrivate.put(`${baseUrl}/api/v1/rm/${itemId}`, data);
             // console.log(res);
             const editedItemId = res.data.rawMaterial._id;
             const editedItem = materials.find(item => item._id === editedItemId);
@@ -114,12 +116,10 @@ export const RawMaterial = () => {
         }
     }
 
-
-
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axiosPrivate.get('http://localhost:5124/api/v1/rm');
+                const res = await axiosPrivate.get(`${baseUrl}/api/v1/rm`);
                 setMaterials(res.data.rawMaterials);
             } catch (err) {
                 console.log(err);
@@ -127,16 +127,6 @@ export const RawMaterial = () => {
         }
         fetchData();
     }, []);
-
-    // const deleteItem = useCallback(async (id) => {
-    //     try {
-    //         await axios.delete(`http://localhost:5124/rm/${id}`);
-    //         setMaterials(materials.filter(material => material._id !== id));
-    //     } catch(err) {
-    //         console.log(err);
-    //     }
-    // }
-    // , [materials]);
 
     const handleEdit = useCallback((row) => async (e) => {
         handleEditDialogOpen();
@@ -150,7 +140,7 @@ export const RawMaterial = () => {
     const deleteItem = useCallback((id) => async () => {
         console.log(id);
         try {
-            await axiosPrivate.delete(`http://localhost:5124/api/v1/rm/${id}`);
+            await axiosPrivate.delete(`${baseUrl}/api/v1/rm/${id}`);
             setMaterials((materials) => materials.filter((row) => row._id !== id));
         }
         catch (err) {
@@ -159,9 +149,9 @@ export const RawMaterial = () => {
     }, []);
 
     const columns = useMemo(() => [
-        { field: 'name', type: 'string', headerName: 'Name', flex: 1 },
-        { field: 'qty', type: 'number', headerName: 'Quantity', minWidth: 100 },
-        { field: 'alertQty', type: 'number', headerName: 'Alert Quantity', minWidth: 100 },
+        { field: 'name', type: 'string', headerName: 'Name', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'qty', type: 'number', headerName: 'Quantity(kg)', minWidth: 120, headerAlign: 'center', align: 'center' },
+        { field: 'alertQty', type: 'number', headerName: 'Alert Quantity(kg)', minWidth: 140, headerAlign: 'center', align: 'center' },
         {
             field: 'actions',
             type: 'actions',
@@ -178,7 +168,8 @@ export const RawMaterial = () => {
                     label="Delete"
                     onClick={deleteItem(params.id)}
                 />
-            ]
+            ],
+            headerAlign: 'center', align: 'center'
         }
     ], [handleEdit, deleteItem]);
 

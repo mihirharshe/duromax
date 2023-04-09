@@ -24,6 +24,8 @@ const stockInventoryBuckets = Schema({
     productionId: String,
     prodName: String,
     batchId: String,
+    labelId: String,
+    colorShade: String,
     sold: {
         type: Boolean,
         required: true,

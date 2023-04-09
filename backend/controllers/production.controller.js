@@ -39,7 +39,7 @@ const addProductionInsert = async (req, res) => {
     const { name, boqId, qty, pack_size, desc } = req.body;
     try {
         let boq = await boqMainModel.findById(boqId);
-        if(!boq) {
+        if (!boq) {
             res.status(400).json({
                 message: 'Invalid boqId'
             });
@@ -163,7 +163,7 @@ const getBatch = async (req, res) => {
     const { id, batchNo } = req.params;
     try {
         const batch = await batchModel.findOne({ productionId: id, batch: parseInt(batchNo) });
-        if(!batch)
+        if (!batch)
             res.status(404).json({
                 message: 'No batch found'
             });
@@ -217,7 +217,7 @@ const addCompletedMaterials = async (req, res) => {
     // console.log(materials);
     try {
         const production = await productionModel.findById(id);
-        for(const material of materials) {
+        for (const material of materials) {
             let totalUsed = material.totalQty / 1000;
             await rawMaterialModel.findOneAndUpdate({ name: material.name }, { $inc: { usedQty: totalUsed, qty: -totalUsed } });
         }
@@ -267,16 +267,27 @@ const addBucketDetails = async (req, res) => {
         let batchLabelId = generateUID();
         let newLabelDetails = { ...batch.labelDetails, labelId: batchLabelId };
         batch.labelDetails = newLabelDetails;
+        let out = [];
         for (let i = 0; i < bucketDetails.length; i++) {
-            const bucket = await bucketModel.findById(bucketDetails[i].bktId, { capacity: 1, _id: 0 });
+            // const bucket = await bucketModel.findById(bucketDetails[i].bktId, { capacity: 1, _id: 0 });
             // bucketDetails[i].bktLabelDetails.labelId = `${batchLabelId}${bucket.capacity}${String.fromCharCode(65 + i)}`; // appends capacity (5/10) and bucket char (A/B/C) to bktLabel
             // bucketDetails[i].bktLabelDetails.qtyKg = bucketDetails[i].bktQty;
             // bucketDetails[i].bktLabelDetails.qtyL = bucketDetails[i].bktQty / density;
-
-            bucketDetails[i].bktLabelDetails = {
-                labelId: `${batchLabelId}${bucket.capacity}${String.fromCharCode(65 + i)}`, // appends capacity (5/10) and bucket char (A/B/C) to bktLabel
-                qtyKg: bucketDetails[i].bktQty,
-                qtyL: bucketDetails[i].bktQty / density
+            let bucket = bucketDetails[i];
+            let labelId = `${batchLabelId}${bucket.bktQty}${String.fromCharCode(65 + i)}`
+            bucket.bktLabelDetails = {
+                labelId: labelId, // appends capacity (5/10) and bucket char (A/B/C) to bktLabel
+                qtyKg: bucket.bktQty,
+                qtyL: bucket.bktQty / density
+            }
+            for (let j = 0; j < bucket.bktNo; j++) {
+                out.push(new stockInventoryBucketsModel({
+                    "bktId": bucket.bktId,
+                    "bktQty": bucket.bktQty,
+                    "batchId": batchLabelId ?? null,
+                    "labelId": labelId,
+                    "boqName": production.name ?? null
+                }));
             }
         }
         batch.bucketDetails = bucketDetails;
@@ -296,18 +307,19 @@ const addBucketDetails = async (req, res) => {
 
         ////////////////////
 
-        let out = [];
+        // let out = [];
 
-        bucketDetails.forEach(obj => {
-            for(let i = 0; i<obj.bktNo; i++) {
-                out.push(new stockInventoryBucketsModel({
-                    "bktId": obj.bktId,
-                    "bktQty": obj.bktQty,
-                    "batchId": batchLabelId ?? null,
-                    "boqName": production.name ?? null
-                }));
-            }
-        });
+        // bucketDetails.forEach(obj => {
+        //     for(let i = 0; i<obj.bktNo; i++) {
+        //         out.push(new stockInventoryBucketsModel({
+        //             "bktId": obj.bktId,
+        //             "bktQty": obj.bktQty,
+        //             "batchId": batchLabelId ?? null,
+        //             "labelId": labelId,
+        //             "boqName": production.name ?? null
+        //         }));
+        //     }
+        // });
 
         await stockInventoryBucketsModel.create(out);
 
@@ -384,7 +396,8 @@ const _getAllBktLabels = async (req, res) => {
         const batch = production.batches.find(x => x.batch == batchId);
         // updating for stock inventory
         let prodName = labelDetails.productLabelName ?? "";
-        await stockInventoryBucketsModel.updateMany({ "batchId": batch.labelDetails.labelId }, { $set: { "prodName": prodName } });
+        let colorShade = labelDetails.colorShade ?? "";
+        await stockInventoryBucketsModel.updateMany({ "batchId": batch.labelDetails.labelId }, { $set: { "prodName": prodName, "colorShade": colorShade } });
         batch.labelDetails = Object.assign(batch.labelDetails, labelDetails); // saving colorShade
 
         await production.save();
@@ -401,7 +414,7 @@ const _getAllBktLabels = async (req, res) => {
             { upsert: true, new: true }
         );
 
-        
+
 
         res.status(200).json({
             bucketDetails: batch.bucketDetails,
@@ -420,7 +433,7 @@ const _getAllBktLabels = async (req, res) => {
 const findBucketByLabelId = async (req, res) => {
     const { bktLabelId } = req.params;
     const { soldTo } = req.body;
-    if(!soldTo)
+    if (!soldTo)
         res.status(400).json({
             message: 'soldTo is mandatory'
         });
@@ -437,7 +450,7 @@ const findBucketByLabelId = async (req, res) => {
                 soldTo
             }
             await foundBucket.save();
-            
+
             res.status(200).json({
                 message: `Successfully found a bucket with label ID ${bktLabelId}`,
                 batch: foundBucket

@@ -7,10 +7,11 @@ import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 export const StockInventory = () => {
 
     const [allStocks, setAllStocks] = useState([]);
+    const baseUrl = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         const fetchStockInventory = async () => {
-            let res = await axios.get('http://localhost:5124/api/v1/reports/inventory-bkts');
+            let res = await axios.get(`${baseUrl}/api/v1/reports/inventory-bkts`);
             setAllStocks(res.data.inventoryBuckets);
         }
         fetchStockInventory();
@@ -29,40 +30,46 @@ export const StockInventory = () => {
         setOpen(false);
     };
     const sellBucket = async () => {
-        let res = await axios.put(`http://localhost:5124/api/v1/reports/sell-bkt/${selectedBucketId}`);
+        let res = await axios.put(`${baseUrl}/api/v1/reports/sell-bkt/${selectedBucketId}`);
         if(res.status == 200) {
             // selectedBucketId -> change sold false to true in allStocks
-            // allStocks.find(bucket => bucket)
+            let idx = allStocks.findIndex(bucket => bucket._id === selectedBucketId);
+            if (idx != -1) {
+                const updatedStocks = [...allStocks];
+                updatedStocks[idx] = res.data.updatedBucket;
+                setAllStocks(updatedStocks);
+            }
             handleClose();
         }
     }
 
     const columns = useMemo(() => [
-        { field: 'batchId', type: 'string', headerName: 'Batch ID', flex: 1 },
-        { field: 'boqName', type: 'string', headerName: 'BOQ Name', flex: 1 },
-        { field: 'prodName', type: 'string', headerName: 'Product Name', flex: 1 },
-        { field: 'bktQty', type: 'number', headerName: 'Qty (kg)', minWidth: 100 },
+        { field: 'labelId', type: 'string', headerName: 'Bucket ID', flex: 1, headerAlign: 'center', align: 'center'},
+        { field: 'boqName', type: 'string', headerName: 'BOQ Name', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'prodName', type: 'string', headerName: 'Product Name', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'colorShade', type: 'string', headerName: 'Color Shade', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'bktQty', type: 'number', headerName: 'Qty (kg)', minWidth: 100, headerAlign: 'center', align: 'center' },
+        {
+            field: 'soldTime',
+            type: 'date',
+            headerName: 'Date of Sale',
+            minWidth: 175,
+            valueFormatter: (params) => {
+                if(!params.value)
+                    return "-";
+                return new Date(params.value).toLocaleString().replace(',', '');
+            },
+            headerAlign: 'center', 
+            align: 'center'
+        },
         {
             field: 'actions',
             type: 'actions',
             headerName: 'Actions',
             width: 200,
-            // getActions: (params) => [
-            //     <GridActionsCellItem 
-            //         icon={<Button />}
-            //         label="SELL"
-            //         // onClick={handleEdit(params.row)}
-            //     />,
-            //     // <GridActionsCellItem
-            //     //     icon={<DeleteIcon />}
-            //     //     label="Delete"
-            //     //     onClick={deleteItem(params.id)}
-            //     // />
-            // ]
             renderCell: (params) => {
                 const onClick = (e) => {
                     e.stopPropagation();
-                    console.log(params.row);
                     setSelectedBucketId(params.row._id);
                     handleClickOpen();
                 };
@@ -74,7 +81,6 @@ export const StockInventory = () => {
         }
     ])
 
-    console.log(allStocks);
     return (
         <>
             <Container maxWidth='lg' sx={{ marginTop: 2 }}>

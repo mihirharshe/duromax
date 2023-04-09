@@ -15,6 +15,7 @@ const SalesReport = () => {
     // }, [])   
     const [is404, set404] = useState(false);
     const [pageSize, setPageSize] = useState(10);
+    const baseUrl = process.env.REACT_APP_API_URL;
 
     const [soldBuckets, setSoldBuckets] = useState([]);
 
@@ -31,7 +32,7 @@ const SalesReport = () => {
             console.log('returned');
             return;
         }
-        let res = await axios.get(`http://localhost:5124/api/v1/reports/sales?date=${queryDate}`, { validateStatus: false });
+        let res = await axios.get(`${baseUrl}/api/v1/reports/sales?date=${queryDate}`, { validateStatus: false });
         console.log(res)
         if(res.status == 404) {
             set404(true);

@@ -11,10 +11,11 @@ const BucketReport = () => {
     const [pageSize, setPageSize] = useState(10);
     const [buckets, setBuckets] = useState([]);
     // const [selectedRM, setSelectedRM] = useState();
+    const baseUrl = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         const fetchBktReport = async () => {
-            let res = await axios.get(`http://localhost:5124/api/v1/reports/buckets`);
+            let res = await axios.get(`${baseUrl}/api/v1/reports/buckets`);
             setBuckets(res.data.bktReport);
         }
 
@@ -27,10 +28,10 @@ const BucketReport = () => {
     }
 
     const columns = [
-        { field: 'name', type: 'string', headerName: 'Bucket', flex: 1 },
-        { field: 'totalQty', type: 'number', headerName: 'Total Qty', flex: 1 },
-        { field: 'usedQty', type: 'number', headerName: 'Used Qty', flex: 1 },
-        { field: 'stockQty', type: 'number', headerName: 'Stock Qty', flex: 1 },
+        { field: 'name', type: 'string', headerName: 'Bucket', flex: 1,headerAlign: 'center', align: 'center' },
+        { field: 'totalQty', type: 'number', headerName: 'Total Qty', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'usedQty', type: 'number', headerName: 'Used Qty', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'stockQty', type: 'number', headerName: 'Stock Qty', flex: 1, headerAlign: 'center', align: 'center' },
         {
             field: 'actions',
             type: 'actions',
@@ -45,7 +46,8 @@ const BucketReport = () => {
                 };
 
                 return <Button variant='contained' onClick={onClick}>Adjustments</Button>
-            }
+            },
+            headerAlign: 'center', align: 'center'
         }
     ]
 

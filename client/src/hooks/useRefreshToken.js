@@ -4,12 +4,11 @@ import useAuth from './useAuth';
 
 const useRefreshToken = () => {
     const { setAuth } = useAuth();
+    const baseUrl = process.env.REACT_APP_API_URL;
 
     const refresh = async () => {
-        const response = await axios.get('http://localhost:5124/api/v1/auth/refresh-token', { withCredentials: true });
+        const response = await axios.get(`${baseUrl}/api/v1/auth/refresh-token`, { withCredentials: true });
         setAuth(prev => {
-            console.log(JSON.stringify(prev));
-            console.log(response.data);
             return { 
                 ...prev, 
                 user: response.data.user,

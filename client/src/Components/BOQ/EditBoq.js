@@ -45,10 +45,12 @@ export const EditBoq = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const isDuplicate = searchParams.get('duplicate') === 'true';
 
+    const baseUrl = process.env.REACT_APP_API_URL;
+
     useEffect(() => {
         const fetchBoq = async () => {
             try {
-                const res = await axios.get(`http://localhost:5124/api/v1/boq/${params.id}`);
+                const res = await axios.get(`${baseUrl}/api/v1/boq/${params.id}`);
                 setBoq(res.data.boq);
                 setBoqContent(res.data.boq.content);
             } catch (err) {
@@ -57,7 +59,7 @@ export const EditBoq = () => {
         }
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5124/api/v1/rm');
+                const res = await axios.get(`${baseUrl}/api/v1/rm`);
                 setAllRM(res.data.rawMaterials);
             } catch (err) {
                 console.log(err);
@@ -65,7 +67,7 @@ export const EditBoq = () => {
         }
         const fetchAllBoq = async() => {
             try {
-                const res = await axios.get('http://localhost:5124/api/v1/boq');
+                const res = await axios.get(`${baseUrl}/api/v1/boq`);
                 setAllBoq(res.data.boq);
             } catch(err) {
                 console.log(err);
@@ -142,7 +144,7 @@ export const EditBoq = () => {
         newBoq.content = boqContent;
         setBoq(newBoq);
         try {
-            const res = await axios.put(`http://localhost:5124/api/v1/boq/${params.id}`, newBoq);
+            const res = await axios.put(`${baseUrl}/api/v1/boq/${params.id}`, newBoq);
             console.log(res);
             if (res.status === 200) {
                 setOpenSnackbar(true);
@@ -172,7 +174,7 @@ export const EditBoq = () => {
             const newBoq = { ...boq };
             newBoq.content = boqContent;
             setBoq(newBoq);
-            const res = await axios.post(`http://localhost:5124/api/v1/boq`, newBoq);
+            const res = await axios.post(`${baseUrl}/api/v1/boq`, newBoq);
             console.log(res);
             if (res.status === 200) {
                 setOpenSnackbar(true);

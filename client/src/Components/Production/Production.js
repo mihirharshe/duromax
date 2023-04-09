@@ -15,6 +15,12 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 
+class PackSizeError extends Error {
+    constructor(message) {
+        super(message);
+    }
+}
+
 export const Production = () => {
 
     const [open, setOpen] = useState(false);
@@ -28,6 +34,8 @@ export const Production = () => {
         desc: ''
     });
     const [allBoq, setAllBoq] = useState([]);
+    const [packSizeError, setPackSizeError] = useState(false);
+    const [packSizeErrorText, setPackSizeErrorText] = useState('');
 
     const resetValues = () => {
         setData({
@@ -37,6 +45,7 @@ export const Production = () => {
             pack_size: '',
             desc: ''
         })
+        setPackSizeError(false);
     }
 
     const handleInputChange = (event) => {
@@ -55,23 +64,40 @@ export const Production = () => {
         resetValues();
     }
 
+    const baseUrl = process.env.REACT_APP_API_URL;
+
     const deleteItem = useCallback((id) => async () => {
         try {
-            await axios.delete(`http://localhost:5124/api/v1/prod/${id}`);
-            setProductions((productions) => productions.filter(row => row._id !== id));
+            let res = await axios.delete(`${baseUrl}/api/v1/prod/${id}`);
+            if(res.status == 200)
+                setProductions((productions) => productions.filter(row => row._id !== id));
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     }, []);
 
     const handleDialogSubmit = async (e) => {
+        e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5124/api/v1/prod/add', data);
+            if(!data.qty || !data.boqId) {
+                setPackSizeErrorText('Either qty or boq is missing');
+            } else {
+                const selectedItem = allBoq.find(item => item.name === data.name);
+                let batchSize = selectedItem.batch_size;
+                let batchCount = Math.ceil(data.qty / batchSize);
+                let batchQty = data.qty / batchCount;
+                if(!Number.isInteger(batchQty / data.pack_size)) throw new PackSizeError(`Invalid pack size. Pack size should be divisible by resultant batch size ${batchQty}`);
+                setPackSizeError(false);
+            }
+            const res = await axios.post(`${baseUrl}/api/v1/prod/add`, data);
             setProductions([...productions, res.data.production]);
-            e.preventDefault();
             handleDialogClose();
         } catch (err) {
-            console.log(err);
+            console.error(err);
+            if(err instanceof PackSizeError) {
+                setPackSizeError(true);
+                setPackSizeErrorText(err.message)
+            }
         }
     }
 
@@ -87,7 +113,7 @@ export const Production = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:5124/api/v1/prod');
+                const response = await axios.get(`${baseUrl}/api/v1/prod`);
                 setProductions(response.data.productions);
             } catch (err) {
                 console.log(err);
@@ -95,7 +121,7 @@ export const Production = () => {
         }
         const fetchBoq = async () => {
             try {
-                const response = await axios.get('http://localhost:5124/api/v1/boq');
+                const response = await axios.get(`${baseUrl}/api/v1/boq`);
                 setAllBoq(response.data.boq);
             } catch (err) {
                 console.log(err);
@@ -106,10 +132,10 @@ export const Production = () => {
     }, []);
 
     const columns = useMemo(() => [
-        { field: 'name', type: 'string', headerName: 'Product Name', minWidth: 150, flex: 0.25 },
-        { field: 'qty', type: 'number', headerName: 'Quantity', minWidth: 100 },
-        { field: 'pack_size', type: 'number', headerName: 'Pack Size', minWidth: 100 },
-        { field: 'desc', type: 'string', headerName: 'Remarks', flex: 1 },
+        { field: 'name', type: 'string', headerName: 'Product Name', minWidth: 150, flex: 0.25, headerAlign: 'center', align: 'center' },
+        { field: 'qty', type: 'number', headerName: 'Quantity (kg)', minWidth: 120 ,headerAlign: 'center', align: 'center'},
+        { field: 'pack_size', type: 'number', headerName: 'Pack Size (kg)', minWidth: 120, headerAlign: 'center', align: 'center' },
+        { field: 'desc', type: 'string', headerName: 'Remarks', flex: 1, headerAlign: 'center', align: 'center' },
         {
             field: 'createdAt',
             type: 'date',
@@ -201,6 +227,8 @@ export const Production = () => {
                             label="Pack Size"
                             type="number"
                             value={data.pack_size}
+                            error={packSizeError}
+                            helperText={packSizeError && packSizeErrorText}
                             onChange={handleInputChange}
                             fullWidth
                         />

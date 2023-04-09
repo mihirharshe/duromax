@@ -34,7 +34,14 @@ const getBatchReportDetails = async (prodId, batchNo) => {
                     },
                     {
                         $addFields: {
-                            totalBatches: { $size: "$batches" }
+                            totalBatches: {
+                                $ceil: {
+                                    $divide: [
+                                        "$qty",
+                                        { $arrayElemAt: ["$batchSize.batch_size", 0] }
+                                    ]
+                                }
+                            }
                         }
                     },
                     {
@@ -43,7 +50,7 @@ const getBatchReportDetails = async (prodId, batchNo) => {
                             totalBatches: 1,
                             qty: 1,
                             batchSize: {
-                                $arrayElemAt: ["$batchSize", 0]
+                                $arrayElemAt: ["$batchSize.batch_size", 0]
                             },
                             _id: 0
                         }
@@ -56,7 +63,11 @@ const getBatchReportDetails = async (prodId, batchNo) => {
         },
         {
             $project: {
-                objectIdProdId: 0
+                objectIdProdId: 0,
+                // "productionDetails.name": 1,
+                // "productionDetails.qty": 1,
+                // "productionDetails.totalBatches": 1,
+                // "productionDetails.batchSize": "$productionDetails.batchSize.batch_size"
             }
         }
     ]
@@ -162,7 +173,7 @@ const getAdjRMReport = async (req, res) => {
                 message: `Adjustments of raw material ${name} found successfully`,
                 rm: adjRMDetails
             });
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             error: err.message
         })
@@ -214,7 +225,61 @@ const getAdjBktReport = async (req, res) => {
                 message: `Adjustments of bucket with id ${id} found successfully`,
                 bkt: adjBktDetails
             });
-    } catch(err) {
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        })
+    }
+}
+
+// batch report
+
+const getBatchReport = async (req, res) => {
+    try {
+        // let completedBatches = await batchModel.find({ completed: true }, { productionId: 1, batch: 1 })
+        let aggregationPipeline = [
+            { $match: { completed: true } },
+            {
+                $addFields:
+                {
+                    pid: {
+                        $toObjectId: "$productionId",
+                    },
+                },
+            },
+            {
+                $lookup: {
+                    from: "productions",
+                    localField: "pid",
+                    foreignField: "_id",
+                    as: "res",
+                },
+            },
+            {
+                $project:
+                /**
+                 * specifications: The fields to
+                 *   include or exclude.
+                 */
+                {
+                    boqName: {
+                        $arrayElemAt: ["$res.name", 0],
+                    },
+                    batch: 1,
+                    colorShade: "$labelDetails.colorShade",
+                    prodName:
+                        "$labelDetails.productLabelName",
+                    updatedAt: 1,
+                    productionId: 1
+                },
+            },
+        ];
+        let batchReports = await batchModel.aggregate(aggregationPipeline);
+        res.status(200).json({
+            message: 'Successfully fetched batch reports',
+            batchReports
+        })
+    } catch (err) {
         res.status(500).json({
             error: err.message
         })
@@ -223,5 +288,4 @@ const getAdjBktReport = async (req, res) => {
 
 
 
-
-module.exports = { fetchBatchReportAsync, getSales, getRMReport, getAdjRMReport, getBktReport, getAdjBktReport }
+module.exports = { fetchBatchReportAsync, getSales, getRMReport, getAdjRMReport, getBktReport, getAdjBktReport, getBatchReport }

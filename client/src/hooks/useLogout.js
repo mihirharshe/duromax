@@ -4,11 +4,12 @@ import useAuth from "./useAuth";
 
 const useLogout = () => {
     const { setAuth } = useAuth();
+    const baseUrl = process.env.REACT_APP_API_URL;
 
     const logout = async () => {
         setAuth({});
         try {
-            const response = await axiosPrivate.post('http://localhost:5124/api/v1/auth/logout');
+            const response = await axiosPrivate.post(`${baseUrl}/api/v1/auth/logout`);
         } catch (err) {
             console.error(err);
         }

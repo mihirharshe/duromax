@@ -9,7 +9,7 @@ import FinalLabel from './FinalLabel';
 const Label = () => {
 
     const { id, batchId } = useParams();
-
+    let navigate = useNavigate();
     // const Item = styled(Paper)(({ theme }) => ({
     //     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
     //     ...theme.typography.body2,
@@ -19,10 +19,11 @@ const Label = () => {
     // }));
 
     const [prod, setProd] = useState({});
+    const baseUrl = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         const fetchProd = async () => {
-            const res = await axios.get(`http://localhost:5124/api/v1/prod/${id}`);
+            const res = await axios.get(`${baseUrl}/api/v1/prod/${id}`);
             setProd(res.data.production);
         }
         fetchProd();
@@ -56,7 +57,7 @@ const Label = () => {
         setLoading(true);
         // let bktQty = prod.batches[batchId - 1].bucketDetails[batchId - 1].bktQty;
         // let density = prod.batches[batchId - 1].quality.density;
-        const res = await axios.post(`http://localhost:5124/api/v1/prod/bktlabels/${id}/${batchId}`, {
+        const res = await axios.post(`${baseUrl}/api/v1/prod/bktlabels/${id}/${batchId}`, {
             labelDetails: inputLabelDetails
         })
         if (res.status === 200) {
@@ -144,6 +145,7 @@ const Label = () => {
                         }
                     </Grid>
                 </div>
+                {isLoaded && <Button sx={{display: 'flex', margin: '50px auto 0 auto'}} variant="contained" onClick={() => navigate(`/reports/batch/${id}/${batchId}`)}>NEXT</Button>}
                 {/* <svg ref={inputRef} /> */}
             </Container>
         </>

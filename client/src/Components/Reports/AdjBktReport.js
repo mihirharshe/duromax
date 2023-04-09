@@ -11,9 +11,11 @@ const AdjBktReport = () => {
     const [pageSize, setPageSize] = useState(10);
     const [bktName, setBktName] = useState('');
 
+    const baseUrl = process.env.REACT_APP_API_URL;
+
     useEffect(() => {
         const fetchAdjBkt = async () => {
-            const res = await axios.get(`http://localhost:5124/api/v1/reports/buckets/${id}`, { validateStatus: false });
+            const res = await axios.get(`${baseUrl}/api/v1/reports/buckets/${id}`, { validateStatus: false });
             if(res.status == 404)
                 setBktLC([]);
             else {

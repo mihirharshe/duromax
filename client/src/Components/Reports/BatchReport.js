@@ -23,26 +23,24 @@ export const BatchReport = React.forwardRef(({}, ref) => {
     // const componentRef = useRef();
     // const [prod, setProd] = useState({});
     const [batchReport, setBatchReport] = useState({})
+    const baseUrl = process.env.REACT_APP_API_URL;
     useEffect(() => {
-        // const fetchProd = async () => {
-        //     const res = await axios.get(`http://localhost:5124/api/v1/prod/${id}`);
-        //     setProd(res.data.production);
-        // }
         const fetchBatch = async () => {
-            const res = await axios.get(`http://localhost:5124/api/v1/reports/batch/${id}/${batchId}`);
-            console.log(res);
+            const res = await axios.get(`${baseUrl}/api/v1/reports/batch/${id}/${batchId}`);
             setBatchReport(res.data.batchReport);
         }
         fetchBatch();
     }, []);
 
-    let createdDate = ((new Date(batchReport?.createdAt)).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    }) ?? "");
+    // let productionDate = ((new Date(batchReport?.updatedAt)).toLocaleDateString("en-GB", {
+    //     day: "2-digit",
+    //     month: "2-digit",
+    //     year: "numeric",
+    //     hour: "2-digit",
+    //     minute: "2-digit"
+    // }) ?? "");
+
+    let productionDate = (new Date(batchReport?.updatedAt)).toLocaleString();
 
 
     const tableStyle = {
@@ -83,7 +81,7 @@ export const BatchReport = React.forwardRef(({}, ref) => {
                                 </tr>
                                 <tr>
                                     <th style={cellStyle}>Date of Production: </th>
-                                    <td style={cellStyle}>{createdDate}</td>
+                                    <td style={cellStyle}>{productionDate}</td>
                                 </tr>
                                 <tr>
                                     <th style={cellStyle}>Batch ID: </th>

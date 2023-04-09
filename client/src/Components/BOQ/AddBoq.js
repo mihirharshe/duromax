@@ -36,10 +36,12 @@ export const AddBoq = () => {
 
     const [allBoq, setAllBoq] = useState([]);
 
+    const baseUrl = process.env.REACT_APP_API_URL;
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5124/api/v1/rm');
+                const res = await axios.get(`${baseUrl}/api/v1/rm`);
                 setAllRM(res.data.rawMaterials);
             } catch (err) {
                 console.log(err);
@@ -47,7 +49,7 @@ export const AddBoq = () => {
         }
         const fetchAllBoq = async() => {
             try {
-                const res = await axios.get('http://localhost:5124/api/v1/boq');
+                const res = await axios.get(`${baseUrl}/api/v1/boq`);
                 setAllBoq(res.data.boq);
             } catch(err) {
                 console.log(err);
@@ -140,7 +142,7 @@ export const AddBoq = () => {
         newBoq.content = boqContent;
         setBoq(newBoq);
         try {
-            const res = await axios.post('http://localhost:5124/api/v1/boq', newBoq);
+            const res = await axios.post(`${baseUrl}/api/v1/boq`, newBoq);
             console.log(res);
             if (res.status === 200) {
                 setOpenSnackbar(true);

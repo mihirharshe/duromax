@@ -10,9 +10,11 @@ const AdjRMReport = () => {
     const [rmLC, setRMLC] = useState([]);
     const [pageSize, setPageSize] = useState(10);
 
+    const baseUrl = process.env.REACT_APP_API_URL;
+
     useEffect(() => {
         const fetchAdjRM = async () => {
-            const res = await axios.get(`http://localhost:5124/api/v1/reports/raw-materials/${name}`, { validateStatus: false });
+            const res = await axios.get(`${baseUrl}/api/v1/reports/raw-materials/${name}`, { validateStatus: false });
             if(res.status == 404)
                 setRMLC([]);
             else

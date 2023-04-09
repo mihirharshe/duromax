@@ -25,6 +25,8 @@ export const Bucket = () => {
     const [error, setError] = useState(false);
     const [pageSize, setPageSize] = useState(10);
 
+    const baseUrl = process.env.REACT_APP_API_URL;
+
     const handleDialogOpen = () => {
         setOpen(true);
     }
@@ -75,7 +77,7 @@ export const Bucket = () => {
             alertQty: alertQty
         }
         try {
-            const res = await axios.post('http://localhost:5124/api/v1/bkt', data);
+            const res = await axios.post(`${baseUrl}/api/v1/bkt`, data);
             setBuckets([...buckets, res.data.bucket]);
             handleDialogClose();
         } catch (err) {
@@ -102,7 +104,7 @@ export const Bucket = () => {
             alertQty: alertQty
         }
         try {
-            const res = await axios.put(`http://localhost:5124/api/v1/bkt/${itemId}`, data);
+            const res = await axios.put(`${baseUrl}/api/v1/bkt/${itemId}`, data);
             // console.log(res);
             const editedItemId = res.data.bucket._id;
             const editedItem = buckets.find(item => item._id === editedItemId);
@@ -121,7 +123,7 @@ export const Bucket = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5124/api/v1/bkt');
+                const res = await axios.get(`${baseUrl}/api/v1/bkt`);
                 setBuckets(res.data.buckets);
             } catch (err) {
                 console.log(err);
@@ -132,7 +134,7 @@ export const Bucket = () => {
 
     // const deleteItem = useCallback(async (id) => {
     //     try {
-    //         await axios.delete(`http://localhost:5124/rm/${id}`);
+    //         await axios.delete(`${baseUrl}/rm/${id}`);
     //         setMaterials(materials.filter(material => material._id !== id));
     //     } catch(err) {
     //         console.log(err);
@@ -153,7 +155,7 @@ export const Bucket = () => {
     const deleteItem = useCallback((id) => async () => {
         console.log(id);
         try {
-            await axios.delete(`http://localhost:5124/api/v1/bkt/${id}`);
+            await axios.delete(`${baseUrl}/api/v1/bkt/${id}`);
             setBuckets((buckets) => buckets.filter((row) => row._id !== id));
         }
         catch (err) {
@@ -162,10 +164,10 @@ export const Bucket = () => {
     }, []);
 
     const columns = useMemo(() => [
-        { field: 'name', type: 'string', headerName: 'Name', flex: 1 },
-        { field: 'qty', type: 'number', headerName: 'Quantity', minWidth: 100 },
-        { field: 'capacity', type: 'number', headerName: 'Capacity', minWidth: 100 },
-        { field: 'alertQty', type: 'number', headerName: 'Alert Quantity', minWidth: 100 },
+        { field: 'name', type: 'string', headerName: 'Name', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'qty', type: 'number', headerName: 'Quantity', minWidth: 100, headerAlign: 'center', align: 'center' },
+        { field: 'capacity', type: 'number', headerName: 'Capacity', minWidth: 100, headerAlign: 'center', align: 'center' },
+        { field: 'alertQty', type: 'number', headerName: 'Alert Quantity', minWidth: 100, headerAlign: 'center', align: 'center' },
         {
             field: 'actions',
             type: 'actions',
@@ -182,7 +184,8 @@ export const Bucket = () => {
                     label="Delete"
                     onClick={deleteItem(params.id)}
                 />
-            ]
+            ],
+            headerAlign: 'center', align: 'center'
         }
     ], [handleEdit, deleteItem]);
 

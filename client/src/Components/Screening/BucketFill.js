@@ -11,6 +11,7 @@ export const BucketFill = () => {
 
     const { id, batchId } = useParams();
     let navigate = useNavigate();
+    const baseUrl = process.env.REACT_APP_API_URL;
 
     const Item = styled(Paper)(({ theme }) => ({
         backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -33,7 +34,7 @@ export const BucketFill = () => {
 
     useEffect(() => {
         const fetchBkts = async () => {
-            const res = await axios.get(`http://localhost:5124/api/v1/bkt`);
+            const res = await axios.get(`${baseUrl}/api/v1/bkt`);
             setBuckets(res.data.buckets);
         }
         fetchBkts();
@@ -66,9 +67,7 @@ export const BucketFill = () => {
                 updates.push(obj);
         });
 
-        console.log(updates);
-
-        const res = await axios.put(`http://localhost:5124/api/v1/prod/add-bkts/${id}/${batchId}`, {
+        const res = await axios.put(`${baseUrl}/api/v1/prod/add-bkts/${id}/${batchId}`, {
             bucketDetails: updates
         });
         if(res.status === 200) {

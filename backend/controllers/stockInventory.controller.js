@@ -198,10 +198,14 @@ const sellBucket = async (req, res) => {
             bucket.save();
         }
         res.status(200).json({
-            message: `Bucket with id ${bktId} was successfully sold`
+            message: `Bucket with id ${bktId} was successfully sold`,
+            updatedBucket: bucket
         });
     } catch(err) {
         console.log(err);
+        res.status(500).json({
+            message: err
+        })
     }
 }
 

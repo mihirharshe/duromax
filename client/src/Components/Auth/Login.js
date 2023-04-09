@@ -7,6 +7,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 export const Login = () => {
 
+    const baseUrl = process.env.REACT_APP_API_URL;
+
     const { setAuth } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -68,7 +70,7 @@ export const Login = () => {
             if (!validateEmail(user.email) || user.password.length < 5) {
                 return;
             }
-            const response = await axios.post('http://localhost:5124/api/v1/auth/login', user, { withCredentials: true });
+            const response = await axios.post(`${baseUrl}/api/v1/auth/login`, user, { withCredentials: true });
             const accessToken = response?.data?.accessToken;
             const decoded = jwt_decode(accessToken);
             // const roles = decoded?.UserInfo?.roles;

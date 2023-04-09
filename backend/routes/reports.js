@@ -7,6 +7,10 @@ router.get('/batch/:prodId/:batchNo', async (req, res) => {
     await reportController.fetchBatchReportAsync(req, res);
 });
 
+router.get('/batch', async (req, res) => {
+    await reportController.getBatchReport(req, res);
+});
+
 router.get('/stock-inventory', async (req, res) => {
     await stockController.getStockInventory(req, res);
 });

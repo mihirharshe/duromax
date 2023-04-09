@@ -17,12 +17,14 @@ export const Boq = () => {
     const [open, setOpen] = useState(false);
     const [severity, setSeverity] = useState('');
     const [message, setMessage] = useState('');
+
+    const baseUrl = process.env.REACT_APP_API_URL;
     
     let navigate = useNavigate();
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5124/api/v1/boq');
+                const res = await axios.get(`${baseUrl}/api/v1/boq`);
                 setBoq(res.data.boq);
             } catch(err) {
                 console.log(err)
@@ -33,7 +35,7 @@ export const Boq = () => {
 
     const handleDeleteBoq = async(id) => {
         try {
-            const res = await axios.delete(`http://localhost:5124/api/v1/boq/${id}`);
+            const res = await axios.delete(`${baseUrl}/api/v1/boq/${id}`);
             if(res.status === 200) {
                 setBoq((newBoq) => newBoq.filter(boq => boq._id !== id));
                 setOpen(true);
@@ -49,8 +51,8 @@ export const Boq = () => {
     }
 
     const columns = useMemo(() => [
-        { field: 'name', type: 'string', headerName: 'Name', flex: 1 },
-        { field: 'batch_size', type: 'number', headerName: 'Batch size', minWidth: 100 },
+        { field: 'name', type: 'string', headerName: 'Name', flex: 1,headerAlign: 'center', align: 'center' },
+        { field: 'batch_size', type: 'number', headerName: 'Batch size', minWidth: 100, headerAlign: 'center', align: 'center' },
         { 
             field: 'updatedAt', 
             type: 'date', 
@@ -58,7 +60,8 @@ export const Boq = () => {
             minWidth: 175,
             valueFormatter: (params) => {
                 return new Date(params.value).toLocaleString().replace(',', '');
-            }
+            },
+            headerAlign: 'center', align: 'center'
         },
         {
             field: 'actions',
@@ -91,7 +94,8 @@ export const Boq = () => {
                         search: '?duplicate=true'
                     })}}
                 />
-            ]
+            ],
+            headerAlign: 'center', align: 'center'
         }
     ], []);
     return (

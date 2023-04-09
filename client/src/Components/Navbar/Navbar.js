@@ -7,6 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
 import CssBaseline from '@mui/material/CssBaseline';
 import Typography from '@mui/material/Typography';
+import { Tooltip } from '@mui/material';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
@@ -43,21 +44,24 @@ import AdjRMReport from '../Reports/AdjRMReport';
 import BucketReport from '../Reports/BucketReport';
 import AdjBktReport from '../Reports/AdjBktReport';
 import useLogout from '../../hooks/useLogout';
+import BatchReportsTable from '../Reports/BatchReportsTable';
+import useAuth from '../../hooks/useAuth';
 
 const drawerWidth = 240;
 
 const navigation = [
-    { name: 'Raw Material', icon: <ArticleIcon />, href: '/raw-material' },
-    { name: 'Bucket', icon: <ArticleIcon />, href: '/bucket' },
-    { name: 'BOQ', icon: <ArticleIcon />, href: '/boq' },
-    { name: 'Adjust Raw Material', icon: <ArticleIcon />, href: '/adjust-rm' },
-    { name: 'Adjust Bucket', icon: <ArticleIcon />, href: '/adjust-bkt' },
-    { name: 'Production', icon: <ArticleIcon />, href: '/production' },
-    { name: 'Screening', icon: <ArticleIcon />, href: '/screen' },
-    { name: 'Stock Inventory', icon: <ArticleIcon />, href: '/inventory' },
-    { name: 'Sales Report', icon: <ArticleIcon />, href: '/reports/sales' },
-    { name: 'RM Report', icon: <ArticleIcon />, href: '/reports/raw-materials' },
-    { name: 'Buckets Report', icon: <ArticleIcon />, href: '/reports/buckets' },
+    { name: 'Raw Material', icon: <ArticleIcon />, href: '/raw-material', allowedRoles: ['Admin'] },
+    { name: 'Bucket', icon: <ArticleIcon />, href: '/bucket', allowedRoles: ['Admin'] },
+    { name: 'BOQ', icon: <ArticleIcon />, href: '/boq', allowedRoles: ['Admin'] },
+    { name: 'Adjust Raw Material', icon: <ArticleIcon />, href: '/adjust-rm', allowedRoles: ['Admin', 'FactoryMain', 'Manager'] },
+    { name: 'Adjust Bucket', icon: <ArticleIcon />, href: '/adjust-bkt', allowedRoles: ['Admin', 'FactoryMain', 'Manager'] },
+    { name: 'Production', icon: <ArticleIcon />, href: '/production', allowedRoles: ['Admin', 'Manager'] },
+    { name: 'Screening', icon: <ArticleIcon />, href: '/screen', allowedRoles: ['Admin', 'Factory', 'FactoryMain'] },
+    { name: 'Stock Inventory', icon: <ArticleIcon />, href: '/inventory', allowedRoles: ['Admin', 'Factory', 'FactoryMain', 'Manager'] },
+    { name: 'Sales Report', icon: <ArticleIcon />, href: '/reports/sales', allowedRoles: ['Admin', 'Factory', 'FactoryMain', 'Manager'] },
+    { name: 'Batch Report', icon: <ArticleIcon />, href: '/reports/batch', allowedRoles: ['Admin', 'Factory', 'FactoryMain', 'Manager'] },
+    { name: 'RM Report', icon: <ArticleIcon />, href: '/reports/raw-materials', allowedRoles: ['Admin', 'Manager'] },
+    { name: 'Buckets Report', icon: <ArticleIcon />, href: '/reports/buckets', allowedRoles: ['Admin', 'Manager'] },
 ];
 
 const openedMixin = (theme) => ({
@@ -126,6 +130,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 export default function Navbar() {
+    const { auth } = useAuth();
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
     const logout = useLogout();
@@ -141,7 +146,6 @@ export default function Navbar() {
 
     const handleLogout = async () => {
         await logout();
-        // localStorage.removeItem('token'); 
         navigate('/');
     }
 
@@ -177,65 +181,75 @@ export default function Navbar() {
                 </DrawerHeader>
                 <Divider />
                 <List>
-                    {navigation.map((item) => (
-                        <Link key={item.name} to={item.href} className="navLinks">
-                            <ListItem key={item.name} disablePadding sx={{ display: 'block' }}>
-                                <ListItemButton
-                                    sx={{
-                                        minHeight: 48,
-                                        justifyContent: open ? 'initial' : 'center',
-                                        px: 2.5,
-                                    }}
-                                >
-                                    <ListItemIcon
-                                        sx={{
-                                            minWidth: 0,
-                                            mr: open ? 3 : 'auto',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        {item.icon}
-                                        {/* {index % 2 === 0 ? <InboxIcon /> : <MailIcon />} */}
-                                    </ListItemIcon>
-                                    <ListItemText primary={item.name} sx={{ opacity: open ? 1 : 0 }} />
-                                </ListItemButton>
-                            </ListItem>
-                        </Link>
-                    ))}
+                    {navigation
+                        .filter((item) => {
+                            return item.allowedRoles.some(role => auth.roles.includes(role));
+                        })
+                        .map((item) => (
+                            <Link key={item.name} to={item.href} className="navLinks">
+                                <Tooltip title={item.name} arrow placement='right'>
+                                    <ListItem key={item.name} disablePadding sx={{ display: 'block' }}>
+                                        <ListItemButton
+                                            sx={{
+                                                minHeight: 48,
+                                                justifyContent: open ? 'initial' : 'center',
+                                                px: 2.5,
+                                            }}
+                                        >
+                                            <ListItemIcon
+                                                sx={{
+                                                    minWidth: 0,
+                                                    mr: open ? 3 : 'auto',
+                                                    justifyContent: 'center',
+                                                }}
+                                            >
+                                                {item.icon}
+                                                {/* {index % 2 === 0 ? <InboxIcon /> : <MailIcon />} */}
+                                            </ListItemIcon>
+                                            <ListItemText primary={item.name} sx={{ opacity: open ? 1 : 0 }} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                </Tooltip>
+                            </Link>
+                        ))}
                 </List>
             </Drawer>
-            {/* <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-             */}
+
             <Box component="main" sx={{ paddingTop: 8, paddingLeft: 8, backgroundColor: 'whitesmoke', minHeight: '100vh' }}>
                 <Routes>
-                    {/* <Route element={<PersistLogin />}> */}
-
+                    <Route element={<RequireAuth allowedRoles={['Admin', 'Factory', 'FactoryMain']} />} >
                         <Route path="/screen" element={<ScreenMain />} />
                         <Route path="/screen/:id" element={<ScreenProd />} />
                         <Route path='/screen/:id/test/:batchId' element={<QualityTest />} />
                         <Route path="/screen/:id/bktFill/:batchId" element={<BucketFill />} />
                         <Route path="/screen/:id/label/:batchId" element={<Label />} />
+                    </Route>
 
-                        <Route path="/reports/prod/:id/:batchId" element={<BatchReportPrintHelper />} />
-                        <Route path="/reports/sales" element={<SalesReport />} />
+                    <Route path="/reports/sales" element={<SalesReport />} />
+                    <Route path="/inventory" element={<StockInventory />} />
+                    <Route path="/reports/batch" element={<BatchReportsTable />} />
+                    <Route path="/reports/batch/:id/:batchId" element={<BatchReportPrintHelper />} />
+
+                    <Route element={<RequireAuth allowedRoles={['Admin', 'Manager', 'FactoryMain']} />} >
+                        <Route path="/adjust-rm" element={<AdjustRM />} />
+                        <Route path="/adjust-bkt" element={<AdjustBkt />} />
+                    </Route>
+
+                    <Route element={<RequireAuth allowedRoles={['Admin', 'Manager']} />} >
+                        <Route path="/production" element={<Production />} />
                         <Route path="/reports/raw-materials" element={<RawMaterialReport />} />
                         <Route path="/reports/raw-materials/:name" element={<AdjRMReport />} />
                         <Route path="/reports/buckets" element={<BucketReport />} />
                         <Route path="/reports/buckets/:id" element={<AdjBktReport />} />
+                    </Route>
 
-                        <Route path="/inventory" element={<StockInventory />} />
-
-                        <Route element={<RequireAuth allowedRoles={['Admin']} />} >
-                            <Route path="/raw-material" element={<RawMaterial />} />
-                            <Route path="/bucket" element={<Bucket />} />
-                            <Route path="/boq" element={<Boq />} />
-                            <Route path="/boq/add" element={<AddBoq />} />
-                            <Route path="/boq/edit/:id" element={<EditBoq />} />
-                            <Route path="/adjust-rm" element={<AdjustRM />} />
-                            <Route path="/adjust-bkt" element={<AdjustBkt />} />
-                            <Route path="/production" element={<Production />} />
-                        </Route>
-                    {/* </Route> */}
+                    <Route element={<RequireAuth allowedRoles={['Admin']} />} >
+                        <Route path="/raw-material" element={<RawMaterial />} />
+                        <Route path="/bucket" element={<Bucket />} />
+                        <Route path="/boq" element={<Boq />} />
+                        <Route path="/boq/add" element={<AddBoq />} />
+                        <Route path="/boq/edit/:id" element={<EditBoq />} />
+                    </Route>
 
                 </Routes>
             </Box>

@@ -44,6 +44,7 @@ export const ScreenProd = () => {
         _id: '',
         totalQty: ''
     });
+    const baseUrl = process.env.REACT_APP_API_URL;
 
 
     // const handleSelectBatch = (batchNumber) => {
@@ -53,8 +54,7 @@ export const ScreenProd = () => {
     useEffect(() => {
         const fetchProd = async () => {
             try {
-                console.log("fetching prod")
-                const res = await axios.get(`http://localhost:5124/api/v1/prod/${id}`);
+                const res = await axios.get(`${baseUrl}/api/v1/prod/${id}`);
                 setSelectedProduct(res.data.production);
             }
             catch (err) {
@@ -63,8 +63,7 @@ export const ScreenProd = () => {
         }
         const fetchBatchDetails = async () => {
             try {
-                console.log("fetching batch details")
-                const res = await axios.get(`http://localhost:5124/api/v1/prod/batch/all/${id}`);
+                const res = await axios.get(`${baseUrl}/api/v1/prod/batch/all/${id}`);
                 setBatchDetails(res.data.batches);
             }
             catch (err) {
@@ -73,8 +72,7 @@ export const ScreenProd = () => {
         }
         const fetchCompletedElements = async () => {
             try {
-                console.log("fetching completed elements")
-                const res = await axios.get(`http://localhost:5124/api/v1/prod/completed/${id}`);
+                const res = await axios.get(`${baseUrl}/api/v1/prod/completed/${id}`);
                 setCompletedElements(res.data.materials);
             } catch(err) {
                 console.log(err);
@@ -91,8 +89,7 @@ export const ScreenProd = () => {
         if (selectedProduct.name) {
             const fetchBoq = async () => {
                 try {
-                    console.log("fetching boq")
-                    const res = await axios.get(`http://localhost:5124/api/v1/boq/name/${selectedProduct.name}`);
+                    const res = await axios.get(`${baseUrl}/api/v1/boq/name/${selectedProduct.name}`);
                     setProdBoq(res.data.boq);
                     // setCurrElement({...res.data.boq.content[idx], totalQty: res.data.boq.content[idx].qty * batchQty});
                 }
@@ -116,8 +113,6 @@ export const ScreenProd = () => {
     const prodQty = selectedProduct.qty;
     const batchCount = Math.ceil(prodQty / batch_size);
     const batchQty = prodQty / batchCount;
-    console.log(batch_size, prodQty, batchCount, batchQty);
-    console.log(prodBoq);
     const generateBatchArray = (batchCount) => {
         const gen = batchCount ? (new Array(batchCount-batchDetails.length).fill({ completed: false, currentIdx: 0 })) : [];
         const newArr = [...batchDetails, ...gen]
@@ -136,7 +131,6 @@ export const ScreenProd = () => {
         }
     }, [batchArray, selectedBatch])
 
-    console.log(allBatches);
 
     // const batchCompletionArray = (new Array(batchCount).fill({ completed: false }));
 
@@ -147,7 +141,7 @@ export const ScreenProd = () => {
     }
 
     const saveCompletedElements = () => {
-        axios.post(`http://localhost:5124/api/v1/prod/completed/${id}`, {
+        axios.post(`${baseUrl}/api/v1/prod/completed/${id}`, {
             materials: {...currElement, batch: selectedBatch+1, totalQty: currElement.qty * batchQty }
         });
     }
@@ -157,7 +151,7 @@ export const ScreenProd = () => {
         if(updatedBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
             updatedBatches[selectedBatch].completed = true;
         }
-        axios.post(`http://localhost:5124/api/v1/prod/batch/${id}`, {
+        axios.post(`${baseUrl}/api/v1/prod/batch/${id}`, {
             batchIdx: selectedBatch,
             batchDetails: {
                 completed: updatedBatches[selectedBatch].completed,
@@ -165,14 +159,6 @@ export const ScreenProd = () => {
             }
         }); 
     }
-
-    // const addBatchDetails = () => {
-    //     const updatedBatches = [...allBatches];
-    //     updatedBatches[selectedBatch] = {...updatedBatches[selectedBatch], completed: true, currentIdx: idx};
-    //     axios.post(`http://localhost:5124/prod/batch/all/${id}`, {
-    //         batches: updatedBatches
-    //     });
-    // }
 
     const [value, setValue] = useState('1');
     
@@ -197,14 +183,11 @@ export const ScreenProd = () => {
             handleSelectElement();
             handleClose();
             setSelectedProduct({...selectedProduct, completedMaterials: [...completedElements, {...currElement, batch: selectedBatch+1, totalQty: (currElement?.qty * batchQty).toFixed(2) }] })
-            console.log(allBatches[selectedBatch].currentIdx);
             if (allBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
-                console.log("completed");
                 // setIdx(0);
                 const updatedBatch = [...allBatches];
                 // const single = {...updatedBatch[selectedBatch], completed: true, currentIdx: idx}
                 updatedBatch[selectedBatch] = {...updatedBatch[selectedBatch], completed: true, currentIdx: idx}
-                console.log("updatedBatch: ",updatedBatch)
                 // updatedBatch.splice(selectedBatch, 1, { completed: true, currentIdx: idx });
                 setAllBatches(updatedBatch);
                 // addBatchDetails();
@@ -220,7 +203,6 @@ export const ScreenProd = () => {
         }
     };
 
-    console.log(selectedProduct)
 
     const renderer = ({ api, formatted }) => {
         const { minutes, seconds } = formatted;
@@ -235,7 +217,6 @@ export const ScreenProd = () => {
 
     const updateIdx = () => {
         const newArr = [...allBatches];
-        console.log(selectedBatch)
         newArr[selectedBatch] = {...newArr[selectedBatch], currentIdx: idx + 1}
         setAllBatches(newArr);
     }
@@ -251,7 +232,6 @@ export const ScreenProd = () => {
         setTimeout(() => {
             countdownRef.current.api.start();
         }, 1);
-        console.log(countdownRef);
     }
 
     const handleClose = () => {
@@ -368,7 +348,7 @@ export const ScreenProd = () => {
                             <Backdrop open={backdropOpen} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                     <Countdown
-                                        date={time + 3000}
+                                        date={time + (currElement.mixTime * 1000)}
                                         onComplete={handleCompletion}
                                         autoStart={false}
                                         key={time}

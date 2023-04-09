@@ -21,12 +21,13 @@ export const QualityTest = () => {
     });
 
     const [open, setOpen] = useState(false);
+    const baseUrl = process.env.REACT_APP_API_URL;
 
     let navigate = useNavigate();
 
     useEffect(() => {
         const fetchProd = async () => {
-            const res = await axios.get(`http://localhost:5124/api/v1/prod/${id}`)
+            const res = await axios.get(`${baseUrl}/api/v1/prod/${id}`)
             setProductDetails(res.data.production);
             console.log(res);
             if (res.data.production.batches[batchId - 1].quality) {
@@ -47,7 +48,7 @@ export const QualityTest = () => {
 
     const handleSubmit = async () => {
         try {
-            await axios.put(`http://localhost:5124/api/v1/prod/batch/${id}`, {
+            await axios.put(`${baseUrl}/api/v1/prod/batch/${id}`, {
                 batch: batchId - 0,
                 quality
             });
