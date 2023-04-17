@@ -348,7 +348,7 @@ export const ScreenProd = () => {
                             <Backdrop open={backdropOpen} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                     <Countdown
-                                        date={time + (currElement.mixTime * 1000)}
+                                        date={time + ((currElement.mixTime === 0 ? currElement.mixTime + 0.9 : currElement.mixTime) * 1000)}
                                         onComplete={handleCompletion}
                                         autoStart={false}
                                         key={time}
