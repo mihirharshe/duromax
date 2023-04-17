@@ -26,13 +26,18 @@ app.use(logger('dev'));
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+
 
 app.listen(PORT, () => {
     console.log("Server running on port "+ PORT);
 });
 
 app.use('/api/v1', indexRouter);
+
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
+})
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

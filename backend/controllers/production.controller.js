@@ -214,13 +214,10 @@ const updateBatch = async (req, res) => {
 const addCompletedMaterials = async (req, res) => {
     const { id } = req.params;
     const { materials } = req.body;
-    // console.log(materials);
     try {
         const production = await productionModel.findById(id);
-        for (const material of materials) {
-            let totalUsed = material.totalQty / 1000;
-            await rawMaterialModel.findOneAndUpdate({ name: material.name }, { $inc: { usedQty: totalUsed, qty: -totalUsed } });
-        }
+        let totalUsed = materials.totalQty / 1000;
+        await rawMaterialModel.findOneAndUpdate({ name: materials.name }, { $inc: { usedQty: totalUsed, qty: -totalUsed } });
         production.completedMaterials.push(materials);
         // production.completedMaterials = [...production.completedMaterials, ...materials];
         await production.save();
