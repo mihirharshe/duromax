@@ -262,6 +262,7 @@ export const RawMaterial = () => {
                         error={name === ''}
                         helperText={name === '' ? 'Please fill this field' : ''}
                         fullWidth
+                        disabled
                     />
                     <TextField
                         required
