@@ -29,8 +29,10 @@ const addRawMaterial = async (req, res) => {
             rawMaterial: rawMaterial
         });
     } catch(err) {
-        res.status(500).json({
-            message: err.message
+        res.status(400).json({
+            message: err.message,
+            field: Object.keys(err.keyValue)[0],
+            value: Object.values(err.keyValue)[0]
         });
     }
 }

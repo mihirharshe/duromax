@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
-import { Box } from '@mui/material';
+import { Box, FormControl } from '@mui/material';
 import axios from 'axios';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useRefreshToken from '../../hooks/useRefreshToken';
@@ -26,6 +26,9 @@ export const RawMaterial = () => {
     const [error, setError] = useState(false);
     const [pageSize, setPageSize] = useState(10);
 
+    const [duplicateRMerror, setDuplicateRMerror] = useState(false);
+    const [duplicateRMname, setDuplicateRMname] = useState('');
+
     const baseUrl = process.env.REACT_APP_API_URL;
 
     const axiosPrivate = useAxiosPrivate();
@@ -41,6 +44,8 @@ export const RawMaterial = () => {
         setQty('');
         setAlertQty('');
         setError(false);
+        setDuplicateRMerror(false);
+        setDuplicateRMname(''); 
     }
 
     const handleEditDialogOpen = () => {
@@ -53,6 +58,8 @@ export const RawMaterial = () => {
         setQty('');
         setAlertQty('');
         setError(false);
+        setDuplicateRMerror(false);
+        setDuplicateRMname('');
     }
 
     const handleInputChange = (e) => {
@@ -65,7 +72,8 @@ export const RawMaterial = () => {
         }
     }
 
-    const handleDialogSubmit = async () => {
+    const handleDialogSubmit = async (e) => {
+        e.preventDefault();
         if (!validationCheck()) {
             setError(true);
             return;
@@ -77,10 +85,16 @@ export const RawMaterial = () => {
         }
         try {
             const res = await axiosPrivate.post(`${baseUrl}/api/v1/rm`, data);
+            if (res.status !== 200)
+                throw Error(res.statusText);
             setMaterials([...materials, res.data.rawMaterial]);
             handleDialogClose();
         } catch (err) {
-            console.log(err);
+            console.log(err.response.data);
+            if (err.response.data.field === 'name') {
+                setDuplicateRMerror(true);
+                setDuplicateRMname(err.response.data.value);
+            }
         }
     }
 
@@ -195,57 +209,60 @@ export const RawMaterial = () => {
                 </Box>
             </Container>
             <Dialog open={open} onClose={handleDialogClose} aria-labelledby="form-dialog-title">
-                <DialogTitle id="form-dialog-title">Add new raw material</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Please enter the details of the raw material you want to add.
-                    </DialogContentText>
-                    <TextField
-                        required
-                        autoFocus
-                        margin="dense"
-                        id="name"
-                        label="Name"
-                        type="text"
-                        value={name}
-                        onChange={handleInputChange}
-                        error={error && name === ''}
-                        helperText={error && name === '' ? 'Please enter a name' : ''}
-                        fullWidth
-                    />
-                    <TextField
-                        required
-                        margin="dense"
-                        id="qty"
-                        label="Quantity"
-                        type="number"
-                        value={qty}
-                        onChange={handleInputChange}
-                        error={error && qty === ''}
-                        helperText={error && qty === '' ? 'Please enter a quantity' : ''}
-                        fullWidth
-                    />
-                    <TextField
-                        required
-                        margin="dense"
-                        id="alertQty"
-                        label="Alert Quantity"
-                        type="number"
-                        value={alertQty}
-                        onChange={handleInputChange}
-                        error={error && alertQty === ''}
-                        helperText={error && alertQty === '' ? 'Please enter an alert quantity' : ''}
-                        fullWidth
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleDialogSubmit} color="primary">
-                        Add
-                    </Button>
-                    <Button onClick={handleDialogClose} color="primary">
-                        Cancel
-                    </Button>
-                </DialogActions>
+                <Box component='form' onSubmit={handleDialogSubmit}>
+                    <DialogTitle id="form-dialog-title">Add new raw material</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Please enter the details of the raw material you want to add.
+                        </DialogContentText>
+                        <TextField
+                            required
+                            autoFocus
+                            margin="dense"
+                            id="name"
+                            label="Name"
+                            type="text"
+                            value={name}
+                            onChange={handleInputChange}
+                            error={duplicateRMerror}
+                            helperText={duplicateRMerror && `Raw material with the name ${duplicateRMname} already exists`}
+                            fullWidth
+                        />
+                        <TextField
+                            required
+                            margin="dense"
+                            id="qty"
+                            label="Quantity"
+                            type="number"
+                            value={qty}
+                            onChange={handleInputChange}
+                            error={error && qty === ''}
+                            helperText={error && qty === '' ? 'Please enter a quantity' : ''}
+                            fullWidth
+                        />
+                        <TextField
+                            required
+                            margin="dense"
+                            id="alertQty"
+                            label="Alert Quantity"
+                            type="number"
+                            value={alertQty}
+                            onChange={handleInputChange}
+                            error={error && alertQty === ''}
+                            helperText={error && alertQty === '' ? 'Please enter an alert quantity' : ''}
+                            fullWidth
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button type='submit' color="primary">
+                            Add
+                        </Button>
+                        <Button onClick={handleDialogClose} color="primary">
+                            Cancel
+                        </Button>
+                    </DialogActions>
+                </Box>
+
             </Dialog>
             <Dialog open={editOpen} onClose={handleEditDialogClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Edit raw material</DialogTitle>

@@ -5,6 +5,7 @@ const rawMaterialSchema = Schema({
     name: {
         type: String,
         required: true,
+        unique: true
     },
     qty: {
         type: Number,
