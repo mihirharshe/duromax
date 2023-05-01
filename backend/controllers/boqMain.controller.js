@@ -1,5 +1,6 @@
 const boqMainModel = require('../models/boqMain.model');
 const rawMaterialModel = require('../models/rawMaterial.model');
+const mongoose = require('mongoose');
 
 const getAllBoq = async (_, res) => {
     try {
@@ -92,7 +93,7 @@ const addBoq = async (req, res) => {
 const updateBoq = async (req, res) => {
     const { name, batch_size, content } = req.body;
     const { id } = req.params;
-    const boqExists = await boqMainModel.find({ name }).count() > 0;
+    const boqExists = await boqMainModel.find({ name, _id: { $ne: mongoose.Types.ObjectId(id) } }).count() > 0;
     if(boqExists) {
         res.status(400).json({
             message: 'BOQ already exists'
