@@ -35,7 +35,7 @@ app.listen(PORT, () => {
 
 app.use('/api/v1', indexRouter);
 
-app.get('/', (_req, res) => {
+app.get('/*', (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
 })
 
