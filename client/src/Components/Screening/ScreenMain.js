@@ -1,4 +1,4 @@
-import React , { useState, useEffect, useMemo }from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Container from '@mui/system/Container';
 import Box from '@mui/material/Box';
@@ -19,7 +19,7 @@ export const ScreenMain = () => {
             try {
                 const res = await axios.get(`${baseUrl}/api/v1/prod`);
                 setProductions(res.data.productions);
-            } catch(err) {
+            } catch (err) {
                 console.log(err);
             }
         }
@@ -39,7 +39,7 @@ export const ScreenMain = () => {
             valueFormatter: (params) => {
                 return new Date(params.value).toLocaleString().replace(',', '');
             },
-            headerAlign: 'center', 
+            headerAlign: 'center',
             align: 'center'
         },
         {
@@ -50,7 +50,7 @@ export const ScreenMain = () => {
             getActions: (params) => [
                 <GridActionsCellItem
                     // icon={<Button size='small' variant='contained' color='warning'>Start</Button>}
-                    icon={<PlayArrowIcon color='success'/>}
+                    icon={<PlayArrowIcon color='success' />}
                     label="Start"
                     onClick={() => {
                         console.log(params.row.name);
@@ -77,6 +77,11 @@ export const ScreenMain = () => {
                             pageSize={pageSize}
                             onPageSizeChange={(pageSize) => setPageSize(pageSize)}
                             rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                            initialState={{
+                                sorting: {
+                                    sortModel: [{ field: 'createdAt', sort: 'desc' }],
+                                },
+                            }}
                         />
                     </Box>
                 </Box>

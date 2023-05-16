@@ -20,6 +20,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Countdown from 'react-countdown';
 
 import { CustomSnackbar } from '../Snackbar/CustomSnackbar';
+import ShowLabels from './ShowLabels';
 
 export const ScreenProd = () => {
 
@@ -45,7 +46,6 @@ export const ScreenProd = () => {
         totalQty: ''
     });
     const baseUrl = process.env.REACT_APP_API_URL;
-
 
     // const handleSelectBatch = (batchNumber) => {
     //     setSelectedBatch(batchNumber);
@@ -74,7 +74,7 @@ export const ScreenProd = () => {
             try {
                 const res = await axios.get(`${baseUrl}/api/v1/prod/completed/${id}`);
                 setCompletedElements(res.data.materials);
-            } catch(err) {
+            } catch (err) {
                 console.log(err);
             }
         }
@@ -82,8 +82,6 @@ export const ScreenProd = () => {
         fetchBatchDetails();
         fetchCompletedElements();
     }, []);
-
-    console.log("batchDetails: " , batchDetails);
 
     useEffect(() => {
         if (selectedProduct.name) {
@@ -102,8 +100,8 @@ export const ScreenProd = () => {
     }, [selectedProduct]);
 
     useEffect(() => {
-        if(prodBoq.content) {
-            setCurrElement({...prodBoq.content[idx], totalQty: (prodBoq.content[idx]?.qty * batchQty).toFixed(2)});
+        if (prodBoq.content) {
+            setCurrElement({ ...prodBoq.content[idx], totalQty: parseFloat((prodBoq.content[idx]?.qty * batchQty).toFixed(2)) });
         }
     }, [prodBoq]);
 
@@ -114,7 +112,7 @@ export const ScreenProd = () => {
     const batchCount = Math.ceil(prodQty / batch_size);
     const batchQty = prodQty / batchCount;
     const generateBatchArray = (batchCount) => {
-        const gen = batchCount ? (new Array(batchCount-batchDetails.length).fill({ completed: false, currentIdx: 0 })) : [];
+        const gen = batchCount ? (new Array(batchCount - batchDetails.length).fill({ completed: false, currentIdx: 0 })) : [];
         const newArr = [...batchDetails, ...gen]
         return newArr;
     }
@@ -126,7 +124,7 @@ export const ScreenProd = () => {
     }, [batchArray]);
 
     useEffect(() => {
-        if(batchArray.length > 0) {
+        if (batchArray.length > 0) {
             setIdx(batchArray[selectedBatch].currentIdx);
         }
     }, [batchArray, selectedBatch])
@@ -135,20 +133,20 @@ export const ScreenProd = () => {
     // const batchCompletionArray = (new Array(batchCount).fill({ completed: false }));
 
     const handleSelectElement = () => {
-        if(prodBoq.content) {
-            setCurrElement({...prodBoq.content[idx], totalQty: (prodBoq.content[idx].qty * batchQty).toFixed(2)});
+        if (prodBoq.content) {
+            setCurrElement({ ...prodBoq.content[idx], totalQty: (prodBoq.content[idx].qty * batchQty).toFixed(2) });
         }
     }
 
     const saveCompletedElements = () => {
         axios.post(`${baseUrl}/api/v1/prod/completed/${id}`, {
-            materials: {...currElement, batch: selectedBatch+1, totalQty: currElement.qty * batchQty }
+            materials: { ...currElement, batch: selectedBatch + 1, totalQty: currElement.qty * batchQty }
         });
     }
 
     const updateSingleBatch = () => {
         const updatedBatches = [...allBatches];
-        if(updatedBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
+        if (updatedBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
             updatedBatches[selectedBatch].completed = true;
         }
         axios.post(`${baseUrl}/api/v1/prod/batch/${id}`, {
@@ -157,24 +155,23 @@ export const ScreenProd = () => {
                 completed: updatedBatches[selectedBatch].completed,
                 currentIdx: updatedBatches[selectedBatch].currentIdx
             }
-        }); 
+        });
     }
 
     const [value, setValue] = useState('1');
-    
+
     const handleTabChange = (e, newValue) => {
         setValue(newValue);
         setSelectedBatch(newValue - 1);
         setIdx(allBatches[newValue - 1].currentIdx);
         const newBatchElementIdx = allBatches[newValue - 1].currentIdx;
-        setCurrElement({...prodBoq.content[newBatchElementIdx], totalQty: (prodBoq.content[newBatchElementIdx]?.qty * batchQty).toFixed(2)});
-        console.log(currElement);
+        setCurrElement({ ...prodBoq.content[newBatchElementIdx], totalQty: (prodBoq.content[newBatchElementIdx]?.qty * batchQty).toFixed(2) });
     }
 
     const handleCompletion = () => { // ON COMPLETE ADD TO DB -> whole batchDetails array. Need to look into completedElements as well
         if (!allBatches[selectedBatch].completed) {
             // setCompletedElements([...completedElements, currElement]);
-            setCompletedElements([...completedElements, {...currElement, batch: selectedBatch+1, totalQty: (currElement.qty * batchQty).toFixed(2) }]);
+            setCompletedElements([...completedElements, { ...currElement, batch: selectedBatch + 1, totalQty: (currElement.qty * batchQty).toFixed(2) }]);
             console.log(idx);
             // console.log("check1",currElement);
             setIdx(idx + 1);
@@ -182,12 +179,12 @@ export const ScreenProd = () => {
             updateSingleBatch();
             handleSelectElement();
             handleClose();
-            setSelectedProduct({...selectedProduct, completedMaterials: [...completedElements, {...currElement, batch: selectedBatch+1, totalQty: (currElement?.qty * batchQty).toFixed(2) }] })
+            setSelectedProduct({ ...selectedProduct, completedMaterials: [...completedElements, { ...currElement, batch: selectedBatch + 1, totalQty: (currElement?.qty * batchQty).toFixed(2) }] })
             if (allBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
                 // setIdx(0);
                 const updatedBatch = [...allBatches];
                 // const single = {...updatedBatch[selectedBatch], completed: true, currentIdx: idx}
-                updatedBatch[selectedBatch] = {...updatedBatch[selectedBatch], completed: true, currentIdx: idx}
+                updatedBatch[selectedBatch] = { ...updatedBatch[selectedBatch], completed: true, currentIdx: idx }
                 // updatedBatch.splice(selectedBatch, 1, { completed: true, currentIdx: idx });
                 setAllBatches(updatedBatch);
                 // addBatchDetails();
@@ -198,7 +195,7 @@ export const ScreenProd = () => {
                 //     _id: '',
                 //     totalQty: ''
                 // });
-                navigate(`/screen/${id}/test/${selectedBatch+1}`);
+                navigate(`/screen/${id}/test/${selectedBatch + 1}`);
             }
         }
     };
@@ -217,7 +214,7 @@ export const ScreenProd = () => {
 
     const updateIdx = () => {
         const newArr = [...allBatches];
-        newArr[selectedBatch] = {...newArr[selectedBatch], currentIdx: idx + 1}
+        newArr[selectedBatch] = { ...newArr[selectedBatch], currentIdx: idx + 1 }
         setAllBatches(newArr);
     }
 
@@ -307,15 +304,15 @@ export const ScreenProd = () => {
                                                 Current Element
                                             </Typography>
                                             <Divider />
-                                                <div>
-                                                    <Typography gutterBottom variant='h4' component='div' fontWeight={500}>
-                                                        {currElement ? (currElement.name ? currElement.name : '-') : '-'}
-                                                    </Typography>
-                                                    <Divider />
-                                                    <Typography gutterBottom variant='h4' component='div' fontWeight={500}>
-                                                        {currElement.totalQty ? (currElement.totalQty==='NaN' ? null : currElement.totalQty) : '-'} 
-                                                    </Typography>
-                                                </div>
+                                            <div>
+                                                <Typography gutterBottom variant='h4' component='div' fontWeight={500}>
+                                                    {currElement ? (currElement.name ? currElement.name : '-') : '-'}
+                                                </Typography>
+                                                <Divider />
+                                                <Typography gutterBottom variant='h4' component='div' fontWeight={500}>
+                                                    {currElement.totalQty ? (currElement.totalQty === 'NaN' ? null : currElement.totalQty) : '-'}
+                                                </Typography>
+                                            </div>
                                         </Box>
                                     </Paper>
                                 </Grid>
@@ -357,11 +354,10 @@ export const ScreenProd = () => {
                                     />
                                 </Box>
                             </Backdrop>
+                            { allBatches[selectedBatch]?.completed ? <ShowLabels batchId={i+1}/> : null}
                         </TabPanel>
                     ))}
-                    {/* <TabPanel value='1'>Panel one</TabPanel>
-                    <TabPanel value='2'>Panel two</TabPanel>
-                    <TabPanel value='3'>Panel three</TabPanel> */}
+
                 </TabContext>
             </Container>
         </>

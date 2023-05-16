@@ -385,7 +385,7 @@ const saveLabelDetails = async (req, res) => { // not in use rn
     }
 }
 
-const _getAllBktLabels = async (req, res) => {
+const _getAllBktLabels = async (req, res) => { // to update and get labels [POST]
     const { id, batchId } = req.params;
     const { labelDetails } = req.body;
     try {
@@ -421,6 +421,29 @@ const _getAllBktLabels = async (req, res) => {
         });
 
     } catch (err) {
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
+const getAllLabels = async (req, res) => { // only to get labels [GET]
+    const { id, batchId } = req.params;
+    try {
+        // const production = await productionModel.findById(id);
+        // const batch = production.batches.find(x => x.batch == batchId);
+        const batch = await batchModel.findOne({ productionId: id, batch: batchId });
+        let reducedBktDetails = batch.bucketDetails.reduce((acc, curr) => {
+            acc.push(curr.bktLabelDetails);
+            return acc;
+        }, [])
+        res.status(200).json({
+            colorShade: batch.labelDetails.colorShade,
+            productLabelName: batch.labelDetails.productLabelName,
+            batchNo: batch.labelDetails.labelId,
+            bucketDetails: reducedBktDetails
+        })
+    } catch(err) {
         res.status(500).json({
             message: err.message
         })
@@ -477,5 +500,6 @@ module.exports = {
     addBucketDetails,
     saveLabelDetails,
     findBucketByLabelId,
-    _getAllBktLabels
+    _getAllBktLabels,
+    getAllLabels
 }

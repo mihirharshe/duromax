@@ -55,8 +55,6 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel }, ref
         </>
     );
 
-    console.log(labelDetails);
-
     return (
         // <div ref={ref}>
         //     <Box sx={{ minWidth: 275 }}>
