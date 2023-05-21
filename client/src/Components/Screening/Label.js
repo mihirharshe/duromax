@@ -58,7 +58,9 @@ const Label = () => {
         // let bktQty = prod.batches[batchId - 1].bucketDetails[batchId - 1].bktQty;
         // let density = prod.batches[batchId - 1].quality.density;
         const res = await axios.post(`${baseUrl}/api/v1/prod/bktlabels/${id}/${batchId}`, {
-            labelDetails: inputLabelDetails
+            labelDetails: inputLabelDetails,
+            stage: 'Finished',
+            completed: true
         })
         if (res.status === 200) {
             setLoading(false);

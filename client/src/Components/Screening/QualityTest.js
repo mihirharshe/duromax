@@ -50,7 +50,8 @@ export const QualityTest = () => {
         try {
             await axios.put(`${baseUrl}/api/v1/prod/batch/${id}`, {
                 batch: batchId - 0,
-                quality
+                quality,
+                stage: 'BucketFilling'
             });
             setOpen(true);
             navigate(`/screen/${id}/bktFill/${batchId}`);

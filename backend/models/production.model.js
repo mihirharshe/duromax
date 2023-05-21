@@ -30,6 +30,12 @@ const batchSchema = Schema({
         type: Boolean,
         default: false
     },
+    stage: {
+        type: String,
+        enum: ['Screening', 'QualityTesting', 'BucketFilling', 'Labelling', 'Finished'],
+        default: 'Screening',
+        required: true
+    },
     quality: {
         hegmen: Number,
         viscosity: Number,

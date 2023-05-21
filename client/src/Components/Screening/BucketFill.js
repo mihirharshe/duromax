@@ -57,7 +57,7 @@ export const BucketFill = () => {
         e.preventDefault();
 
         Object.entries(bucketData).map(data => {
-            if(!data[1]["bktNo"] || !data[1]["bktQty"]) return;
+            if(!data[1]["bktNo"] || !data[1]["bktQty"] || data[1]["bktNo"] == 0 || data[1]["bktQty"] == 0) return;
             let obj = {
                 bktId: data[0],
                 bktNo: parseInt(data[1]["bktNo"]),
@@ -68,7 +68,8 @@ export const BucketFill = () => {
         });
 
         const res = await axios.put(`${baseUrl}/api/v1/prod/add-bkts/${id}/${batchId}`, {
-            bucketDetails: updates
+            bucketDetails: updates,
+            stage: 'Labelling'
         });
         if(res.status === 200) {
             setOpen(true);
