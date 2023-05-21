@@ -87,9 +87,8 @@ export const ScreenProd = () => {
         if (selectedProduct.name) {
             const fetchBoq = async () => {
                 try {
-                    const res = await axios.get(`${baseUrl}/api/v1/boq/name/${selectedProduct.name}`);
+                    const res = await axios.get(`${baseUrl}/api/v1/boq/name/${encodeURIComponent(selectedProduct.name)}`);
                     setProdBoq(res.data.boq);
-                    // setCurrElement({...res.data.boq.content[idx], totalQty: res.data.boq.content[idx].qty * batchQty});
                 }
                 catch (err) {
                     console.log(err);
@@ -106,13 +105,12 @@ export const ScreenProd = () => {
     }, [prodBoq]);
 
 
-
     const batch_size = prodBoq.batch_size;
     const prodQty = selectedProduct.qty;
     const batchCount = Math.ceil(prodQty / batch_size);
     const batchQty = prodQty / batchCount;
     const generateBatchArray = (batchCount) => {
-        const gen = batchCount ? (new Array(batchCount - batchDetails.length).fill({ completed: false, currentIdx: 0 })) : [];
+        const gen = batchCount ? (new Array(batchCount - batchDetails.length).fill({ completed: false, currentIdx: 0, stage: 'Screening' })) : [];
         const newArr = [...batchDetails, ...gen]
         return newArr;
     }
@@ -129,31 +127,30 @@ export const ScreenProd = () => {
         }
     }, [batchArray, selectedBatch])
 
-
-    // const batchCompletionArray = (new Array(batchCount).fill({ completed: false }));
-
     const handleSelectElement = () => {
         if (prodBoq.content) {
             setCurrElement({ ...prodBoq.content[idx], totalQty: (prodBoq.content[idx].qty * batchQty).toFixed(2) });
         }
     }
 
-    const saveCompletedElements = () => {
-        axios.post(`${baseUrl}/api/v1/prod/completed/${id}`, {
+    const saveCompletedElements = async () => {
+        await axios.post(`${baseUrl}/api/v1/prod/completed/${id}`, {
             materials: { ...currElement, batch: selectedBatch + 1, totalQty: currElement.qty * batchQty }
         });
     }
 
-    const updateSingleBatch = () => {
+    const updateSingleBatch = async () => {
         const updatedBatches = [...allBatches];
         if (updatedBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
-            updatedBatches[selectedBatch].completed = true;
+            updatedBatches[selectedBatch].completed = false;
+            updatedBatches[selectedBatch].stage = 'QualityTesting'
         }
-        axios.post(`${baseUrl}/api/v1/prod/batch/${id}`, {
+        await axios.post(`${baseUrl}/api/v1/prod/batch/${id}`, {
             batchIdx: selectedBatch,
             batchDetails: {
                 completed: updatedBatches[selectedBatch].completed,
-                currentIdx: updatedBatches[selectedBatch].currentIdx
+                currentIdx: updatedBatches[selectedBatch].currentIdx,
+                stage: updatedBatches[selectedBatch].stage
             }
         });
     }
@@ -168,33 +165,19 @@ export const ScreenProd = () => {
         setCurrElement({ ...prodBoq.content[newBatchElementIdx], totalQty: (prodBoq.content[newBatchElementIdx]?.qty * batchQty).toFixed(2) });
     }
 
-    const handleCompletion = () => { // ON COMPLETE ADD TO DB -> whole batchDetails array. Need to look into completedElements as well
-        if (!allBatches[selectedBatch].completed) {
-            // setCompletedElements([...completedElements, currElement]);
+    const handleCompletion = async () => { // ON COMPLETE ADD TO DB -> whole batchDetails array. Need to look into completedElements as well
+        if (allBatches[selectedBatch].stage === 'Screening') {
             setCompletedElements([...completedElements, { ...currElement, batch: selectedBatch + 1, totalQty: (currElement.qty * batchQty).toFixed(2) }]);
-            console.log(idx);
-            // console.log("check1",currElement);
             setIdx(idx + 1);
-            saveCompletedElements();
-            updateSingleBatch();
+            await saveCompletedElements();
+            await updateSingleBatch();
             handleSelectElement();
             handleClose();
             setSelectedProduct({ ...selectedProduct, completedMaterials: [...completedElements, { ...currElement, batch: selectedBatch + 1, totalQty: (currElement?.qty * batchQty).toFixed(2) }] })
             if (allBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
-                // setIdx(0);
                 const updatedBatch = [...allBatches];
-                // const single = {...updatedBatch[selectedBatch], completed: true, currentIdx: idx}
-                updatedBatch[selectedBatch] = { ...updatedBatch[selectedBatch], completed: true, currentIdx: idx }
-                // updatedBatch.splice(selectedBatch, 1, { completed: true, currentIdx: idx });
+                updatedBatch[selectedBatch] = { ...updatedBatch[selectedBatch], completed: false, currentIdx: idx, stage: 'QualityTesting' }
                 setAllBatches(updatedBatch);
-                // addBatchDetails();
-                // setCurrElement({
-                //     name: '',
-                //     qty: '',
-                //     mixTime: '',
-                //     _id: '',
-                //     totalQty: ''
-                // });
                 navigate(`/screen/${id}/test/${selectedBatch + 1}`);
             }
         }
@@ -219,6 +202,21 @@ export const ScreenProd = () => {
     }
 
     const handleStart = () => {
+        if (allBatches[selectedBatch].stage != 'Screening') {
+            switch(allBatches[selectedBatch].stage) {
+                case 'QualityTesting':
+                    navigate(`/screen/${id}/test/${selectedBatch + 1}`);
+                    break;
+                case 'BucketFilling':
+                    navigate(`/screen/${id}/bktFill/${selectedBatch + 1}`);
+                    break;
+                case 'Labelling':
+                    navigate(`/screen/${id}/label/${selectedBatch + 1}`);
+                    break;
+                default:
+                    break;
+            }
+        }
         setBackdropOpen(!backdropOpen);
         setTime(Date.now());
         // setIdx(idx + 1);
