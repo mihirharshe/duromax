@@ -34,8 +34,20 @@ export const Production = () => {
         desc: ''
     });
     const [allBoq, setAllBoq] = useState([]);
+    const [selectedBoq, setSelectedBoq] = useState();
+    const [updatedBoqContent, setUpdatedBoqContent] = useState([]);
     const [packSizeError, setPackSizeError] = useState(false);
     const [packSizeErrorText, setPackSizeErrorText] = useState('');
+    const [rmAvailableError, setRMAvailableError] = useState(false);
+    const [rmAvailableErrorText, setRMAvailableErrorText] = useState('');
+
+    useEffect(() => {
+        const fetchExtendedBoqContent = async () => {
+            let res = await axios.get(`${baseUrl}/api/v1/prod/boqContent/${selectedBoq._id.toString()}`);
+            setUpdatedBoqContent(res.data.updatedContent);
+        };
+        fetchExtendedBoqContent();
+    }, [selectedBoq])
 
     const resetValues = () => {
         setData({
@@ -45,6 +57,7 @@ export const Production = () => {
             pack_size: '',
             desc: ''
         })
+        setRMAvailableError(false);
         setPackSizeError(false);
     }
 
@@ -78,6 +91,7 @@ export const Production = () => {
 
     const handleDialogSubmit = async (e) => {
         e.preventDefault();
+        if (setRMAvailableError) return;
         try {
             if(!data.qty || !data.boqId) {
                 setPackSizeErrorText('Either qty or boq is missing');
@@ -101,8 +115,23 @@ export const Production = () => {
         }
     }
 
+    const checkMaterialAvailability = async (e) => {
+        let inputQty = e.target.value;
+        updatedBoqContent.map((rmContent) => {
+            let qtyRequiredKG = (rmContent.qty * inputQty) / 1000;
+            if (rmContent.availableQty - qtyRequiredKG < 0) {
+                setRMAvailableError(true);
+                setRMAvailableErrorText(`Insufficient quantity of ${rmContent.name}`);
+            } else {
+                setRMAvailableError(false);
+                setRMAvailableErrorText('');
+            }
+        });
+    }
+
     const handleSelectBOQ = (e) => {
         const selectedItem = allBoq.find(item => item.name == e.target.value)
+        setSelectedBoq(selectedItem);
         setData({
             ...data,
             name: e.target.value,
@@ -217,6 +246,9 @@ export const Production = () => {
                             type="number"
                             value={data.qty}
                             onChange={handleInputChange}
+                            onBlur={checkMaterialAvailability}
+                            error={rmAvailableError}
+                            helperText={rmAvailableError && rmAvailableErrorText}
                             fullWidth
                         />
                         <TextField

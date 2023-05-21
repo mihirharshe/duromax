@@ -182,7 +182,7 @@ const getBatch = async (req, res) => {
 const updateBatch = async (req, res) => {
     const { id } = req.params;
     console.log(req.body);
-    const { batch, quality, bkt, completed, currentIdx } = req.body;
+    const { batch, quality, bkt, completed, currentIdx, stage } = req.body;
     try {
         const production = await productionModel.findById(id);
         const batches = production.batches.find(b => b.batch === batch);
@@ -198,6 +198,9 @@ const updateBatch = async (req, res) => {
         }
         if (currentIdx) {
             batches.currentIdx = currentIdx;
+        }
+        if (stage) {
+            batches.stage = stage;
         }
         await production.save();
         res.status(200).json({
@@ -251,7 +254,7 @@ const getCompletedMaterails = async (req, res) => {
 
 const addBucketDetails = async (req, res) => {
     const { id, batchId } = req.params;
-    let { bucketDetails } = req.body;
+    let { bucketDetails, stage } = req.body;
     try {
         // const production = await productionModel.findByIdAndUpdate(id, { $set: { bucketDetails } });
         if (!bucketDetails || bucketDetails.length == 0) throw new Error("Bucket details cannot be empty");
@@ -288,6 +291,7 @@ const addBucketDetails = async (req, res) => {
             }
         }
         batch.bucketDetails = bucketDetails;
+        batch.stage = stage;
         bucketDetails.forEach(async (bucket) => {
             await bucketDetailsModel.findOneAndUpdate(
                 { 'bktLabelDetails.labelId': bucket.labelId },
@@ -331,6 +335,7 @@ const addBucketDetails = async (req, res) => {
                 batch: batch.batch,
                 currentIdx: batch.currentIdx,
                 completed: batch.completed,
+                stage: batch.stage,
                 quality: batch.quality,
                 bucketDetails: batch.bucketDetails,
                 labelDetails: newLabelDetails
@@ -367,6 +372,7 @@ const saveLabelDetails = async (req, res) => { // not in use rn
                 batch: batch.batch,
                 currentIdx: batch.currentIdx,
                 completed: batch.completed,
+                stage: batch.stage,
                 quality: batch.quality,
                 bucketDetails: batch.bucketDetails,
                 labelDetails: batch.labelDetails
@@ -387,7 +393,7 @@ const saveLabelDetails = async (req, res) => { // not in use rn
 
 const _getAllBktLabels = async (req, res) => { // to update and get labels [POST]
     const { id, batchId } = req.params;
-    const { labelDetails } = req.body;
+    const { labelDetails, stage, completed } = req.body;
     try {
         const production = await productionModel.findById(id);
         const batch = production.batches.find(x => x.batch == batchId);
@@ -396,6 +402,8 @@ const _getAllBktLabels = async (req, res) => { // to update and get labels [POST
         let colorShade = labelDetails.colorShade ?? "";
         await stockInventoryBucketsModel.updateMany({ "batchId": batch.labelDetails.labelId }, { $set: { "prodName": prodName, "colorShade": colorShade } });
         batch.labelDetails = Object.assign(batch.labelDetails, labelDetails); // saving colorShade
+        batch.stage = stage;
+        batch.completed = completed;
 
         await production.save();
         await batchModel.findOneAndUpdate(
@@ -404,6 +412,7 @@ const _getAllBktLabels = async (req, res) => { // to update and get labels [POST
                 batch: batch.batch,
                 currentIdx: batch.currentIdx,
                 completed: batch.completed,
+                stage: batch.stage,
                 quality: batch.quality,
                 bucketDetails: batch.bucketDetails,
                 labelDetails: batch.labelDetails
@@ -484,6 +493,46 @@ const findBucketByLabelId = async (req, res) => {
     }
 }
 
+const getRawMaterialsQtyByBoqId = async (req, res) => {
+    const { boqId } = req.params;
+    try {
+        let boq = await boqMainModel.findById(boqId);
+        if (!boq) {
+            res.status(404).json({
+                message: 'boq not found'
+            });
+        }
+
+        const rmNames = boq.content.map((item) => item.name);
+        const rawMaterials = await rawMaterialModel.find({ name: { $in: rmNames } });
+
+        const updatedContent = boq.content.map((item) => {
+            const rawMaterial = rawMaterials.find((rm) => rm.name === item.name);
+            if (rawMaterial) {
+                return {
+                    _id: item._id,
+                    name: item.name,
+                    qty: item.qty,
+                    mixTime: item.mixTime,
+                    availableQty: rawMaterial.qty
+                }
+            }
+            return item;
+        })
+
+        res.status(200).json({
+            message: 'Successfully acquired raw materials qty from boqId',
+            updatedContent: updatedContent
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            error: err
+        });
+    }
+}
+
 module.exports = {
     getAllProductionInserts,
     getOneProductionInsert,
@@ -501,5 +550,6 @@ module.exports = {
     saveLabelDetails,
     findBucketByLabelId,
     _getAllBktLabels,
-    getAllLabels
+    getAllLabels,
+    getRawMaterialsQtyByBoqId
 }

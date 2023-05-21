@@ -17,7 +17,8 @@ const {
     _getAllBktLabels,
     findBucketByLabelId,
     getBatch,
-    getAllLabels} = require('../controllers/production.controller');
+    getAllLabels,
+    getRawMaterialsQtyByBoqId} = require('../controllers/production.controller');
 
 router.get('/', async(req, res) => {
     await getAllProductionInserts(req, res);
@@ -81,10 +82,14 @@ router.post('/bktlabels/:id/:batchId', async(req, res) => {
 
 router.get('/stock-out/:bktLabelId', async(req, res) => {
     await findBucketByLabelId(req, res);
-})
+});
 
 router.get('/labels/:id/:batchId', async (req, res) => {
     await getAllLabels(req, res);
+});
+
+router.get('/boqContent/:boqId', async (req, res) => {
+    await getRawMaterialsQtyByBoqId(req, res);
 })
 
 module.exports = router;
