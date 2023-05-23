@@ -46,7 +46,8 @@ export const Production = () => {
             let res = await axios.get(`${baseUrl}/api/v1/prod/boqContent/${selectedBoq._id.toString()}`);
             setUpdatedBoqContent(res.data.updatedContent);
         };
-        fetchExtendedBoqContent();
+        if (selectedBoq)
+            fetchExtendedBoqContent();
     }, [selectedBoq])
 
     const resetValues = () => {
@@ -91,7 +92,7 @@ export const Production = () => {
 
     const handleDialogSubmit = async (e) => {
         e.preventDefault();
-        if (setRMAvailableError) return;
+        if (rmAvailableError) return;
         try {
             if(!data.qty || !data.boqId) {
                 setPackSizeErrorText('Either qty or boq is missing');
