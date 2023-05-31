@@ -139,8 +139,8 @@ const Label = () => {
                         {isLoaded &&
                             labelDetails.map((label, index) => {
                                 return (
-                                    <div>
-                                        <FinalLabel key={index} labelDetails={label} batchId={batchId} commonLabel={commonLabel} />
+                                    <div key={index}>
+                                        <FinalLabel labelDetails={label} batchId={batchId} commonLabel={commonLabel} />
                                     </div>
                                 )
                             })
