@@ -61,7 +61,7 @@ export const BucketFill = () => {
             let obj = {
                 bktId: data[0],
                 bktNo: parseInt(data[1]["bktNo"]),
-                bktQty: parseInt(data[1]["bktQty"])
+                bktQty: parseFloat(data[1]["bktQty"])
             };
             if(!updates.some(el => el.bktId === obj.bktId))
                 updates.push(obj);
