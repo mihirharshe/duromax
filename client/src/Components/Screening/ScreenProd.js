@@ -4,28 +4,23 @@ import Container from '@mui/system/Container';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import { Divider } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Backdrop from '@mui/material/Backdrop';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import CircularProgress from '@mui/material/CircularProgress';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tab from '@mui/material/Tab';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { useNavigate, useParams } from 'react-router-dom';
 import Countdown from 'react-countdown';
-
 import { CustomSnackbar } from '../Snackbar/CustomSnackbar';
 import ShowLabels from './ShowLabels';
 
 export const ScreenProd = () => {
 
     const { id } = useParams();
-    const countdownRef = useRef();
+    const countdownRef = useRef(null);
     let navigate = useNavigate();
     const [time, setTime] = useState(Date.now());
 
@@ -46,10 +41,6 @@ export const ScreenProd = () => {
         totalQty: ''
     });
     const baseUrl = process.env.REACT_APP_API_URL;
-
-    // const handleSelectBatch = (batchNumber) => {
-    //     setSelectedBatch(batchNumber);
-    // }
 
     useEffect(() => {
         const fetchProd = async () => {
@@ -81,6 +72,9 @@ export const ScreenProd = () => {
         fetchProd();
         fetchBatchDetails();
         fetchCompletedElements();
+
+        setValue(1);
+        setSelectedBatch(0);
     }, []);
 
     useEffect(() => {
@@ -119,11 +113,11 @@ export const ScreenProd = () => {
 
     useEffect(() => {
         setAllBatches(batchArray);
-    }, [batchArray]);
-
-    useEffect(() => {
         if (batchArray.length > 0) {
-            setIdx(batchArray[selectedBatch].currentIdx);
+            const newIdx = batchArray[selectedBatch].currentIdx;
+            setIdx(newIdx);
+            if (prodBoq.content[newIdx])
+                setCurrElement({ ...prodBoq.content[newIdx], totalQty: (prodBoq.content[newIdx]?.qty * batchQty).toFixed(2) });
         }
     }, [batchArray, selectedBatch])
 
@@ -167,7 +161,7 @@ export const ScreenProd = () => {
 
     const handleCompletion = async () => { // ON COMPLETE ADD TO DB -> whole batchDetails array. Need to look into completedElements as well
         if (allBatches[selectedBatch].stage === 'Screening') {
-            setCompletedElements([...completedElements, { ...currElement, batch: selectedBatch + 1, totalQty: (currElement.qty * batchQty).toFixed(2) }]);
+            setCompletedElements([...completedElements, { ...currElement, batch: selectedBatch + 1, totalQty: formatDisplayNumber((currElement.qty * batchQty).toFixed(2)) }]);
             setIdx(idx + 1);
             await saveCompletedElements();
             await updateSingleBatch();
@@ -182,7 +176,6 @@ export const ScreenProd = () => {
             }
         }
     };
-
 
     const renderer = ({ api, formatted }) => {
         const { minutes, seconds } = formatted;
@@ -203,7 +196,7 @@ export const ScreenProd = () => {
 
     const handleStart = () => {
         if (allBatches[selectedBatch].stage != 'Screening') {
-            switch(allBatches[selectedBatch].stage) {
+            switch (allBatches[selectedBatch].stage) {
                 case 'QualityTesting':
                     navigate(`/screen/${id}/test/${selectedBatch + 1}`);
                     break;
@@ -219,19 +212,31 @@ export const ScreenProd = () => {
         }
         setBackdropOpen(!backdropOpen);
         setTime(Date.now());
-        // setIdx(idx + 1);
-        // const updatedIdx = [...allBatches];
-        // updatedIdx.splice(selectedBatch, 1, { success: false, currentIdx: idx, content: prodBoq.content });
-        // setAllBatches(updatedIdx);    
         updateIdx();
         setTimeout(() => {
-            countdownRef.current.api.start();
+            countdownRef.current.start();
         }, 1);
+    }
+
+    const setCountdownRef = (countdown) => {
+        if (countdown) {
+            countdownRef.current = countdown.getApi();
+        }
     }
 
     const handleClose = () => {
         setBackdropOpen(false);
     }
+
+    const formatDisplayNumber = (input) => {
+        if (input === 'NaN' || input === null || input === undefined)
+            return "-";
+
+        const numberValue = parseFloat(input);
+        const isWholeNumber = Number.isInteger(numberValue);
+
+        return isWholeNumber ? Math.floor(numberValue) : numberValue;
+    };
 
 
     return (
@@ -308,7 +313,7 @@ export const ScreenProd = () => {
                                                 </Typography>
                                                 <Divider />
                                                 <Typography gutterBottom variant='h4' component='div' fontWeight={500}>
-                                                    {currElement.totalQty ? (currElement.totalQty === 'NaN' ? null : currElement.totalQty) : '-'}
+                                                    {currElement.totalQty && formatDisplayNumber(currElement.totalQty)}
                                                 </Typography>
                                             </div>
                                         </Box>
@@ -343,16 +348,16 @@ export const ScreenProd = () => {
                             <Backdrop open={backdropOpen} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                     <Countdown
-                                        date={time + ((currElement.mixTime === 0 ? currElement.mixTime + 0.9 : currElement.mixTime) * 1000)}
+                                        date={time + ((currElement.mixTime === 0 ? currElement.mixTime + 1 : currElement.mixTime) * 1000)}
                                         onComplete={handleCompletion}
                                         autoStart={false}
                                         key={time}
-                                        ref={countdownRef}
+                                        ref={setCountdownRef}
                                         renderer={renderer}
                                     />
                                 </Box>
                             </Backdrop>
-                            { allBatches[selectedBatch]?.completed ? <ShowLabels batchId={i+1}/> : null}
+                            {allBatches[selectedBatch]?.completed ? <ShowLabels batchId={i + 1} /> : null}
                         </TabPanel>
                     ))}
 
