@@ -12,12 +12,12 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel }, ref
 
     const tableStyle = {
         backgroundColor: "white",
-        fontSize: "22px",
-        padding: "20px"
+        fontSize: "18px",
+        padding: "16px"
     }
 
     const divStyle = {
-        width: "fit-content",
+        width: "407.88px",
         backgroundColor: "white",
         margin: "0 auto",
         border: "1px solid black",
@@ -36,24 +36,24 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel }, ref
 
     const componentRef = useRef();
 
-    const card = (
-        <>
-            <CardContent>
-                <Typography variant="h6" component="div">
-                    PRODUCT - {commonLabel.product}
-                </Typography>
-                <Typography variant="h6">
-                    COLOR SHADE - {commonLabel.colorShade}
-                </Typography>
-                <Typography variant="h6" component="div">
-                    QTY - {labelDetails.qtyKg?.toFixed(2)} Kg / {labelDetails.qtyL?.toFixed(2)} Ltr
-                </Typography>
-                <Typography variant="h6" component="div">
-                    BATCH NO. - {commonLabel.batchNo}
-                </Typography>
-            </CardContent>
-        </>
-    );
+    // const card = (
+    //     <>
+    //         <CardContent>
+    //             <Typography variant="h6" component="div">
+    //                 PRODUCT - {commonLabel.product}
+    //             </Typography>
+    //             <Typography variant="h6">
+    //                 COLOR SHADE - {commonLabel.colorShade}
+    //             </Typography>
+    //             <Typography variant="h6" component="div">
+    //                 QTY - {labelDetails.qtyKg?.toFixed(2)} Kg / {labelDetails.qtyL?.toFixed(2)} Ltr
+    //             </Typography>
+    //             <Typography variant="h6" component="div">
+    //                 BATCH NO. - {commonLabel.batchNo}
+    //             </Typography>
+    //         </CardContent>
+    //     </>
+    // );
 
     return (
         // <div ref={ref}>
@@ -78,12 +78,17 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel }, ref
                         <tr>
                             <td>QUANTITY</td>
                             <td>:</td>
-                            <td>{labelDetails.qtyKg?.toFixed(2)}Kg / {labelDetails.qtyL?.toFixed(2)}Ltr</td>
+                            <td>{parseFloat(labelDetails.qtyKg)?.toFixed(3)}Kg / {parseFloat(labelDetails.qtyL)?.toFixed(3)}Ltr</td>
                         </tr>
                         <tr>
                             <td>BATCH NO.</td>
                             <td>:</td>
                             <td>{commonLabel.batchNo}</td>
+                        </tr>
+                        <tr>
+                            <td>PART</td>
+                            <td>:</td>
+                            <td>{commonLabel.part}</td>
                         </tr>
                     </tbody>
                 </table>

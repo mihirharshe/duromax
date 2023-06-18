@@ -21,7 +21,7 @@ export const AdjustBkt = () => {
     const [records, setRecords] = useState([]);
     const [allBkt, setAllBkt] = useState([]);
     const [singleBkt, setSingleBkt] = useState([]);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const [open, setOpen] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [qty, setQty] = useState('');
@@ -57,12 +57,12 @@ export const AdjustBkt = () => {
         setOpenDialog(true);
     }
 
-    // console.log(singleBkt);
     const handleDialogClose = () => {
         setOpenDialog(false);
         setDesc('');
         setSingleBkt('');
         setQty('');
+        setOperation('');
     }
 
     const handleDialogSubmit = async (e) => {
@@ -75,7 +75,6 @@ export const AdjustBkt = () => {
             action: operation,
             description: desc,
         }
-        console.log(data)
         // setRecords([...records, data])
         try {
             const res = await axios.post(`${baseUrl}/api/v1/adj-bkt/add`, data);
@@ -90,7 +89,7 @@ export const AdjustBkt = () => {
             console.log(err);
             setOpen(true);
             setSeverity('error');
-            setMessage(err.message);
+            setMessage(err.response.data.message);
         }
         handleDialogClose();
     }
@@ -120,16 +119,21 @@ export const AdjustBkt = () => {
                     <Box component='span'>List of Records :</Box>
                     <Button size='small' variant='contained' onClick={handleDialogOpen}>Add record</Button>
                 </Box>
-                <Box style={{ display: 'flex', height: '100%', width: '100%', backgroundColor: 'white' }}>
+                <Box style={{ display: 'flex', height: '80vh', width: '100%', backgroundColor: 'white' }}>
                     <Box style={{ flexGrow: 1 }}>
                         <DataGrid
-                            autoHeight
+                            // autoHeight
                             getRowId={(row) => row._id}
                             rows={records}
                             columns={columns}
                             pageSize={pageSize}
                             onPageSizeChange={(pageSize) => setPageSize(pageSize)}
                             rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                            initialState={{
+                                sorting: {
+                                    sortModel: [{ field: 'createdAt', sort: 'desc' }],
+                                }
+                            }}
                         />
                     </Box>
                 </Box>

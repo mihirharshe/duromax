@@ -19,9 +19,13 @@ const getRecords = async (req, res) => {
 const addRecord = async (req, res) => {
     const { name, qtyChange, action, description, id } = req.body;
     try {
+        const bkt = await bucketModel.findOne({ name });
         if(action === 'Addition') {
             await bucketModel.findOneAndUpdate({ name }, { $inc: { qty: qtyChange, addedQty: qtyChange } });
         } else if(action === 'Subtraction') {
+            if (bkt.qty - qtyChange < 0) {
+                throw new Error(`Quantity to be subtracted cannot exceed available qty: ${bkt.qty}`);
+            }
             await bucketModel.findOneAndUpdate({ name }, { $inc: { qty: -qtyChange, subtractedQty: qtyChange } });
         }
         const record = await adjustBktModel.create({

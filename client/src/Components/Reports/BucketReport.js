@@ -8,7 +8,7 @@ const BucketReport = () => {
 
     let navigate = useNavigate();
 
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const [buckets, setBuckets] = useState([]);
     // const [selectedRM, setSelectedRM] = useState();
     const baseUrl = process.env.REACT_APP_API_URL;
@@ -28,7 +28,7 @@ const BucketReport = () => {
     }
 
     const columns = [
-        { field: 'name', type: 'string', headerName: 'Bucket', flex: 1,headerAlign: 'center', align: 'center' },
+        { field: 'name', type: 'string', headerName: 'Bucket', flex: 1, headerAlign: 'center', align: 'center' },
         { field: 'totalQty', type: 'number', headerName: 'Total Qty', flex: 1, headerAlign: 'center', align: 'center' },
         { field: 'usedQty', type: 'number', headerName: 'Used Qty', flex: 1, headerAlign: 'center', align: 'center' },
         { field: 'stockQty', type: 'number', headerName: 'Stock Qty', flex: 1, headerAlign: 'center', align: 'center' },
@@ -68,17 +68,20 @@ const BucketReport = () => {
                     <Button variant="contained" onClick={findSales}>SUBMIT</Button>
                 </Box>
             </Box> */}
-
-            <DataGrid
-                autoHeight
-                getRowId={(item) => item._id}
-                rows={buckets}
-                columns={columns}
-                pageSize={pageSize}
-                onPageSizeChange={(pageSize) => setPageSize(pageSize)}
-                rowsPerPageOptions={[5, 10, 20, 50, 100]}
-                sx={{ backgroundColor: 'white' }}
-            />
+            <Box style={{ display: 'flex', width: '100%', height: '80vh', backgroundColor: 'white', margin: '0 auto' }}>
+                <Box style={{ display: 'flex', flexGrow: 1 }} >
+                    <DataGrid
+                        // autoHeight
+                        getRowId={(item) => item._id}
+                        rows={buckets}
+                        columns={columns}
+                        pageSize={pageSize}
+                        onPageSizeChange={(pageSize) => setPageSize(pageSize)}
+                        rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                        sx={{ backgroundColor: 'white' }}
+                    />
+                </Box>
+            </Box>
 
 
         </Container>

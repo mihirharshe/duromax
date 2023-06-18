@@ -31,7 +31,6 @@ export const BatchReport = React.forwardRef(({}, ref) => {
         }
         fetchBatch();
     }, []);
-
     // let productionDate = ((new Date(batchReport?.updatedAt)).toLocaleDateString("en-GB", {
     //     day: "2-digit",
     //     month: "2-digit",
@@ -73,7 +72,7 @@ export const BatchReport = React.forwardRef(({}, ref) => {
                             <tbody>
                                 <tr>
                                     <th style={cellStyle}>Product Name: </th>
-                                    <td style={cellStyle}>{batchReport?.labelDetails?.productLabelName}</td>
+                                    <td style={cellStyle}>{batchReport?.productionDetails?.productLabelName}</td>
                                 </tr>
                                 <tr>
                                     <th style={cellStyle}>Product ID: </th>
@@ -93,7 +92,7 @@ export const BatchReport = React.forwardRef(({}, ref) => {
                                 </tr>
                                 <tr>
                                     <th style={cellStyle}>Appearance: </th>
-                                    <td style={cellStyle}>{batchReport?.labelDetails?.colorShade}</td>
+                                    <td style={cellStyle}>{batchReport?.productionDetails?.colorShade}</td>
                                 </tr>
                                 <tr>
                                     <th style={cellStyle}>Quantity: </th>

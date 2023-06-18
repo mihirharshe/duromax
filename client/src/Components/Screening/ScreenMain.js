@@ -10,7 +10,7 @@ export const ScreenMain = () => {
 
     let navigate = useNavigate();
 
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const [productions, setProductions] = useState([]);
     const baseUrl = process.env.REACT_APP_API_URL;
 
@@ -43,6 +43,18 @@ export const ScreenMain = () => {
             align: 'center'
         },
         {
+            field: 'status',
+            type: 'string',
+            headerName: 'Status',
+            flex: 1,
+            headerAlign: 'center',
+            align: 'center',
+            valueFormatter: (params) => {
+                if (params.value)
+                    return params.value.toUpperCase();
+            }
+        },
+        {
             field: 'actions',
             type: 'actions',
             headerName: 'Actions',
@@ -53,11 +65,16 @@ export const ScreenMain = () => {
                     icon={<PlayArrowIcon color='success' />}
                     label="Start"
                     onClick={() => {
-                        console.log(params.row.name);
                         navigate(`/screen/${params.id}`);
                     }}
                 />,
             ]
+        },
+        {
+            field: 'priority',
+            type: 'string',
+            headerName: 'Priority',
+            minWidth: 100,
         }
     ], []);
 
@@ -67,10 +84,10 @@ export const ScreenMain = () => {
                 <Box display='flex' alignItems='center' justifyContent='space-between' marginBottom={1}>
                     <Box component='span'>List of screening :</Box>
                 </Box>
-                <Box style={{ display: 'flex', height: '100%', width: '100%', backgroundColor: 'white' }}>
+                <Box style={{ display: 'flex', height: '80vh', width: '100%', backgroundColor: 'white' }}>
                     <Box style={{ flexGrow: 1 }}>
                         <DataGrid
-                            autoHeight
+                            // autoHeight
                             getRowId={(prod) => prod._id}
                             rows={productions}
                             columns={columns}
@@ -80,7 +97,13 @@ export const ScreenMain = () => {
                             initialState={{
                                 sorting: {
                                     sortModel: [{ field: 'createdAt', sort: 'desc' }],
+                                    // sortModel: [{ field: 'priority', sort: 'asc' }]
                                 },
+                                columns: {
+                                    columnVisibilityModel: {
+                                        priority: false
+                                    }
+                                }
                             }}
                         />
                     </Box>

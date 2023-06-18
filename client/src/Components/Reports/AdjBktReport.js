@@ -8,7 +8,7 @@ const AdjBktReport = () => {
     const { id } = useParams();
 
     const [bktLC, setBktLC] = useState([]);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const [bktName, setBktName] = useState('');
 
     const baseUrl = process.env.REACT_APP_API_URL;
@@ -16,7 +16,7 @@ const AdjBktReport = () => {
     useEffect(() => {
         const fetchAdjBkt = async () => {
             const res = await axios.get(`${baseUrl}/api/v1/reports/buckets/${id}`, { validateStatus: false });
-            if(res.status == 404)
+            if (res.status == 404)
                 setBktLC([]);
             else {
                 setBktLC(res.data.bkt);
@@ -27,8 +27,8 @@ const AdjBktReport = () => {
     }, [])
 
     const columns = useMemo(() => [
-        { field: 'name', type: 'string', headerName: 'Name', flex: 0.25, headerAlign: 'center', align: 'center'},
-        { field: 'description', type: 'string', headerName: 'Description', flex: 0.25 , headerAlign: 'center', align: 'center'},
+        { field: 'name', type: 'string', headerName: 'Name', flex: 0.25, headerAlign: 'center', align: 'center' },
+        { field: 'description', type: 'string', headerName: 'Description', flex: 0.25, headerAlign: 'center', align: 'center' },
         { field: 'qtyChange', type: 'number', headerName: 'Qty adjusted', minWidth: 100, headerAlign: 'center', align: 'center' },
         {
             field: 'createdAt',
@@ -38,7 +38,7 @@ const AdjBktReport = () => {
             valueFormatter: (params) => {
                 return new Date(params.value).toLocaleString().replace(',', '');
             },
-            headerAlign: 'center', 
+            headerAlign: 'center',
             align: 'center'
         },
         { field: 'action', type: 'string', headerName: 'Operation', width: 120, headerAlign: 'center', align: 'center' }
@@ -61,17 +61,25 @@ const AdjBktReport = () => {
                     <Button variant="contained" onClick={findSales}>SUBMIT</Button>
                 </Box>
             </Box> */}
-
-            <DataGrid
-                autoHeight
-                getRowId={(item) => item._id}
-                rows={bktLC}
-                columns={columns}
-                pageSize={pageSize}
-                onPageSizeChange={(pageSize) => setPageSize(pageSize)}
-                rowsPerPageOptions={[5, 10, 20, 50, 100]}
-                sx={{ backgroundColor: 'white' }}
-            />
+            <Box style={{ display: 'flex', width: '100%', height: '80vh', backgroundColor: 'white', margin: '0 auto' }}>
+                <Box style={{ display: 'flex', flexGrow: 1 }} >
+                    <DataGrid
+                        // autoHeight
+                        getRowId={(item) => item._id}
+                        rows={bktLC}
+                        columns={columns}
+                        pageSize={pageSize}
+                        onPageSizeChange={(pageSize) => setPageSize(pageSize)}
+                        rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                        sx={{ backgroundColor: 'white' }}
+                        initialState={{
+                            sorting: {
+                                sortModel: [{ field: 'createdAt', sort: 'desc' }],
+                            }
+                        }}
+                    />
+                </Box>
+            </Box>
 
 
         </Container>

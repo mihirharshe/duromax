@@ -14,7 +14,7 @@ const SalesReport = () => {
     //     setQueryDate(currDate);
     // }, [])   
     const [is404, set404] = useState(false);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const baseUrl = process.env.REACT_APP_API_URL;
 
     const [soldBuckets, setSoldBuckets] = useState([]);
@@ -34,7 +34,7 @@ const SalesReport = () => {
         }
         let res = await axios.get(`${baseUrl}/api/v1/reports/sales?date=${queryDate}`, { validateStatus: false });
         console.log(res)
-        if(res.status == 404) {
+        if (res.status == 404) {
             set404(true);
             setSoldBuckets([])
         }
@@ -45,21 +45,22 @@ const SalesReport = () => {
     }
 
     const columns = [
-        { field: 'batchId', type: 'string', headerName: 'Batch ID', flex: 1 },
-        { field: 'boqName', type: 'string', headerName: 'BOQ Name', flex: 1 },
-        { field: 'prodName', type: 'string', headerName: 'Product Name', flex: 1 },
-        { field: 'bktQty', type: 'number', headerName: 'Qty (kg)', minWidth: 100 },
+        { field: 'batchId', type: 'string', headerName: 'Batch ID', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'boqName', type: 'string', headerName: 'BOQ Name', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'prodName', type: 'string', headerName: 'Product Name', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'soldTo', type: 'string', headerName: 'Customer', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'bktQty', type: 'number', headerName: 'Qty (kg)', minWidth: 100, headerAlign: 'center', align: 'center' },
     ]
 
     return (
         <>
             <Container maxWidth='lg' sx={{ marginTop: 2 }}>
-            <Box display='flex' alignItems='center' justifyContent='space-between' marginBottom={1}>
+                <Box display='flex' alignItems='center' justifyContent='space-between' marginBottom={1}>
                     <Box component='span'>SALES REPORT</Box>
                     {/* <Button size='small' variant='contained' onClick={handleDialogOpen}>Add item</Button> */}
                 </Box>
                 <Box style={{ display: 'flex', width: '100%', height: '100%', backgroundColor: 'white', margin: '0 auto' }}>
-                    <Box style={{ display:'flex', flexGrow: 1}} >
+                    <Box style={{ display: 'flex', flexGrow: 1 }} >
 
                         <DatePicker
                             label="Pick a date"
@@ -70,17 +71,20 @@ const SalesReport = () => {
                     </Box>
                 </Box>
                 {/* {is404 ? "No sales found for the above date" :  */}
-                    <DataGrid 
-                        autoHeight
-                        getRowId={(soldBuckets) => soldBuckets._id}
-                        rows={soldBuckets}
-                        columns={columns}
-                        pageSize={pageSize}
-                        onPageSizeChange={(pageSize) => setPageSize(pageSize)}
-                        rowsPerPageOptions={[5, 10, 20, 50, 100]}
-                        sx={{ backgroundColor: 'white' }}
-                    />
-
+                <Box style={{ display: 'flex', width: '100%', height: '80vh', backgroundColor: 'white', margin: '0 auto' }}>
+                    <Box style={{ display: 'flex', flexGrow: 1 }} >
+                        <DataGrid
+                            // autoHeight
+                            getRowId={(soldBuckets) => soldBuckets._id}
+                            rows={soldBuckets}
+                            columns={columns}
+                            pageSize={pageSize}
+                            onPageSizeChange={(pageSize) => setPageSize(pageSize)}
+                            rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                            sx={{ backgroundColor: 'white' }}
+                        />
+                    </Box>
+                </Box>
                 {/* } */}
             </Container>
         </>

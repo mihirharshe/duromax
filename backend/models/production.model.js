@@ -98,6 +98,18 @@ const productionSchema = Schema({
         type: String,
         required: true,
     },
+    productLabelName: {
+        type: String,
+        required: true
+    },
+    colorShade: {
+        type: String,
+        required: true
+    },
+    part: {
+        type: String,
+        required: true
+    },
     batches: {
         type: [batchSchema],
         required: false
@@ -105,6 +117,12 @@ const productionSchema = Schema({
     completedMaterials: {
         type: [completedSchema],
         required: false
+    },
+    status: {
+        type: String,
+        enum: ['Start', 'Processing', 'Completed'],
+        // default: 'Start',
+        // required: true
     }
 }, { timestamps: true });
 

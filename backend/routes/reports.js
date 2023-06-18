@@ -43,4 +43,12 @@ router.get('/buckets/:id', async (req, res) => {
     await reportController.getAdjBktReport(req, res);
 });
 
+router.get('/stock-out', async (req, res) => {
+    await reportController.getStockReports(req, res);
+});
+
+router.get('/stock-out/:transactionId', async (req, res) => {
+    await reportController.getSingleStockReport(req, res);
+});
+
 module.exports = router;

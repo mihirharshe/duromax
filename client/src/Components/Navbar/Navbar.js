@@ -37,6 +37,7 @@ import RequireAuth from '../Auth/RequireAuth';
 import PersistLogin from '../Auth/PersistLogin';
 import Label from '../Screening/Label';
 import { BatchReportPrintHelper } from '../Reports/BatchReport';
+import { StockReportPrintHelper } from '../Reports/StockOutReport';
 import { StockInventory } from '../Reports/StockInventory';
 import SalesReport from '../Reports/SalesReport';
 import RawMaterialReport from '../Reports/RawMaterialReport';
@@ -46,6 +47,9 @@ import AdjBktReport from '../Reports/AdjBktReport';
 import useLogout from '../../hooks/useLogout';
 import BatchReportsTable from '../Reports/BatchReportsTable';
 import useAuth from '../../hooks/useAuth';
+import GenerateLabel from '../ManualLabel/GenerateLabel';
+import StockOut from '../StockOut/StockOut';
+import StockOutReportsTable from '../Reports/StockOutReportsTable';
 
 const drawerWidth = 240;
 
@@ -62,6 +66,9 @@ const navigation = [
     { name: 'Batch Report', icon: <ArticleIcon />, href: '/reports/batch', allowedRoles: ['Admin', 'Factory', 'FactoryMain', 'Manager'] },
     { name: 'RM Report', icon: <ArticleIcon />, href: '/reports/raw-materials', allowedRoles: ['Admin', 'Manager'] },
     { name: 'Buckets Report', icon: <ArticleIcon />, href: '/reports/buckets', allowedRoles: ['Admin', 'Manager'] },
+    { name: 'Stock Out Report', icon: <ArticleIcon />, href: '/reports/stock-out', allowedRoles: ['Admin', 'Manager'] },
+    { name: 'Stock Out', icon: <ArticleIcon />, href: '/stock-out', allowedRoles: ['Admin', 'Manager'] },
+    { name: 'Generate Label', icon: <ArticleIcon />, href: '/generate-label', allowedRoles: ['Admin', 'Manager', 'Factory', 'FactoryMain'] },
 ];
 
 const openedMixin = (theme) => ({
@@ -229,6 +236,11 @@ export default function Navbar() {
                     <Route path="/inventory" element={<StockInventory />} />
                     <Route path="/reports/batch" element={<BatchReportsTable />} />
                     <Route path="/reports/batch/:id/:batchId" element={<BatchReportPrintHelper />} />
+                    <Route path='/reports/stock-out' element={<StockOutReportsTable />} />
+                    <Route path="/reports/stock-out/:transactionId" element={<StockReportPrintHelper />} />
+
+                    <Route path="/generate-label" element={<GenerateLabel />} />
+                    <Route path="/stock-out" element={<StockOut />} />
 
                     <Route element={<RequireAuth allowedRoles={['Admin', 'Manager', 'FactoryMain']} />} >
                         <Route path="/adjust-rm" element={<AdjustRM />} />

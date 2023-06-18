@@ -4,6 +4,7 @@ const { productionModel, batchModel } = require('../models/production.model');
 const rawMaterialModel = require('../models/rawMaterial.model');
 const adjustBktModel = require('../models/adjustBkt.model');
 const { stockInventoryBucketsModel } = require('../models/stockInventory.model');
+const { stockReportModel } = require('../models/stockReport.model');
 
 const getBatchReportDetails = async (prodId, batchNo) => {
     let aggregationPipeline = [
@@ -52,6 +53,9 @@ const getBatchReportDetails = async (prodId, batchNo) => {
                             batchSize: {
                                 $arrayElemAt: ["$batchSize.batch_size", 0]
                             },
+                            productLabelName: 1,
+                            colorShade: 1,
+                            part: 1,
                             _id: 0
                         }
                     }],
@@ -286,6 +290,38 @@ const getBatchReport = async (req, res) => {
     }
 }
 
+const getStockReports = async (req, res) => {
+    try {
+        const stockReports = await stockReportModel.find({});
+        if (!stockReports)
+            throw new Error('No stock reports found');
+        
+        res.status(200).json({
+            stockReports
+        });
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        })
+    }
+}
+
+const getSingleStockReport = async (req, res) => {
+    const { transactionId } = req.params;
+    try {
+        const report = await stockReportModel.findOne({ transactionId });
+        if (!report) {
+            throw new Error(`Stock report with transactionId: ${transactionId} not found`);
+        }
+        res.status(200).json({
+            stockReport: report
+        });
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        })
+    }
+}
 
 
-module.exports = { fetchBatchReportAsync, getSales, getRMReport, getAdjRMReport, getBktReport, getAdjBktReport, getBatchReport }
+module.exports = { fetchBatchReportAsync, getSales, getRMReport, getAdjRMReport, getBktReport, getAdjBktReport, getBatchReport, getStockReports, getSingleStockReport }

@@ -36,7 +36,21 @@ export const EditBoq = () => {
     let navigate = useNavigate();
 
     const [boqContent, setBoqContent] = useState([]);
-    const [boq, setBoq] = useState({});
+    const [boq, setBoq] = useState({
+        name: "",
+        batch_size: "",
+        content: boqContent,
+        qualityTestLimits: {
+            densityRange: {
+                from: '',
+                to: ''
+            },
+            hegmenRange: {
+                from: '',
+                to: ''
+            },
+        }
+    });
 
     const [allRM, setAllRM] = useState([]);
     const [allBoq, setAllBoq] = useState([]);
@@ -132,14 +146,38 @@ export const EditBoq = () => {
         }
     }
 
+    const handleBoqDensityRangeLL = async (e) => {
+        const newBoq = { ...boq };
+        newBoq.qualityTestLimits.densityRange.from = e.target.value;
+        setBoq(newBoq);
+    }
+
+    const handleBoqDensityRangeUL = async (e) => {
+        const newBoq = { ...boq };
+        newBoq.qualityTestLimits.densityRange.to = e.target.value;
+        setBoq(newBoq);
+    }
+
+    const handleBoqHegmenRangeLL = async (e) => {
+        const newBoq = { ...boq };
+        newBoq.qualityTestLimits.hegmenRange.from = e.target.value;
+        setBoq(newBoq);
+    }
+
+    const handleBoqHegmenRangeUL = async (e) => {
+        const newBoq = { ...boq };
+        newBoq.qualityTestLimits.hegmenRange.to = e.target.value;
+        setBoq(newBoq);
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if(allBoq.find(item => item.name === boq.name )) { // checking if boq name already exists
-            setSnackbarSeverity('error');
-            setSnackbarMessage(`BOQ ${boq.name} already exists`);
-            setOpenSnackbar(true);
-            return;
-        }
+        // if(allBoq.find(item => item.name === boq.name )) { // checking if boq name already exists
+        //     setSnackbarSeverity('error');
+        //     setSnackbarMessage(`BOQ ${boq.name} already exists`);
+        //     setOpenSnackbar(true);
+        //     return;
+        // }
         const newBoq = { ...boq };
         newBoq.content = boqContent;
         setBoq(newBoq);
@@ -204,34 +242,91 @@ export const EditBoq = () => {
                     onDragEnd={handleDragEnd}
                 >
                     <Box display='flex' alignItems='center' justifyContent='space-between' marginBottom={1}>
-                        <Box component='span'>ADD BOQs:</Box>
+                        <Box component='span'>EDIT BOQ:</Box>
                     </Box>
                     <Box component='form' onSubmit={handleSubmit}>
                         <Stack spacing={1}>
-                            <Item elevation={3}>
-                                <TextField
-                                    required
-                                    id="boqName"
-                                    type="text"
-                                    label="Name"
-                                    variant="outlined"
-                                    value={boq.name ?? ""}
-                                    onChange={handleBoqMainName}
-                                    placeholder='Enter Production Name'
-                                    sx={{ m: 1 }}
-                                />
-                                <TextField
-                                    required
-                                    id="boqSize"
-                                    type="number"
-                                    label="Batch Size"
-                                    variant="outlined"
-                                    value={boq.batch_size ?? ""}
-                                    onChange={handleBoqMainBatchSize}
-                                    placeholder='Enter Max Batch Size'
-                                    sx={{ m: 1 }}
-                                    InputProps={{ endAdornment: (<InputAdornment position="end">kg</InputAdornment>) }}
-                                />
+                        <Item elevation={3}>
+                                <Grid container alignItems="center" padding={2}>
+                                    <Grid item xs={6}>
+                                        <TextField
+                                            required
+                                            id="boqName"
+                                            type="text"
+                                            label="Name"
+                                            variant="outlined"
+                                            value={boq?.name || ''}
+                                            onChange={handleBoqMainName}
+                                            placeholder='Enter Production Name'
+                                            sx={{ m: 1 }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <TextField
+                                            required
+                                            id="boqSize"
+                                            type="number"
+                                            label="Batch Size (in kgs)"
+                                            variant="outlined"
+                                            value={boq?.batch_size || ''}
+                                            onChange={handleBoqMainBatchSize}
+                                            placeholder='Enter Max Batch Size'
+                                            sx={{ m: 1 }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={3}>
+                                        <TextField
+                                            required
+                                            id="densityFrom"
+                                            type="number"
+                                            label="Density lower limit"
+                                            variant="outlined"
+                                            value={boq?.qualityTestLimits?.densityRange?.from || ''}
+                                            onChange={handleBoqDensityRangeLL}
+                                            placeholder='Enter lower limit for density'
+                                            sx={{ m: 1 }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={3}>
+                                        <TextField
+                                            required
+                                            id="densityTo"
+                                            type="number"
+                                            label="Density upper limit"
+                                            variant="outlined"
+                                            value={boq?.qualityTestLimits?.densityRange?.to || ''}
+                                            onChange={handleBoqDensityRangeUL}
+                                            placeholder='Enter upper limit for density'
+                                            sx={{ m: 1 }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={3}>
+                                        <TextField
+                                            required
+                                            id="hegmenFrom"
+                                            type="number"
+                                            label="Hegmen lower limit"
+                                            variant="outlined"
+                                            value={boq?.qualityTestLimits?.hegmenRange?.from || ''}
+                                            onChange={handleBoqHegmenRangeLL}
+                                            placeholder='Enter lower limit for hegmen'
+                                            sx={{ m: 1 }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={3}>
+                                        <TextField
+                                            required
+                                            id="hegmenFrom"
+                                            type="number"
+                                            label="Hegmen upper limit"
+                                            variant="outlined"
+                                            value={boq?.qualityTestLimits?.hegmenRange?.to || ''}
+                                            onChange={handleBoqHegmenRangeUL}
+                                            placeholder='Enter upper limit for hegmen'
+                                            sx={{ m: 1 }}
+                                        />
+                                    </Grid>
+                                </Grid>
                             </Item>
                             {boqContent.length < 25 && <Button sx={{ maxWidth: 80, alignSelf: 'flex-end' }} variant='contained' onClick={handleAddItem}>Add</Button>}
                             <div>

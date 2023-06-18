@@ -31,7 +31,9 @@ const stockInventoryBuckets = Schema({
         required: true,
         default: false
     },
-    soldTime: Date
+    soldTo: String,
+    soldTime: Date,
+    transactionId: String
 }, { timestamps: true });
 
 const stockInventoryBucketsModel = mongoose.model('stockInventoryBuckets', stockInventoryBuckets);

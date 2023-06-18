@@ -128,6 +128,9 @@ export const ScreenProd = () => {
     }
 
     const saveCompletedElements = async () => {
+        if(completedElements.length >= 0) {
+            await axios.put(`${baseUrl}/api/v1/prod/status/${id}`, { status: 'Processing' });
+        }
         await axios.post(`${baseUrl}/api/v1/prod/completed/${id}`, {
             materials: { ...currElement, batch: selectedBatch + 1, totalQty: currElement.qty * batchQty }
         });
@@ -282,53 +285,53 @@ export const ScreenProd = () => {
                         </TabList>
                     </Box>
                     {batchArray.map((batch, i) => (
-                        <TabPanel key={i} value={`${i + 1}`}>
+                        <TabPanel key={i} value={`${i + 1}`} sx={{ padding: '30px 0 0 0' }}>
                             <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }} >
                                 <Grid item xs={3}>
                                     <Paper align='center'>
                                         <Box p={2}>
-                                            <Typography gutterBottom variant='h6' component='div'>
+                                            <Typography gutterBottom variant='h5' component='div' sx={{ fontWeight: 'bold' }}>
                                                 Composition
                                             </Typography>
                                             <Divider />
                                             {prodBoq.content.map((materials, element) => (
                                                 <div key={element}>
-                                                    <span>{materials.name}</span>
+                                                    <span style={{ fontSize: '34px' }}>{materials.name}</span>
                                                     <Divider />
                                                 </div>
                                             ))}
                                         </Box>
                                     </Paper>
                                 </Grid>
-                                <Grid item xs={6}>
+                                <Grid item xs={5.5}>
                                     <Paper align='center'>
                                         <Box p={2}>
-                                            <Typography gutterBottom variant='h6' component='div'>
+                                            <Typography gutterBottom variant='h5' component='div' sx={{ fontWeight: 'bold' }}>
                                                 Current Element
                                             </Typography>
                                             <Divider />
                                             <div>
-                                                <Typography gutterBottom variant='h4' component='div' fontWeight={500}>
+                                                <Typography gutterBottom variant='h1' component='div' fontWeight={500}>
                                                     {currElement ? (currElement.name ? currElement.name : '-') : '-'}
                                                 </Typography>
                                                 <Divider />
-                                                <Typography gutterBottom variant='h4' component='div' fontWeight={500}>
-                                                    {currElement.totalQty && formatDisplayNumber(currElement.totalQty)}
+                                                <Typography gutterBottom variant='h1' component='div' fontWeight={500}>
+                                                    {currElement.totalQty ? formatDisplayNumber(currElement.totalQty) : '-'}
                                                 </Typography>
                                             </div>
                                         </Box>
                                     </Paper>
                                 </Grid>
-                                <Grid item xs={3}>
-                                    <Paper >
+                                <Grid item xs={3.5}>
+                                    <Paper align='center'>
                                         <Box p={2}>
-                                            <Typography gutterBottom variant='h6' component='div'>
+                                            <Typography gutterBottom variant='h5' component='div' sx={{ fontWeight: 'bold' }}>
                                                 Completed
                                             </Typography>
                                             <Divider />
                                             {completedElements && completedElements.map((element, i) => (
                                                 <div key={i}>
-                                                    <span>{element.name} - {`Batch ${element.batch}`} - {element.totalQty}</span>
+                                                    <span style={{ fontSize: '24px' }}>{element.name} - {`Batch ${element.batch}`} - {element.totalQty}</span>
                                                     <Divider />
                                                 </div>
                                             ))}

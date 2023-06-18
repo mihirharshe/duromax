@@ -1,6 +1,17 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+const qualityTestLimitSchema = Schema({
+    densityRange: {
+        from: Number,
+        to: Number
+    },
+    hegmenRange: {
+        from: Number,
+        to: Number
+    }
+});
+
 const boqMainSchema = Schema({
     name: {
         type: String,
@@ -26,7 +37,8 @@ const boqMainSchema = Schema({
             required: true,
             min: 0
         }
-    }]
+    }],
+    qualityTestLimits: qualityTestLimitSchema
 }, { timestamps: true });
 
 const boqMainModel = mongoose.model('BoqMain', boqMainSchema);

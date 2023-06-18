@@ -24,7 +24,7 @@ export const RawMaterial = () => {
     const [alertQty, setAlertQty] = useState('');
     const [itemId, setItemId] = useState('');
     const [error, setError] = useState(false);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
 
     const [duplicateRMerror, setDuplicateRMerror] = useState(false);
     const [duplicateRMname, setDuplicateRMname] = useState('');
@@ -194,10 +194,10 @@ export const RawMaterial = () => {
                     <Box component='span'>List of raw materials :</Box>
                     <Button size='small' variant='contained' onClick={handleDialogOpen}>Add item</Button>
                 </Box>
-                <Box style={{ display: 'flex', height: '100%', width: '100%', backgroundColor: 'white' }}>
+                <Box style={{ display: 'flex', height: '80vh', width: '100%', backgroundColor: 'white' }}>
                     <Box sx={{ flexGrow: 1 }}>
                         <DataGrid
-                            autoHeight
+                            // autoHeight
                             getRowId={(materials) => materials._id}
                             rows={materials}
                             columns={columns}

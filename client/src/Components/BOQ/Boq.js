@@ -13,7 +13,7 @@ import { CustomSnackbar } from '../Snackbar/CustomSnackbar';
 export const Boq = () => {
 
     const [boq, setBoq] = useState([]);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const [open, setOpen] = useState(false);
     const [severity, setSeverity] = useState('');
     const [message, setMessage] = useState('');
@@ -105,16 +105,21 @@ export const Boq = () => {
                     <Box component='span'>List of BOQs :</Box>
                     <Button size='small' variant='contained' onClick={() => { navigate(`/boq/add`) }}>Add item</Button>
                 </Box>
-                <Box style={{ display: 'flex', height: '100%', width: '100%', backgroundColor: 'white' }}>
+                <Box style={{ display: 'flex', height: '80vh', width: '100%', backgroundColor: 'white' }}>
                     <Box style={{ flexGrow: 1 }}>
                         <DataGrid
-                            autoHeight
+                            // autoHeight
                             getRowId={(row) => row._id}
                             rows={boq}
                             columns={columns}
                             pageSize={pageSize}
                             onPageSizeChange={(pageSize) => setPageSize(pageSize)}
                             rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                            initialState={{
+                                sorting: {
+                                    sortModel: [{ field: 'updatedAt', sort: 'desc' }],
+                                }
+                            }}
                         />
                     </Box>
                 </Box>

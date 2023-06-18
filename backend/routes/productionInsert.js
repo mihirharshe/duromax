@@ -18,7 +18,10 @@ const {
     findBucketByLabelId,
     getBatch,
     getAllLabels,
-    getRawMaterialsQtyByBoqId} = require('../controllers/production.controller');
+    getRawMaterialsQtyByBoqId,
+    getQualityTestDetails,
+    updateProductionStatus,
+    getBatchCount} = require('../controllers/production.controller');
 
 router.get('/', async(req, res) => {
     await getAllProductionInserts(req, res);
@@ -36,8 +39,16 @@ router.put('/:id', async(req, res) => {
     await updateProductionInsert(req, res);
 });
 
+router.put('/status/:id', async (req, res) => {
+    await updateProductionStatus(req, res);
+})
+
 router.delete('/:id', async(req, res) => {
     await deleteProductionInsert(req, res);
+});
+
+router.get('/batch/count/:id', async (req, res) => {
+    await getBatchCount(req, res);
 });
 
 router.get('/batch/all/:id', async(req, res) => {
@@ -58,6 +69,10 @@ router.post('/batch/all/:id', async(req, res) => {
 
 router.put('/batch/:id', async(req, res) => {
     await updateBatch(req, res);
+});
+
+router.get(`/quality-details/:id/:batchId`, async (req, res) => {
+    await getQualityTestDetails(req, res);
 });
 
 router.get('/completed/:id', async(req, res) => {
@@ -90,6 +105,6 @@ router.get('/labels/:id/:batchId', async (req, res) => {
 
 router.get('/boqContent/:boqId', async (req, res) => {
     await getRawMaterialsQtyByBoqId(req, res);
-})
+});
 
 module.exports = router;

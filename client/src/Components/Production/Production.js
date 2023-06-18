@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
-import { Box, Select } from '@mui/material';
+import { Box, Menu, Select } from '@mui/material';
 import axios from 'axios';
 import { Container } from '@mui/system';
 import MenuItem from '@mui/material/MenuItem';
@@ -24,14 +24,17 @@ class PackSizeError extends Error {
 export const Production = () => {
 
     const [open, setOpen] = useState(false);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const [productions, setProductions] = useState([]);
     const [data, setData] = useState({
         name: '',
         boqId: '',
         qty: '',
         pack_size: '',
-        desc: ''
+        desc: '',
+        productLabelName: '',
+        colorShade: '',
+        part: ''
     });
     const [allBoq, setAllBoq] = useState([]);
     const [selectedBoq, setSelectedBoq] = useState();
@@ -56,7 +59,10 @@ export const Production = () => {
             boqId: '',
             qty: '',
             pack_size: '',
-            desc: ''
+            desc: '',
+            productLabelName: '',
+            colorShade: '',
+            part: ''
         })
         setRMAvailableError(false);
         setPackSizeError(false);
@@ -83,7 +89,7 @@ export const Production = () => {
     const deleteItem = useCallback((id) => async () => {
         try {
             let res = await axios.delete(`${baseUrl}/api/v1/prod/${id}`);
-            if(res.status == 200)
+            if (res.status == 200)
                 setProductions((productions) => productions.filter(row => row._id !== id));
         } catch (err) {
             console.error(err);
@@ -94,14 +100,14 @@ export const Production = () => {
         e.preventDefault();
         if (rmAvailableError) return;
         try {
-            if(!data.qty || !data.boqId) {
+            if (!data.qty || !data.boqId) {
                 setPackSizeErrorText('Either qty or boq is missing');
             } else {
                 const selectedItem = allBoq.find(item => item.name === data.name);
                 let batchSize = selectedItem.batch_size;
                 let batchCount = Math.ceil(data.qty / batchSize);
                 let batchQty = data.qty / batchCount;
-                if(!Number.isInteger(batchQty / data.pack_size)) throw new PackSizeError(`Invalid pack size. Pack size should be divisible by resultant batch size ${batchQty}`);
+                if (!Number.isInteger(batchQty / data.pack_size)) throw new PackSizeError(`Invalid pack size. Pack size should be divisible by resultant batch size ${batchQty}`);
                 setPackSizeError(false);
             }
             const res = await axios.post(`${baseUrl}/api/v1/prod/add`, data);
@@ -109,7 +115,7 @@ export const Production = () => {
             handleDialogClose();
         } catch (err) {
             console.error(err);
-            if(err instanceof PackSizeError) {
+            if (err instanceof PackSizeError) {
                 setPackSizeError(true);
                 setPackSizeErrorText(err.message)
             }
@@ -163,7 +169,7 @@ export const Production = () => {
 
     const columns = useMemo(() => [
         { field: 'name', type: 'string', headerName: 'Product Name', minWidth: 150, flex: 0.25, headerAlign: 'center', align: 'center' },
-        { field: 'qty', type: 'number', headerName: 'Quantity (kg)', minWidth: 120 ,headerAlign: 'center', align: 'center'},
+        { field: 'qty', type: 'number', headerName: 'Quantity (kg)', minWidth: 120, headerAlign: 'center', align: 'center' },
         { field: 'pack_size', type: 'number', headerName: 'Pack Size (kg)', minWidth: 120, headerAlign: 'center', align: 'center' },
         { field: 'desc', type: 'string', headerName: 'Remarks', flex: 1, headerAlign: 'center', align: 'center' },
         {
@@ -174,8 +180,20 @@ export const Production = () => {
             valueFormatter: (params) => {
                 return new Date(params.value).toLocaleString().replace(',', '');
             },
-            headerAlign: 'center', 
+            headerAlign: 'center',
             align: 'center'
+        },
+        {
+            field: 'status',
+            type: 'string',
+            headerName: 'Status',
+            flex: 1,
+            headerAlign: 'center',
+            align: 'center',
+            valueFormatter: (params) => {
+                if (params.value)
+                    return params.value.toUpperCase();
+            }
         },
         {
             field: 'actions',
@@ -189,6 +207,12 @@ export const Production = () => {
                     onClick={deleteItem(params.id)}
                 />,
             ]
+        },
+        {
+            field: 'priority',
+            type: 'string',
+            headerName: 'Priority',
+            minWidth: 100,
         }
     ], []);
 
@@ -200,16 +224,27 @@ export const Production = () => {
                     <Box component='span'>List of productions :</Box>
                     <Button size='small' variant='contained' onClick={handleDialogOpen}>Add item</Button>
                 </Box>
-                <Box style={{ display: 'flex', height: '100%', width: '100%', backgroundColor: 'white' }}>
+                <Box style={{ display: 'flex', height: '80vh', width: '100%', backgroundColor: 'white' }}>
                     <Box style={{ flexGrow: 1 }}>
                         <DataGrid
-                            autoHeight
+                            // autoHeight
                             getRowId={(prod) => prod._id}
                             rows={productions}
                             columns={columns}
                             pageSize={pageSize}
                             onPageSizeChange={(pageSize) => setPageSize(pageSize)}
                             rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                            initialState={{
+                                sorting: {
+                                    sortModel: [{ field: 'createdAt', sort: 'desc' }],
+                                    // sortModel: [{ field: 'priority', sort: 'asc' }]
+                                },
+                                columns: {
+                                    columnVisibilityModel: {
+                                        priority: false
+                                    }
+                                }
+                            }}
                         />
                     </Box>
                 </Box>
@@ -265,6 +300,55 @@ export const Production = () => {
                             onChange={handleInputChange}
                             fullWidth
                         />
+                        <TextField
+                            required
+                            margin="dense"
+                            id="productLabelName"
+                            name="productLabelName"
+                            label="Product Label Name"
+                            type="text"
+                            value={data.productLabelName}
+                            // error={packSizeError}
+                            // helperText={packSizeError && packSizeErrorText}
+                            onChange={handleInputChange}
+                            fullWidth
+                        />
+                        <TextField
+                            required
+                            margin="dense"
+                            id="colorShade"
+                            name="colorShade"
+                            label="Color Shade"
+                            type="text"
+                            value={data.colorShade}
+                            // error={packSizeError}
+                            // helperText={packSizeError && packSizeErrorText}
+                            onChange={handleInputChange}
+                            fullWidth
+                        />
+                        <FormControl fullWidth margin="dense">
+                            <InputLabel id="part">Select Part</InputLabel>
+                            <Select
+                                required
+                                margin="dense"
+                                labelId="part"
+                                id="part"
+                                name="part"
+                                value={data.part}
+                                label="Part"
+                                onChange={handleInputChange}
+                                fullWidth
+                            // displayEmpty
+                            // renderValue={data.part !== "" ? null : () => <span style={{color: "#666"}}>test</span>}
+                            >
+                                {/* <MenuItem hidden>Test</MenuItem> */}
+                                <MenuItem value="A">A</MenuItem>
+                                <MenuItem value="B">B</MenuItem>
+                                <MenuItem value="C">C</MenuItem>
+                                <MenuItem value="D">D</MenuItem>
+                                <MenuItem value="SINGLE">SINGLE</MenuItem>
+                            </Select>
+                        </FormControl>
                         <TextField
                             required
                             margin="dense"

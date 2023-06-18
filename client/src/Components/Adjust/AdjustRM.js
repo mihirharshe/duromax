@@ -23,7 +23,7 @@ export const AdjustRM = () => {
     const [records, setRecords] = useState([]);
     const [allRM, setAllRM] = useState([]);
     const [singleRM, setSingleRM] = useState([]);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const [open, setOpen] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [qty, setQty] = useState('');
@@ -88,7 +88,7 @@ export const AdjustRM = () => {
             console.log(err);
             setOpen(true);
             setSeverity('error');
-            setMessage(err.message);
+            setMessage(err.response.data.message);
         }
         handleDialogClose();
     }
@@ -118,16 +118,21 @@ export const AdjustRM = () => {
                     <Box component='span'>List of Records :</Box>
                     <Button size='small' variant='contained' onClick={handleDialogOpen}>Add record</Button>
                 </Box>
-                <Box style={{ display: 'flex', height: '100%', width: '100%', backgroundColor: 'white' }}>
+                <Box style={{ display: 'flex', height: '80vh', width: '100%', backgroundColor: 'white' }}>
                     <Box style={{ flexGrow: 1 }}>
                         <DataGrid
-                            autoHeight
+                            // autoHeight
                             getRowId={(row) => row._id}
                             rows={records}
                             columns={columns}
                             pageSize={pageSize}
                             onPageSizeChange={(pageSize) => setPageSize(pageSize)}
                             rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                            initialState={{
+                                sorting: {
+                                    sortModel: [{ field: 'createdAt', sort: 'desc' }],
+                                }
+                            }}
                         />
                     </Box>
                 </Box>

@@ -23,7 +23,7 @@ export const Bucket = () => {
     const [alertQty, setAlertQty] = useState('');
     const [itemId, setItemId] = useState('');
     const [error, setError] = useState(false);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
 
     const baseUrl = process.env.REACT_APP_API_URL;
 
@@ -197,10 +197,10 @@ export const Bucket = () => {
                     <Box component='span'>List of buckets :</Box>
                     <Button size='small' variant='contained' onClick={handleDialogOpen}>Add item</Button>
                 </Box>
-                <Box style={{ display: 'flex', height: '100%', width: '100%', backgroundColor: 'white' }}>
+                <Box style={{ display: 'flex', height: '80vh', width: '100%', backgroundColor: 'white' }}>
                     <Box style={{ flexGrow: 1 }}>
                         <DataGrid
-                            autoHeight
+                            // autoHeight
                             getRowId={(buckets) => buckets._id}
                             rows={buckets}
                             columns={columns}

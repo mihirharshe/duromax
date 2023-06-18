@@ -8,7 +8,23 @@ const rawMaterialModel = require('../models/rawMaterial.model');
 
 const getAllProductionInserts = async (req, res) => {
     try {
-        const productions = await productionModel.find({});
+        // const productions = await productionModel.find({});
+        const productions = await productionModel.aggregate([
+            {
+                $addFields: {
+                    priority: {
+                        $switch: {
+                            branches: [
+                                { case: { $eq: ['$status', 'Start'] }, then: 1 },
+                                { case: { $eq: ['$status', 'Processing'] }, then: 2 },
+                                { case: { $eq: ['$status', 'Completed'] }, then: 3 }
+                            ],
+                            default: 999
+                        }
+                    }
+                }
+            }
+        ]);
         res.status(200).json({
             message: 'Successfully retrieved productions',
             productions
@@ -36,7 +52,7 @@ const getOneProductionInsert = async (req, res) => {
 }
 
 const addProductionInsert = async (req, res) => {
-    const { name, boqId, qty, pack_size, desc } = req.body;
+    const { name, boqId, qty, pack_size, desc, productLabelName, colorShade, part } = req.body;
     try {
         let boq = await boqMainModel.findById(boqId);
         if (!boq) {
@@ -50,8 +66,13 @@ const addProductionInsert = async (req, res) => {
             boqId,
             qty,
             pack_size,
-            desc
+            desc,
+            productLabelName,
+            colorShade,
+            part,
+            status: 'Start'
         });
+
         await production.save();
         res.status(200).json({
             message: 'Successfully added production',
@@ -68,11 +89,15 @@ const updateProductionInsert = async (req, res) => {
     const { id } = req.params;
     try {
         const production = await productionModel.findById(id);
-        const { name, qty, pack_size, desc } = req.body;
+        const { name, qty, pack_size, desc, productLabelName, colorShade, part } = req.body;
         production.name = name;
         production.qty = qty;
         production.pack_size = pack_size;
         production.desc = desc;
+        production.productLabelName = productLabelName;
+        production.colorShade = colorShade;
+        production.part = part;
+
         await production.save();
         res.status(200).json({
             message: 'Successfully updated production',
@@ -82,6 +107,26 @@ const updateProductionInsert = async (req, res) => {
         res.status(404).json({
             message: 'Production not found',
             error: err.message
+        });
+    }
+}
+
+const updateProductionStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        const production = await productionModel.findById(id);
+        if (status) {
+            production.status = status;
+        }
+        production.save();
+        res.status(200).json({
+            message: `Successfully updated production ${id} status to ${status}`
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: err
         });
     }
 }
@@ -109,7 +154,6 @@ const addBatch = async (req, res) => {
     console.log(req.body);
     try {
         const production = await productionModel.findByIdAndUpdate(id, { $set: { [`batches.${batchIdx}`]: { ...batchDetails, batch: batchIdx + 1 } } });
-        // console.log(batch);
         await production.save();
         res.status(200).json({
             message: 'Successfully added batch',
@@ -140,6 +184,27 @@ const addAllBatches = async (req, res) => {
         res.status(500).json({
             message: err.message
         });
+    }
+}
+
+const getBatchCount = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const production = await productionModel.findById(id);
+        if (!production) {
+            return res.status(404).json({
+                message: `Production with id ${id} not found`
+            });
+        }
+        const boqBatchSize = await boqMainModel.findById(production.boqId, { batch_size: 1 });
+        const batchCount = Math.ceil(production.qty / boqBatchSize.batch_size);
+        return res.status(200).json({
+            batchCount
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        })
     }
 }
 
@@ -181,13 +246,51 @@ const getBatch = async (req, res) => {
 
 const updateBatch = async (req, res) => {
     const { id } = req.params;
-    console.log(req.body);
     const { batch, quality, bkt, completed, currentIdx, stage } = req.body;
     try {
         const production = await productionModel.findById(id);
         const batches = production.batches.find(b => b.batch === batch);
-        console.log(batches);
         if (quality) {
+            const qualityParams = await boqMainModel.findById(production.boqId, { qualityTestLimits: 1 });
+            let rangeExists = true;
+            if (!qualityParams.qualityTestLimits) {
+                rangeExists = false;
+                if (quality.density < 0.5 || quality.density > 3) {
+                    return res.status(400).json({
+                        message: 'Invalid density value',
+                        densityRange: {
+                            from: 0.5,
+                            to: 3
+                        }
+                    });
+                }
+
+                if (quality.hegmen < 1 || quality.hegmen > 7) {
+                    return res.status(400).json({
+                        message: 'Invalid hegmen value',
+                        hegmenRange: {
+                            from: 1,
+                            to: 7
+                        }
+                    });
+                }
+            }
+            if (rangeExists) {
+                if (quality.density < qualityParams.qualityTestLimits.densityRange.from || quality.density > qualityParams.qualityTestLimits.densityRange.to) {
+                    return res.status(400).json({
+                        message: 'Invalid density value',
+                        densityRange: qualityParams.qualityTestLimits.densityRange
+                    });
+                }
+
+                if (quality.hegmen < qualityParams.qualityTestLimits.hegmenRange.from || quality.hegmen > qualityParams.qualityTestLimits.hegmenRange.to) {
+                    res.status(400).json({
+                        message: 'Invalid hegmen value',
+                        hegmenRange: qualityParams.qualityTestLimits.hegmenRange
+                    });
+                    return;
+                }
+            }
             batches.quality = quality;
         }
         if (bkt) {
@@ -211,6 +314,24 @@ const updateBatch = async (req, res) => {
         res.status(500).json({
             message: err.message
         });
+    }
+}
+
+const getQualityTestDetails = async (req, res) => {
+    const { id, batchId } = req.params;
+    try {
+        const production = await productionModel.findById(id);
+        const batch = production.batches.find(b => b.batch === batchId);
+        const qualityRanges = await boqMainModel.findById(production.boqId, { qualityTestLimits: 1 });
+        res.status(200).json({
+            name: production.name,
+            quality: batch?.quality ?? null,
+            qualityRanges
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        })
     }
 }
 
@@ -274,7 +395,12 @@ const addBucketDetails = async (req, res) => {
             // bucketDetails[i].bktLabelDetails.qtyKg = bucketDetails[i].bktQty;
             // bucketDetails[i].bktLabelDetails.qtyL = bucketDetails[i].bktQty / density;
             let bucket = bucketDetails[i];
+            const bktDB = await bucketModel.findById(bucket.bktId);
+            if (bktDB.qty - bucket.bktNo < 0) {
+                throw new Error(`Insufficient buckets available for bucket: ${bktDB.name}`);
+            }
             let labelId = `${batchLabelId}${bucket.bktQty}${String.fromCharCode(65 + i)}`
+            labelId = labelId.replace(".", "");
             bucket.bktLabelDetails = {
                 labelId: labelId, // appends capacity (5/10) and bucket char (A/B/C) to bktLabel
                 qtyKg: bucket.bktQty,
@@ -286,7 +412,10 @@ const addBucketDetails = async (req, res) => {
                     "bktQty": bucket.bktQty,
                     "batchId": batchLabelId ?? null,
                     "labelId": labelId,
-                    "boqName": production.name ?? null
+                    "boqName": production.name ?? null,
+                    "prodName": production.productLabelName,
+                    "colorShade": production.colorShade,
+                    "part": production.part
                 }));
             }
         }
@@ -323,7 +452,6 @@ const addBucketDetails = async (req, res) => {
         // });
 
         await stockInventoryBucketsModel.create(out);
-
 
         await saveStockInventory(production.boqId, production._id.toString(), bucketDetails);
 
@@ -394,14 +522,15 @@ const saveLabelDetails = async (req, res) => { // not in use rn
 const _getAllBktLabels = async (req, res) => { // to update and get labels [POST]
     const { id, batchId } = req.params;
     const { labelDetails, stage, completed } = req.body;
+    console.log(labelDetails);
     try {
         const production = await productionModel.findById(id);
         const batch = production.batches.find(x => x.batch == batchId);
         // updating for stock inventory
-        let prodName = labelDetails.productLabelName ?? "";
-        let colorShade = labelDetails.colorShade ?? "";
-        await stockInventoryBucketsModel.updateMany({ "batchId": batch.labelDetails.labelId }, { $set: { "prodName": prodName, "colorShade": colorShade } });
-        batch.labelDetails = Object.assign(batch.labelDetails, labelDetails); // saving colorShade
+        // let prodName = labelDetails.productLabelName ?? "";
+        // let colorShade = labelDetails.colorShade ?? "";
+        await stockInventoryBucketsModel.updateMany({ "batchId": batch.labelDetails.labelId }, { $set: { "prodName": production.productLabelName, "colorShade": production.colorShade } });
+        // batch.labelDetails = Object.assign(batch.labelDetails, labelDetails); // saving colorShade
         batch.stage = stage;
         batch.completed = completed;
 
@@ -420,13 +549,12 @@ const _getAllBktLabels = async (req, res) => { // to update and get labels [POST
             { upsert: true, new: true }
         );
 
-
-
         res.status(200).json({
             bucketDetails: batch.bucketDetails,
             batchNo: batch.bucketDetails[0].bktLabelDetails.labelId.substring(0, 12) ?? null,
-            colorShade: labelDetails.colorShade,
-            productLabelName: labelDetails.productLabelName
+            colorShade: production.colorShade,
+            productLabelName: production.productLabelName,
+            part: production.part
         });
 
     } catch (err) {
@@ -439,20 +567,22 @@ const _getAllBktLabels = async (req, res) => { // to update and get labels [POST
 const getAllLabels = async (req, res) => { // only to get labels [GET]
     const { id, batchId } = req.params;
     try {
-        // const production = await productionModel.findById(id);
-        // const batch = production.batches.find(x => x.batch == batchId);
-        const batch = await batchModel.findOne({ productionId: id, batch: batchId });
+        const production = await productionModel.findById(id);
+        const batch = production.batches.find(x => x.batch == batchId);
+        console.log(production)
+        // const batch = await batchModel.findOne({ productionId: id, batch: batchId });
         let reducedBktDetails = batch.bucketDetails.reduce((acc, curr) => {
             acc.push(curr.bktLabelDetails);
             return acc;
         }, [])
         res.status(200).json({
-            colorShade: batch.labelDetails.colorShade,
-            productLabelName: batch.labelDetails.productLabelName,
+            colorShade: production.colorShade,
+            productLabelName: production.productLabelName,
             batchNo: batch.labelDetails.labelId,
-            bucketDetails: reducedBktDetails
+            bucketDetails: reducedBktDetails,
+            part: production.part
         })
-    } catch(err) {
+    } catch (err) {
         res.status(500).json({
             message: err.message
         })
@@ -533,11 +663,29 @@ const getRawMaterialsQtyByBoqId = async (req, res) => {
     }
 }
 
+// const generateManualLabel = async (req, res) => {
+//     const { prodName, colorShade, qtyKg, qtyL, batchNo, barcodeId } = req.body;
+//     try {
+//         if (!prodName || !colorShade || !qtyKg || !qtyL || !batchNo || !barcodeId) {
+//             res.status(403).json({
+//                 message: "fields are missing"
+//             });
+//         } else {
+
+//         }
+//     } catch (err) {
+//         res.status(500).json({
+//             error: err
+//         })
+//     }
+// }
+
 module.exports = {
     getAllProductionInserts,
     getOneProductionInsert,
     addProductionInsert,
     updateProductionInsert,
+    updateProductionStatus,
     deleteProductionInsert,
     addBatch,
     addAllBatches,
@@ -551,5 +699,7 @@ module.exports = {
     findBucketByLabelId,
     _getAllBktLabels,
     getAllLabels,
-    getRawMaterialsQtyByBoqId
+    getRawMaterialsQtyByBoqId,
+    getQualityTestDetails,
+    getBatchCount
 }

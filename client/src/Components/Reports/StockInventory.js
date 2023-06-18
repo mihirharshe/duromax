@@ -17,7 +17,7 @@ export const StockInventory = () => {
         fetchStockInventory();
     }, [])
 
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const [selectedBucketId, setSelectedBucketId] = useState('');
 
     // sell button dialog box settings -
@@ -49,10 +49,23 @@ export const StockInventory = () => {
         { field: 'prodName', type: 'string', headerName: 'Product Name', flex: 1, headerAlign: 'center', align: 'center' },
         { field: 'colorShade', type: 'string', headerName: 'Color Shade', flex: 1, headerAlign: 'center', align: 'center' },
         { field: 'bktQty', type: 'number', headerName: 'Qty (kg)', minWidth: 100, headerAlign: 'center', align: 'center' },
+        // {
+        //     field: 'soldTime',
+        //     type: 'date',
+        //     headerName: 'Date of Sale',
+        //     minWidth: 175,
+        //     valueFormatter: (params) => {
+        //         if(!params.value)
+        //             return "-";
+        //         return new Date(params.value).toLocaleString().replace(',', '');
+        //     },
+        //     headerAlign: 'center', 
+        //     align: 'center'
+        // },
         {
-            field: 'soldTime',
+            field: 'createdAt',
             type: 'date',
-            headerName: 'Date of Sale',
+            headerName: 'Date of creation',
             minWidth: 175,
             valueFormatter: (params) => {
                 if(!params.value)
@@ -62,23 +75,23 @@ export const StockInventory = () => {
             headerAlign: 'center', 
             align: 'center'
         },
-        {
-            field: 'actions',
-            type: 'actions',
-            headerName: 'Actions',
-            width: 200,
-            renderCell: (params) => {
-                const onClick = (e) => {
-                    e.stopPropagation();
-                    setSelectedBucketId(params.row._id);
-                    handleClickOpen();
-                };
+        // {
+        //     field: 'actions',
+        //     type: 'actions',
+        //     headerName: 'Actions',
+        //     width: 200,
+        //     renderCell: (params) => {
+        //         const onClick = (e) => {
+        //             e.stopPropagation();
+        //             setSelectedBucketId(params.row._id);
+        //             handleClickOpen();
+        //         };
 
-                return params.row.sold ?
-                    <Button variant="contained" disabled>SOLD</Button> :
-                    <Button variant='contained' onClick={onClick}>SELL</Button>
-            }
-        }
+        //         return params.row.sold ?
+        //             <Button variant="contained" disabled>SOLD</Button> :
+        //             <Button variant='contained' onClick={onClick}>SELL</Button>
+        //     }
+        // }
     ])
 
     return (
@@ -87,16 +100,21 @@ export const StockInventory = () => {
                 <Box display='flex' alignItems='center' justifyContent='space-between' marginBottom={1}>
                     <Box component='span'>Stock Inventory :</Box>
                 </Box>
-                <Box style={{ display: 'flex', height: '100%', width: '100%', backgroundColor: 'white' }}>
+                <Box style={{ display: 'flex', height: '80vh', width: '100%', backgroundColor: 'white' }}>
                     <Box sx={{ flexGrow: 1 }}>
                         <DataGrid
-                            autoHeight
+                            // autoHeight
                             getRowId={(materials) => materials._id}
                             rows={allStocks}
                             columns={columns}
                             pageSize={pageSize}
                             onPageSizeChange={(pageSize) => setPageSize(pageSize)}
                             rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                            initialState={{
+                                sorting: {
+                                    sortModel: [{ field: 'createdAt', sort: 'desc' }],
+                                }
+                            }}
                         />
                     </Box>
                 </Box>

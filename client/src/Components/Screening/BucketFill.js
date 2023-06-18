@@ -23,6 +23,11 @@ export const BucketFill = () => {
 
     const [open, setOpen] = useState(false);
     const [buckets, setBuckets] = useState([]);
+    const [batchCount, setBatchCount] = useState();
+    const [sbParams, setSbParams] = useState({
+        severity: '',
+        message: ''
+    });
     // const [currentBkt, setCurrentBkt] = useState({
     //     bucketId: "",
     //     bktNo: 0,
@@ -34,10 +39,33 @@ export const BucketFill = () => {
 
     useEffect(() => {
         const fetchBkts = async () => {
-            const res = await axios.get(`${baseUrl}/api/v1/bkt`);
-            setBuckets(res.data.buckets);
+            try {
+                const res = await axios.get(`${baseUrl}/api/v1/bkt`);
+                setBuckets(res.data.buckets);
+            } catch (err) {
+                console.error(err);
+                setSbParams({
+                    severity: 'error',
+                    message: err.response.data.message
+                });
+                setOpen(true);
+            }
         }
         fetchBkts();
+        const fetchBatchCount = async () => {
+            try {
+                const res = await axios.get(`${baseUrl}/api/v1/prod/batch/count/${id}`);
+                setBatchCount(res.data.batchCount);
+            } catch (err) {
+                console.error(err);
+                setSbParams({
+                    severity: 'error',
+                    message: err.response.data.message
+                })
+                setOpen(true);
+            }
+        }
+        fetchBatchCount();
     }, [])
 
     const handleBlur = (e, id) => {
@@ -50,30 +78,44 @@ export const BucketFill = () => {
                 [e.target.name]: e.target.value
             }
         }));
-        
+
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         Object.entries(bucketData).map(data => {
-            if(!data[1]["bktNo"] || !data[1]["bktQty"] || data[1]["bktNo"] == 0 || data[1]["bktQty"] == 0) return;
+            if (!data[1]["bktNo"] || !data[1]["bktQty"] || data[1]["bktNo"] == 0 || data[1]["bktQty"] == 0) return;
             let obj = {
                 bktId: data[0],
                 bktNo: parseInt(data[1]["bktNo"]),
                 bktQty: parseFloat(data[1]["bktQty"])
             };
-            if(!updates.some(el => el.bktId === obj.bktId))
+            if (!updates.some(el => el.bktId === obj.bktId))
                 updates.push(obj);
         });
-
-        const res = await axios.put(`${baseUrl}/api/v1/prod/add-bkts/${id}/${batchId}`, {
-            bucketDetails: updates,
-            stage: 'Labelling'
-        });
-        if(res.status === 200) {
+        try {
+            await axios.put(`${baseUrl}/api/v1/prod/add-bkts/${id}/${batchId}`, {
+                bucketDetails: updates,
+                stage: 'Labelling'
+            });
             setOpen(true);
+            setSbParams({
+                severity: 'success',
+                message: 'Bucket details saved successfully'
+            });
+            console.log(batchCount, batchId);
+            if (batchCount == batchId) {
+                await axios.put(`${baseUrl}/api/v1/prod/status/${id}`, { status: 'Completed' });
+            }
             navigate(`/screen/${id}/label/${batchId}`)
+        } catch (err) {
+            console.error(err);
+            setSbParams({
+                severity: 'error',
+                message: err.response.data.message
+            });
+            setOpen(true);
         }
     }
 
@@ -143,7 +185,7 @@ export const BucketFill = () => {
                     <Button type="submit" variant="contained">SUBMIT</Button>
                 </Box>
             </Container>
-            <CustomSnackbar open={open} setOpen={setOpen} severity="success" message="Bucket details saved successfully" />
+            <CustomSnackbar open={open} setOpen={setOpen} severity={sbParams.severity} message={sbParams.message} />
         </div>
     )
 }

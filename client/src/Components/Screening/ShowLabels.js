@@ -18,7 +18,8 @@ const ShowLabels = ({ batchId }) => {
             setCommonLabel({
                 name: res.data.productLabelName,
                 colorShade: res.data.colorShade,
-                batchNo: res.data.batchNo
+                batchNo: res.data.batchNo,
+                part: res.data.part
             });
             setIsLoaded(true);
         }

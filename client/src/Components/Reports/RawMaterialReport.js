@@ -8,7 +8,7 @@ const RawMaterialReport = () => {
 
     let navigate = useNavigate();
 
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const [rawMaterials, setRawMaterials] = useState([]);
     // const [selectedRM, setSelectedRM] = useState();
     const baseUrl = process.env.REACT_APP_API_URL;
@@ -56,16 +56,20 @@ const RawMaterialReport = () => {
             <Box display='flex' alignItems='center' justifyContent='space-between' marginBottom={1}>
                 <Box component='span'>RAW MATERIALS REPORT</Box>
             </Box>
-            <DataGrid
-                autoHeight
-                getRowId={(rawMaterials) => rawMaterials._id}
-                rows={rawMaterials}
-                columns={columns}
-                pageSize={pageSize}
-                onPageSizeChange={(pageSize) => setPageSize(pageSize)}
-                rowsPerPageOptions={[5, 10, 20, 50, 100]}
-                sx={{ backgroundColor: 'white' }}
-            />
+            <Box style={{ display: 'flex', width: '100%', height: '80vh', backgroundColor: 'white', margin: '0 auto' }}>
+                <Box style={{ display: 'flex', flexGrow: 1 }} >
+                    <DataGrid
+                        // autoHeight
+                        getRowId={(rawMaterials) => rawMaterials._id}
+                        rows={rawMaterials}
+                        columns={columns}
+                        pageSize={pageSize}
+                        onPageSizeChange={(pageSize) => setPageSize(pageSize)}
+                        rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                        sx={{ backgroundColor: 'white' }}
+                    />
+                </Box>
+            </Box>
         </Container>
     )
 }

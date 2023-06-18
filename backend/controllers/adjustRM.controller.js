@@ -19,9 +19,13 @@ const getRecords = async (req, res) => {
 const addRecord = async (req, res) => {
     const { name, qtyChange, action, description } = req.body;
     try {
+        const rm = await rawMaterialModel.findOne({ name });
         if(action === 'Addition') {
             await rawMaterialModel.findOneAndUpdate({ name }, { $inc: { qty: qtyChange, addedQty: qtyChange } });
         } else if(action === 'Subtraction') {
+            if (rm.qty - qtyChange < 0) {
+                throw new Error(`Quantity to be subtracted cannot exceed available qty: ${rm.qty}`);
+            }
             await rawMaterialModel.findOneAndUpdate({ name }, { $inc: { qty: -qtyChange, subtractedQty: qtyChange } });
         }
         const record = await adjustRMModel.create({

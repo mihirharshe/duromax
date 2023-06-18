@@ -28,77 +28,104 @@ const Label = () => {
         }
         fetchProd();
     }, [])
-    const [inputLabelDetails, setInputLabelDetails] = useState({
-        colorShade: '',
-        productLabelName: ''
-    });
-    // const [colorShade, setColorShade] = useState("");
-    // const [productLabelName, setProductLabelName] = useState("");
-    const [isLoading, setLoading] = useState(false);
-    const [isLoaded, setIsLoaded] = useState(false);
 
-    const [labelDetails, setLabelDetails] = useState([{}]);
-    const [commonLabel, setCommonLabel] = useState({});
-
-    // const handleChange = (e) => {
-    //     setColorShade(e.target.value);
-    // }
-
-    const handleChange = (e) => {
-        setInputLabelDetails(prev => ({
-            ...prev,
-            [e.target.name]: e.target.value
-        }));
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        console.log(inputLabelDetails);
-        setLoading(true);
-        // let bktQty = prod.batches[batchId - 1].bucketDetails[batchId - 1].bktQty;
-        // let density = prod.batches[batchId - 1].quality.density;
-        const res = await axios.post(`${baseUrl}/api/v1/prod/bktlabels/${id}/${batchId}`, {
-            labelDetails: inputLabelDetails,
-            stage: 'Finished',
-            completed: true
-        })
-        if (res.status === 200) {
-            setLoading(false);
-            setIsLoaded(true);
-            // setLabelDetails({
-            //     labelId: res.data.labelDetails.labelId,
-            //     product: prod.name,
-            //     colorShade: res.data.labelDetails.colorShade,
-            //     qtyKg: res.data.labelDetails.qtyKg,
-            //     qtyL: res.data.labelDetails.qtyL,
-            // });
-            let reducedBktDetails = res.data.bucketDetails.reduce((acc, curr) => {
-                acc.push(curr.bktLabelDetails);
-                return acc;
-            }, [])
-            setLabelDetails(reducedBktDetails);
-            setCommonLabel({
-                name: res.data.productLabelName,
-                colorShade: res.data.colorShade,
-                batchNo: res.data.batchNo
-            });
+    useEffect(() => {
+        const getLabels = async () => {
+            const res = await axios.post(`${baseUrl}/api/v1/prod/bktlabels/${id}/${batchId}`, {
+                stage: 'Finished',
+                completed: true
+            })
+            if (res.status === 200) {
+                setIsLoaded(true);
+                let reducedBktDetails = res.data.bucketDetails.reduce((acc, curr) => {
+                    acc.push(curr.bktLabelDetails);
+                    return acc;
+                }, [])
+                setLabelDetails(reducedBktDetails);
+                setCommonLabel({
+                    name: prod.productLabelName,
+                    colorShade: prod.colorShade,
+                    batchNo: prod.batches[0].labelDetails.labelId ?? null,
+                    part: prod.part
+                });
+            }
         }
+        getLabels();
+    }, [prod])
+// const [inputLabelDetails, setInputLabelDetails] = useState({
+//     colorShade: '',
+//     productLabelName: ''
+// });
+// const [colorShade, setColorShade] = useState("");
+// const [productLabelName, setProductLabelName] = useState("");
+// const [isLoading, setLoading] = useState(false);
+const [isLoaded, setIsLoaded] = useState(false);
+
+const [labelDetails, setLabelDetails] = useState([{}]);
+const [commonLabel, setCommonLabel] = useState({});
+
+// const handleChange = (e) => {
+//     setColorShade(e.target.value);
+// }
+
+// const handleChange = (e) => {
+//     setInputLabelDetails(prev => ({
+//         ...prev,
+//         [e.target.name]: e.target.value
+//     }));
+// }
+
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    // console.log(inputLabelDetails);
+    // setLoading(true);
+    // let bktQty = prod.batches[batchId - 1].bucketDetails[batchId - 1].bktQty;
+    // let density = prod.batches[batchId - 1].quality.density;
+    const res = await axios.post(`${baseUrl}/api/v1/prod/bktlabels/${id}/${batchId}`, {
+        // labelDetails: inputLabelDetails,
+        stage: 'Finished',
+        completed: true
+    })
+    if (res.status === 200) {
+        // setLoading(false);
+        setIsLoaded(true);
+        // setLabelDetails({
+        //     labelId: res.data.labelDetails.labelId,
+        //     product: prod.name,
+        //     colorShade: res.data.labelDetails.colorShade,
+        //     qtyKg: res.data.labelDetails.qtyKg,
+        //     qtyL: res.data.labelDetails.qtyL,
+        // });
+        console.log(res.data.bucketDetails)
+        let reducedBktDetails = res.data.bucketDetails.reduce((acc, curr) => {
+            acc.push(curr.bktLabelDetails);
+            return acc;
+        }, [])
+        console.log(prod);
+        setLabelDetails(reducedBktDetails);
+        setCommonLabel({
+            name: prod.productLabelName,
+            colorShade: prod.colorShade,
+            batchNo: prod.batches[0].labelDetails.labelId,
+            part: prod.part
+        });
     }
+}
 
-    // const { inputRef } = useBarcode({
-    //     value: labelDetails.labelId
-    // })
-    console.log(labelDetails)
-    // const componentRef = useRef();
+// const { inputRef } = useBarcode({
+//     value: labelDetails.labelId
+// })
+console.log(labelDetails)
+// const componentRef = useRef();
 
-    return (
-        <>
-            <Container maxWidth='lg' sx={{ marginTop: 2 }} >
-                <Box display='flex' alignItems='center' justifyContent='space-between' marginBottom={1}>
-                    <Box component='span'>Enter details for the label: </Box>
-                </Box>
-                <Box component='form' onSubmit={(e) => handleSubmit(e)}>
-                    <Paper elevation={3}>
+return (
+    <>
+        <Container maxWidth='lg' sx={{ marginTop: 2 }} >
+            <Box display='flex' alignItems='center' justifyContent='space-between' marginBottom={1}>
+                <Box component='span'>LABELS : </Box>
+            </Box>
+            {/*<Box component='form' onSubmit={(e) => handleSubmit(e)}>
+                <Paper elevation={3}>
                         <Grid container alignItems="center" justifyContent="space-around">
                             <Typography variant='h6'>Product Name </Typography>
                             <FormControl sx={{ m: 1 }}>
@@ -132,26 +159,26 @@ const Label = () => {
                             </FormControl>
                         </Grid>
                     </Paper>
-                    <Button type="submit" variant="contained">SUBMIT</Button>
-                </Box>
-                <div>
-                    <Grid container alignItems="center" justifyContent="space-around">
-                        {isLoaded &&
-                            labelDetails.map((label, index) => {
-                                return (
-                                    <div key={index}>
-                                        <FinalLabel labelDetails={label} batchId={batchId} commonLabel={commonLabel} />
-                                    </div>
-                                )
-                            })
-                        }
-                    </Grid>
-                </div>
-                {isLoaded && <Button sx={{display: 'flex', margin: '50px auto 0 auto'}} variant="contained" onClick={() => navigate(`/reports/batch/${id}/${batchId}`)}>NEXT</Button>}
-                {/* <svg ref={inputRef} /> */}
-            </Container>
-        </>
-    )
+                <Button type="submit" variant="contained">GET LABELS</Button>
+            </Box> */}
+            <div>
+                <Grid container alignItems="center" justifyContent="space-around">
+                    {isLoaded &&
+                        labelDetails.map((label, index) => {
+                            return (
+                                <div key={index}>
+                                    <FinalLabel labelDetails={label} batchId={batchId} commonLabel={commonLabel} />
+                                </div>
+                            )
+                        })
+                    }
+                </Grid>
+            </div>
+            {isLoaded && <Button sx={{ display: 'flex', margin: '50px auto 0 auto' }} variant="contained" onClick={() => navigate(`/reports/batch/${id}/${batchId}`)}>NEXT</Button>}
+            {/* <svg ref={inputRef} /> */}
+        </Container>
+    </>
+)
 }
 
 export default Label

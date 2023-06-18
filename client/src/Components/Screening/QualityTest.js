@@ -12,13 +12,17 @@ import { CustomSnackbar } from '../Snackbar/CustomSnackbar'
 export const QualityTest = () => {
 
     const { id, batchId } = useParams();
-    const [productDetails, setProductDetails] = useState({});
-    // const [batchDetails, setBatchDetails] = useState({});
+    const [snackbarParams, setSnackbarParams] = useState({
+        severity: '',
+        message: ''
+    });
     const [quality, setQuality] = useState({
         hegmen: '',
         viscosity: '',
         density: ''
     });
+    const [qualityTestDetails, setQualityTestDetails] = useState();
+    const [qualityRanges, setQualityRanges] = useState();
 
     const [open, setOpen] = useState(false);
     const baseUrl = process.env.REACT_APP_API_URL;
@@ -27,14 +31,9 @@ export const QualityTest = () => {
 
     useEffect(() => {
         const fetchProd = async () => {
-            const res = await axios.get(`${baseUrl}/api/v1/prod/${id}`)
-            setProductDetails(res.data.production);
-            console.log(res);
-            if (res.data.production.batches[batchId - 1].quality) {
-                setQuality(res.data.production.batches[batchId - 1].quality);
-            }
-            // setBatchDetails(res.data.production.batches[batchId - 1]);
-            // console.log(batchDetails);
+            const res = await axios.get(`${baseUrl}/api/v1/prod/quality-details/${id}/${batchId}`);
+            setQualityTestDetails(res.data);
+            setQualityRanges(res.data.qualityRanges);
         }
         fetchProd();
     }, [])
@@ -46,7 +45,8 @@ export const QualityTest = () => {
         })
     }
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
             await axios.put(`${baseUrl}/api/v1/prod/batch/${id}`, {
                 batch: batchId - 0,
@@ -54,9 +54,18 @@ export const QualityTest = () => {
                 stage: 'BucketFilling'
             });
             setOpen(true);
+            setSnackbarParams({
+                severity: 'success',
+                message: 'Successfully saved quality test parameters'
+            });
             navigate(`/screen/${id}/bktFill/${batchId}`);
         } catch (err) {
             console.log(err);
+            setOpen(true);
+            setSnackbarParams({
+                severity: 'error',
+                message: err.response.data.message
+            });
         }
     }
 
@@ -64,59 +73,64 @@ export const QualityTest = () => {
         <>
             <Container maxWidth='lg' sx={{ marginTop: 2 }}>
                 <Box component='div' marginBottom={1}>
-                    <Box component='div'>PRODUCT - {productDetails.name}</Box>
+                    <Box component='div'>PRODUCT - {qualityTestDetails?.name}</Box>
                     <Box component='div'>BATCH - {batchId}</Box>
                 </Box>
                 <Stack spacing={2}>
                     <Box component='span'>Quality Test : </Box>
-                    <Grid container rowSpacing={1} columns={{ xs: 4, sm: 8, md: 12 }} >
-                        <Grid item xs={4}>
-                            <FormControl>
-                                {/* <InputLabel htmlFor='hegmen'>Hegmen Gauge</InputLabel> */}
-                                <TextField
-                                    id='hegmen'
-                                    label='Hegmen Gauge'
-                                    type='number'
-                                    value={quality.hegmen}
-                                    onChange={handleChange}
-                                    required
-                                    sx={{ backgroundColor: 'white' }}
-                                />
-                            </FormControl>
+                    <Box component='form' onSubmit={(e) => handleSubmit(e)}>
+                        <Grid container rowSpacing={1} columns={{ xs: 4, sm: 8, md: 12 }} >
+                            <Grid item xs={4}>
+                                <FormControl>
+                                    {/* <InputLabel htmlFor='hegmen'>Hegmen Gauge</InputLabel> */}
+                                    <TextField
+                                        required
+                                        id='hegmen'
+                                        label='Hegmen Gauge'
+                                        type='number'
+                                        value={qualityTestDetails?.quality?.hegmen}
+                                        onChange={handleChange}
+                                        helperText={`Acceptable Range: ${(qualityRanges?.qualityTestLimits?.hegmenRange?.from) ?? 1} - ${(qualityRanges?.qualityTestLimits?.hegmenRange?.to) ?? 7}`}
+                                        sx={{ backgroundColor: 'white' }}
+                                    />
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <FormControl >
+                                    {/* <InputLabel htmlFor='viscosity'>Viscosity</InputLabel> */}
+                                    <TextField
+                                        required
+                                        id='viscosity'
+                                        label='Viscosity'
+                                        type='number'
+                                        value={qualityTestDetails?.quality?.viscosity}
+                                        onChange={handleChange}
+                                        sx={{ backgroundColor: 'white' }}
+                                    />
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={4}>
+                                <FormControl>
+                                    {/* <InputLabel htmlFor='density'>Density</InputLabel> */}
+                                    <TextField
+                                        required
+                                        id='density'
+                                        label='Density'
+                                        type='number'
+                                        value={qualityTestDetails?.quality?.density}
+                                        onChange={handleChange}
+                                        helperText={`Acceptable Range: ${(qualityRanges?.qualityTestLimits?.densityRange?.from) ?? 0.5} - ${(qualityRanges?.qualityTestLimits?.densityRange?.to) ?? 3}`}
+                                        sx={{ backgroundColor: 'white' }}
+                                        inputProps={{ step: 0.01 }}
+                                    />
+                                </FormControl>
+                            </Grid>
                         </Grid>
-                        <Grid item xs={4}>
-                            <FormControl>
-                                {/* <InputLabel htmlFor='viscosity'>Viscosity</InputLabel> */}
-                                <TextField
-                                    id='viscosity'
-                                    label='Viscosity'
-                                    type='number'
-                                    value={quality.viscosity}
-                                    onChange={handleChange}
-                                    required
-                                    sx={{ backgroundColor: 'white' }}
-                                />
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={4}>
-                            <FormControl>
-                                {/* <InputLabel htmlFor='density'>Density</InputLabel> */}
-                                <TextField
-                                    id='density'
-                                    label='Density'
-                                    type='number'
-                                    value={quality.density}
-                                    onChange={handleChange}
-                                    required
-                                    sx={{ backgroundColor: 'white' }}
-                                />
-                            </FormControl>
-                        </Grid>
-                    </Grid>
-                    <Button variant='contained' color='info' onClick={handleSubmit} sx={{ width: 80 }}>Save</Button>
+                        <Button variant='contained' color='info' type='submit' sx={{ width: 80 }}>Save</Button>
+                    </Box>
                 </Stack>
             </Container>
-            <CustomSnackbar open={open} setOpen={setOpen} severity="success" message="Quality Test saved successfully" />
+            <CustomSnackbar open={open} setOpen={setOpen} severity={snackbarParams.severity} message={snackbarParams.message} />
         </>
     )
 }
