@@ -185,7 +185,7 @@ export const StockOutReport = React.forwardRef(({ }, ref) => {
                             {stockReport?.materialData.map((item) => (
                                 <tr key={item._id}>
                                     <td style={cellStyle}>{item.labelId}</td>
-                                    <td style={cellStyle}>aisjdaskjdpaosidpoaisdpoaisdpoaisdpoiapsodia</td>
+                                    <td style={cellStyle}>{item.boqName}</td>
                                     <td style={cellStyle}>{item.prodName}</td>
                                     {/* <td style={cellStyle}>{item.colorShade}</td> */}
                                     <td style={cellStyle}>{item.qty}</td>
