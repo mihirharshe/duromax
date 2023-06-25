@@ -66,6 +66,21 @@ export const EditBoq = () => {
             try {
                 const res = await axios.get(`${baseUrl}/api/v1/boq/${params.id}`);
                 setBoq(res.data.boq);
+                if(!res.data.boq.qualityTestLimits) { // for prev BOQ having no test ranges, need to specify empty strings as default values; otherwise can't enter any values in the field during duplication
+                    setBoq(prev => ({
+                        ...prev,
+                        qualityTestLimits: {
+                            densityRange: {
+                                from: '',
+                                to: ''
+                            },
+                            hegmenRange: {
+                                from: '',
+                                to: ''
+                            }
+                        }
+                    }))
+                }
                 setBoqContent(res.data.boq.content);
             } catch (err) {
                 console.log(err)
@@ -213,7 +228,6 @@ export const EditBoq = () => {
             newBoq.content = boqContent;
             setBoq(newBoq);
             const res = await axios.post(`${baseUrl}/api/v1/boq`, newBoq);
-            console.log(res);
             if (res.status === 200) {
                 setOpenSnackbar(true);
                 setSnackbarSeverity('success');
