@@ -6,6 +6,7 @@ const materialDataSchema = Schema({
     prodName: String,
     colorShade: String,
     labelId: String,
+    qty: Number,
     units: Number
 }, { timestamps: true });
 

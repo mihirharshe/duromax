@@ -226,13 +226,14 @@ const getAvailableUnitsByLabelId = async (req, res) => {
             });
         }
 
-        const { boqName, prodName, colorShade } = firstDoc;
+        const { boqName, prodName, colorShade, bktQty } = firstDoc;
 
         return res.status(200).json({
             prodName,
             boqName,
             colorShade,
             labelId,
+            qty: bktQty,
             availableUnits
         });
 

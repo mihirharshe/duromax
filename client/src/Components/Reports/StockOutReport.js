@@ -56,7 +56,8 @@ export const StockOutReport = React.forwardRef(({ }, ref) => {
         border: "1px solid black",
         borderCollapse: "collapse",
         padding: "15px",
-        textAlign: "left"
+        textAlign: "left",
+        wordWrap: 'break-word'
     }
 
     const cellThStyle = {
@@ -113,6 +114,7 @@ export const StockOutReport = React.forwardRef(({ }, ref) => {
 
     const stockTableStyles = {
         width: "100%",
+        tableLayout: "fixed",
         borderCollapse: "collapse",
         fontSize: "16px"
     }
@@ -171,20 +173,22 @@ export const StockOutReport = React.forwardRef(({ }, ref) => {
                     <table style={stockTableStyles}>
                         <thead>
                             <tr>
-                                <th style={cellThStyle}>Bucket ID</th>
-                                <th style={cellThStyle}>BOQ Name</th>
-                                <th style={cellThStyle}>Product Name</th>
-                                <th style={cellThStyle}>Color Shade</th>
-                                <th style={cellThStyle}>Units</th>
+                                <th style={{...cellThStyle, width: '180px' }}>Bucket ID</th>
+                                <th style={{...cellThStyle, width: '190px'}}>BOQ Name</th>
+                                <th style={{...cellThStyle, width: '190px'}}>Product Name</th>
+                                {/* <th style={cellThStyle}>Color Shade</th> */}
+                                <th style={{...cellThStyle, width: '90px'}}>Qty (kg)</th>
+                                <th style={{...cellThStyle, width: '80px'}}>Units</th>
                             </tr>
                         </thead>
                         <tbody>
                             {stockReport?.materialData.map((item) => (
                                 <tr key={item._id}>
                                     <td style={cellStyle}>{item.labelId}</td>
-                                    <td style={cellStyle}>{item.boqName}</td>
+                                    <td style={cellStyle}>aisjdaskjdpaosidpoaisdpoaisdpoaisdpoiapsodia</td>
                                     <td style={cellStyle}>{item.prodName}</td>
-                                    <td style={cellStyle}>{item.colorShade}</td>
+                                    {/* <td style={cellStyle}>{item.colorShade}</td> */}
+                                    <td style={cellStyle}>{item.qty}</td>
                                     <td style={cellStyle}>{item.units}</td>
                                 </tr>
                             ))}

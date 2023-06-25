@@ -64,6 +64,7 @@ const StockOut = () => {
                 prodName: res.data.prodName,
                 boqName: res.data.boqName,
                 colorShade: res.data.colorShade,
+                qty: res.data.qty,
                 availableUnits: res.data.availableUnits
             }
             const labelIdExists = scannedStocks.some(item => item.labelId === scannedDetails.labelId);
@@ -110,7 +111,8 @@ const StockOut = () => {
                 units: Number(units[stock.labelId]) || 0,
                 boqName: stock.boqName,
                 prodName: stock.prodName,
-                colorShade: stock.colorShade
+                colorShade: stock.colorShade,
+                qty: stock.qty
             }));
             const res = await axios.post(`${baseUrl}/api/v1/stock-out`, {
                 scannedStocks: data,
@@ -166,6 +168,7 @@ const StockOut = () => {
                             <p>Product Name: {stock.prodName}</p>
                             <p>BOQ Name: {stock.boqName}</p>
                             <p>Color Shade: {stock.colorShade}</p>
+                            <p>Quantity: {stock.qty} kg</p>
                             <p>Available Units: {stock.availableUnits}</p>
                             <TextField
                                 label="Units to stock out"
