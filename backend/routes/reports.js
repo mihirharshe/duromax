@@ -11,12 +11,16 @@ router.get('/batch', async (req, res) => {
     await reportController.getBatchReport(req, res);
 });
 
-router.get('/stock-inventory', async (req, res) => {
+router.get('/old-stock-inventory', async (req, res) => {
     await stockController.getStockInventory(req, res);
 });
 
 router.get('/inventory-bkts', async (req, res) => {
     await stockController.getNewStockInventory(req, res);
+});
+
+router.get('/stock-inventory', async (req, res) => {
+    await reportController.getActualStockInventory(req, res);
 });
 
 router.put('/sell-bkt/:bktId', async (req, res) => {

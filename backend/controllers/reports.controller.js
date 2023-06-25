@@ -323,5 +323,30 @@ const getSingleStockReport = async (req, res) => {
     }
 }
 
+const getActualStockInventory = async (req, res) => { // previous stock inventories -> bucket inventories. this is new stock inventory consisting of only boq's along with their available qty
+    try {
+        let aggregationPipeline = [
+            { $match: { sold: false } },
+            {
+                $group: {
+                    _id: "$boqName",
+                    totalQty: { $sum: "$bktQty" },
+                    updatedAt: { $max: "$updatedAt" }
+                }
+            }
+        ];
+        let actualStockInv = await stockInventoryBucketsModel.aggregate(aggregationPipeline);
+        res.status(200).json({
+            message: `Successfully fetched stock inventory`,
+            stockInventory: actualStockInv
+        })
 
-module.exports = { fetchBatchReportAsync, getSales, getRMReport, getAdjRMReport, getBktReport, getAdjBktReport, getBatchReport, getStockReports, getSingleStockReport }
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        })
+    }
+}
+
+
+module.exports = { fetchBatchReportAsync, getSales, getRMReport, getAdjRMReport, getBktReport, getAdjBktReport, getBatchReport, getStockReports, getSingleStockReport, getActualStockInventory }
