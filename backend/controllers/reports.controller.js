@@ -5,6 +5,12 @@ const rawMaterialModel = require('../models/rawMaterial.model');
 const adjustBktModel = require('../models/adjustBkt.model');
 const { stockInventoryBucketsModel } = require('../models/stockInventory.model');
 const { stockReportModel } = require('../models/stockReport.model');
+const nodemailer = require('nodemailer');
+const handlebars = require('handlebars');
+const { getDeficitRMs } = require('./rawMaterial.controller');
+const { getDeficitBuckets } = require('./bucket.controller');
+const fs = require('fs');
+const { join } = require('path');
 
 const getBatchReportDetails = async (prodId, batchNo) => {
     let aggregationPipeline = [
@@ -348,5 +354,53 @@ const getActualStockInventory = async (req, res) => { // previous stock inventor
     }
 }
 
+const getEmailTemplateContent = async (template, context) => {
+    return new Promise((resolve) => {
+        template = template.replace(/(\r\n|\n|\r|\t)/g, "");
+        resolve(handlebars.compile(template, { noEscape: true })(context));
+    });
+}
 
-module.exports = { fetchBatchReportAsync, getSales, getRMReport, getAdjRMReport, getBktReport, getAdjBktReport, getBatchReport, getStockReports, getSingleStockReport, getActualStockInventory }
+const sendRMandBktsEmail = async (_req, res) => { // deprecated API (using function in emailUpdates for cron job)
+
+    const deficitRMs = await getDeficitRMs();
+    const deficitBkts = await getDeficitBuckets();
+
+    const templateHtml = fs.readFileSync(join(__dirname, '../templates/quantity-alert.html')).toString();
+
+    const data = {
+        deficitRawMaterials: deficitRMs,
+        deficitBuckets: deficitBkts,
+    };
+
+    const htmlBody = await getEmailTemplateContent(templateHtml, data);
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.MAIL_EMAILID,
+            pass: process.env.MAIL_PASSWORD
+        }
+    });
+    
+    const mailOpts = {
+        from: process.env.MAIL_EMAILID,
+        to: ['mihir.harshe12@gmail.com'],
+        subject: 'Raw Materials and Buckets Quantity Update',
+        html: htmlBody
+    };
+    
+    transporter.sendMail(mailOpts, (err, info) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({
+                err
+            });
+        } else {
+            res.status(200).json(info);
+        }
+    });
+}
+
+
+module.exports = { fetchBatchReportAsync, getSales, getRMReport, getAdjRMReport, getBktReport, getAdjBktReport, getBatchReport, getStockReports, getSingleStockReport, getActualStockInventory, sendRMandBktsEmail }

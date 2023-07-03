@@ -74,9 +74,33 @@ const deleteRawMaterial = async (req, res) => {
     }
 }
 
+const getDeficitRMs = async () => {
+    try {
+        // const deficitRMs = await rawMaterialModel.find({ $expr: { $lt: ['$qty', '$alertQty'] } });
+        const aggPipe = [
+            {
+                $match: { $expr: { $lt: ['$qty', '$alertQty'] } }
+            },
+            {
+                $project: {
+                    name: 1,
+                    qty: { $round: ['$qty', 3] },
+                    alertQty: 1,
+                    _id: 0
+                }
+            }
+        ]
+        const deficitRMs = await rawMaterialModel.aggregate(aggPipe);
+        return deficitRMs;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 module.exports = {
     getRawMaterial,
     addRawMaterial,
     updateRawMaterial,
-    deleteRawMaterial
+    deleteRawMaterial,
+    getDeficitRMs
 }

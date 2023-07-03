@@ -55,4 +55,8 @@ router.get('/stock-out/:transactionId', async (req, res) => {
     await reportController.getSingleStockReport(req, res);
 });
 
+// router.post('/send-mail', async (req, res) => {
+//     await reportController.sendRMandBktsEmail(req, res);
+// })
+
 module.exports = router;

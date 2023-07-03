@@ -80,7 +80,7 @@ const updateBucket = async (req, res) => {
 const deleteBucket = async (req, res) => {
     const { id } = req.params;
     try {
-        const bucket = await bucket.findById(id);
+        const bucket = await bucketModel.findById(id);
         await bucket.remove();
         res.status(200).json({
             message: 'Successfully deleted a bucket'
@@ -93,10 +93,34 @@ const deleteBucket = async (req, res) => {
     }
 }
 
+const getDeficitBuckets = async () => {
+    try {
+        // const deficitBkts = await bucketModel.find({ $expr: { $lt: ['$qty', '$alertQty'] } });
+        const aggPipe = [
+            {
+                $match: { $expr: { $lt: ['$qty', '$alertQty'] } }
+            },
+            {
+                $project: {
+                    name: 1,
+                    qty: { $round: ['$qty', 3] },
+                    alertQty: 1,
+                    _id: 0
+                }
+            }
+        ]
+        const deficitBkts = await bucketModel.aggregate(aggPipe);
+        return deficitBkts;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 module.exports = {
     getBuckets,
     getSingleBucket,
     addBucket,
     updateBucket,
-    deleteBucket
+    deleteBucket,
+    getDeficitBuckets
 }
