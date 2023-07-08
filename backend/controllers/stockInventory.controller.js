@@ -247,7 +247,6 @@ const getAvailableUnitsByLabelId = async (req, res) => {
 
 const executeStockOut = async (req, res) => {
     const { scannedStocks, customer } = req.body;
-    console.log(req.body)
     try {
         for (const stock of scannedStocks) {
             const { units, labelId } = stock;

@@ -46,7 +46,8 @@ const Label = () => {
                     name: prod.productLabelName,
                     colorShade: prod.colorShade,
                     batchNo: prod.batches[0].labelDetails.labelId ?? null,
-                    part: prod.part
+                    part: prod.part,
+                    updatedAt: prod.batches[batchId-1].updatedAt
                 });
             }
         }
@@ -96,12 +97,10 @@ const handleSubmit = async (e) => {
         //     qtyKg: res.data.labelDetails.qtyKg,
         //     qtyL: res.data.labelDetails.qtyL,
         // });
-        console.log(res.data.bucketDetails)
         let reducedBktDetails = res.data.bucketDetails.reduce((acc, curr) => {
             acc.push(curr.bktLabelDetails);
             return acc;
         }, [])
-        console.log(prod);
         setLabelDetails(reducedBktDetails);
         setCommonLabel({
             name: prod.productLabelName,
@@ -115,7 +114,6 @@ const handleSubmit = async (e) => {
 // const { inputRef } = useBarcode({
 //     value: labelDetails.labelId
 // })
-console.log(labelDetails)
 // const componentRef = useRef();
 
 return (

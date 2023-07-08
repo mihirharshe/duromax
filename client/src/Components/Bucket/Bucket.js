@@ -144,7 +144,6 @@ export const Bucket = () => {
 
     const handleEdit = useCallback((row) => async (e) => {
         handleEditDialogOpen();
-        console.log(row);
         setName(row.name);
         setQty(row.qty);
         setCapacity(row.capacity);

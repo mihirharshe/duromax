@@ -151,7 +151,6 @@ const deleteProductionInsert = async (req, res) => {
 const addBatch = async (req, res) => {
     const { id } = req.params;
     const { batchIdx, batchDetails } = req.body;
-    console.log(req.body);
     try {
         const production = await productionModel.findByIdAndUpdate(id, { $set: { [`batches.${batchIdx}`]: { ...batchDetails, batch: batchIdx + 1 } } });
         await production.save();
@@ -169,7 +168,6 @@ const addBatch = async (req, res) => {
 const addAllBatches = async (req, res) => {
     const { id } = req.params;
     const { batches } = req.body;
-    console.log(req.body);
     try {
         // const production = await productionModel.findById(id);
         // console.log(production);
@@ -491,7 +489,6 @@ const saveLabelDetails = async (req, res) => { // not in use rn
         const production = await productionModel.findById(id);
         const batch = production.batches.find(x => x.batch == batchId);
         batch.labelDetails = labelDetails;
-        console.log(batch);
         await production.save();
 
         const savedBatch = await batchModel.findOneAndUpdate(
@@ -521,8 +518,7 @@ const saveLabelDetails = async (req, res) => { // not in use rn
 
 const _getAllBktLabels = async (req, res) => { // to update and get labels [POST]
     const { id, batchId } = req.params;
-    const { labelDetails, stage, completed } = req.body;
-    console.log(labelDetails);
+    const { stage, completed } = req.body;
     try {
         const production = await productionModel.findById(id);
         const batch = production.batches.find(x => x.batch == batchId);
@@ -554,7 +550,8 @@ const _getAllBktLabels = async (req, res) => { // to update and get labels [POST
             batchNo: batch.bucketDetails[0].bktLabelDetails.labelId.substring(0, 12) ?? null,
             colorShade: production.colorShade,
             productLabelName: production.productLabelName,
-            part: production.part
+            part: production.part,
+            updatedAt: batch.updatedAt
         });
 
     } catch (err) {
@@ -569,7 +566,6 @@ const getAllLabels = async (req, res) => { // only to get labels [GET]
     try {
         const production = await productionModel.findById(id);
         const batch = production.batches.find(x => x.batch == batchId);
-        console.log(production)
         // const batch = await batchModel.findOne({ productionId: id, batch: batchId });
         let reducedBktDetails = batch.bucketDetails.reduce((acc, curr) => {
             acc.push(curr.bktLabelDetails);
@@ -580,7 +576,8 @@ const getAllLabels = async (req, res) => { // only to get labels [GET]
             productLabelName: production.productLabelName,
             batchNo: batch.labelDetails.labelId,
             bucketDetails: reducedBktDetails,
-            part: production.part
+            part: production.part,
+            updatedAt: batch.updatedAt,
         })
     } catch (err) {
         res.status(500).json({

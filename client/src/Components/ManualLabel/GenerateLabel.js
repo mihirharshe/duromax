@@ -14,7 +14,8 @@ const GenerateLabel = () => {
         name: '',
         colorShade: '',
         batchNo: '',
-        part: ''
+        part: '',
+        updatedAt: ''
     });
 
     const [isLoaded, setIsLoaded] = useState(false);
@@ -182,6 +183,23 @@ const GenerateLabel = () => {
                                     </Select>
                                 </FormControl>
                             </Grid>
+                            <Grid item xs={3}>
+                                <Typography variant='h6'>Mfd. Date</Typography>
+                                <FormControl sx={{ m: 1 }}>
+                                    <TextField
+                                        // autoFocus="autoFocus"
+                                        key="date"
+                                        name="updatedAt"
+                                        id="updatedAt"
+                                        label="Mfd. Date (DD/MM/YYYY)"
+                                        type="text"
+                                        variant="outlined"
+                                        required
+                                        value={commonLabel.updatedAt}
+                                        onChange={e => handleCLChange(e)}
+                                    />
+                                </FormControl>
+                            </Grid>
                         </Grid>
                     </Paper>
                     <Button type="submit" variant="contained">SUBMIT</Button>
@@ -190,7 +208,7 @@ const GenerateLabel = () => {
                     <Grid container alignItems="center" justifyContent="space-around">
                         {
                             <div>
-                                <FinalLabel labelDetails={labelDetails} batchId={labelDetails.batchId} commonLabel={commonLabel} />
+                                <FinalLabel labelDetails={labelDetails} batchId={labelDetails.batchId} commonLabel={commonLabel} manualLabel={true}/>
                             </div>
                         }
                     </Grid>

@@ -104,7 +104,6 @@ export const BucketFill = () => {
                 severity: 'success',
                 message: 'Bucket details saved successfully'
             });
-            console.log(batchCount, batchId);
             if (batchCount == batchId) {
                 await axios.put(`${baseUrl}/api/v1/prod/status/${id}`, { status: 'Completed' });
             }

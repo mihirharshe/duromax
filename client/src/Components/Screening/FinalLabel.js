@@ -1,15 +1,11 @@
 import React, { useRef } from 'react'
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button'
 import { useBarcode } from 'next-barcode';
 import ReactToPrint from 'react-to-print'
 import Barcode from 'react-barcode';
+import dayjs from 'dayjs';
 
-const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel }, ref) => {
-
+const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel, manualLabel }, ref) => {
     const tableStyle = {
         backgroundColor: "white",
         fontSize: "18px",
@@ -33,7 +29,6 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel }, ref
     // const { inputRef } = useBarcode({
     //     value: labelDetails.labelId
     // })
-
     const componentRef = useRef();
 
     // const card = (
@@ -54,7 +49,6 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel }, ref
     //         </CardContent>
     //     </>
     // );
-
     return (
         // <div ref={ref}>
         //     <Box sx={{ minWidth: 275 }}>
@@ -78,7 +72,7 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel }, ref
                         <tr>
                             <td>QUANTITY</td>
                             <td>:</td>
-                            <td>{parseFloat(labelDetails.qtyKg)?.toFixed(3)}Kg / {parseFloat(labelDetails.qtyL)?.toFixed(3)}Ltr</td>
+                            <td>{parseFloat(labelDetails.qtyKg)?.toFixed(3)} kg / {parseFloat(labelDetails.qtyL)?.toFixed(3)} ltr</td>
                         </tr>
                         <tr>
                             <td>BATCH NO.</td>
@@ -89,6 +83,11 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel }, ref
                             <td>PART</td>
                             <td>:</td>
                             <td>{commonLabel.part}</td>
+                        </tr>
+                        <tr>
+                            <td>MFD. DATE</td>
+                            <td>:</td>
+                            <td>{manualLabel ? commonLabel.updatedAt : dayjs(commonLabel.updatedAt).format('DD/MM/YYYY') }</td>
                         </tr>
                     </tbody>
                 </table>

@@ -1,6 +1,4 @@
 const boqMainModel = require('../models/boqMain.model');
-const rawMaterialModel = require('../models/rawMaterial.model');
-const mongoose = require('mongoose');
 
 const getAllBoq = async (_, res) => {
     try {
@@ -107,7 +105,6 @@ const updateBoq = async (req, res) => {
             batch_size,
             content
         });
-        console.log(rs);
         res.status(200).json({
             message: `Successfully updated BOQ: ${id}`,
         });

@@ -95,7 +95,6 @@ const handleRefreshToken = async (req, res) => {
 const handleLogout = async (req, res) => {
     try {
         const cookies = req.cookies;
-        console.log(cookies);
         if(!cookies?.refreshToken) {
             return res.sendStatus(204);
         }

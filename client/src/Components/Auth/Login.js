@@ -87,7 +87,6 @@ export const Login = () => {
             });
             // localStorage.setItem('token', accessToken);
             // console.log(response);
-            console.log(decoded);
             setSuccess(true);
             setError({ email: '', password: '' });
             setErrMsg('');

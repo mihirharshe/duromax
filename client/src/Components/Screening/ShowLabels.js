@@ -19,7 +19,8 @@ const ShowLabels = ({ batchId }) => {
                 name: res.data.productLabelName,
                 colorShade: res.data.colorShade,
                 batchNo: res.data.batchNo,
-                part: res.data.part
+                part: res.data.part,
+                updatedAt: res.data.updatedAt
             });
             setIsLoaded(true);
         }
