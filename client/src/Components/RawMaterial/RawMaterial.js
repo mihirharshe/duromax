@@ -144,7 +144,6 @@ export const RawMaterial = () => {
 
     const handleEdit = useCallback((row) => async (e) => {
         handleEditDialogOpen();
-        console.log(row);
         setName(row.name);
         setQty(row.qty);
         setAlertQty(row.alertQty);
