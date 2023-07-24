@@ -40,7 +40,6 @@ const BucketReport = () => {
             renderCell: (params) => {
                 const onClick = (e) => {
                     e.stopPropagation();
-                    console.log(params.row);
                     // setSelectedRM(params.row.name);
                     handleOpenAdj(params.row._id);
                 };

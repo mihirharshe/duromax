@@ -21,7 +21,6 @@ const SalesReport = () => {
 
     const pickDate = (newValue) => {
         setValue(newValue);
-        console.log(dayjs(newValue).format('YYYY-MM-DD'))
         setQueryDate(dayjs(newValue).format('YYYY-MM-DD'));
     }
 

@@ -46,7 +46,6 @@ const StockOutReportsTable = () => {
                 const onClick = (e) => {
                     e.stopPropagation();
                     // navigate(`/reports/batch/${params.row.productionId}/${params.row.batch}`)
-                    console.log(params);
                     navigate(`/reports/stock-out/${params.row.transactionId}`, { state: params.row });
                 };
                 return <Button variant='contained' onClick={onClick}>SHOW</Button>
