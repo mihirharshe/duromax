@@ -58,7 +58,7 @@ app.use(function(err, req, res, next) {
 });
 
 try {
-    cron.schedule('0 8 * * 1,4', async () => { // 0mins, 8hrs -> (8:00AM), any day of the month, any month, Monday & Thursday
+    cron.schedule('30 2 * * 1,4', async () => { // 0mins, 8hrs -> (8:00AM), any day of the month, any month, Monday & Thursday
         await sendRMandBktsEmail();
     }).start();
 }
