@@ -107,7 +107,7 @@ export const Production = () => {
                 let batchSize = selectedItem.batch_size;
                 let batchCount = Math.ceil(data.qty / batchSize);
                 let batchQty = data.qty / batchCount;
-                if (!Number.isInteger(batchQty / data.pack_size)) throw new PackSizeError(`Invalid pack size. Pack size should be divisible by resultant batch size ${batchQty}`);
+                if (!Number.isInteger(parseFloat(batchQty / data.pack_size).toFixed(3))) throw new PackSizeError(`Invalid pack size. Pack size should be divisible by resultant batch size ${batchQty}`);
                 setPackSizeError(false);
             }
             const res = await axios.post(`${baseUrl}/api/v1/prod/add`, data);
