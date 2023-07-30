@@ -184,14 +184,14 @@ const GenerateLabel = () => {
                                 </FormControl>
                             </Grid>
                             <Grid item xs={3}>
-                                <Typography variant='h6'>Mfd. Date</Typography>
+                                <Typography variant='h6'>Mfg. Date</Typography>
                                 <FormControl sx={{ m: 1 }}>
                                     <TextField
                                         // autoFocus="autoFocus"
                                         key="date"
                                         name="updatedAt"
                                         id="updatedAt"
-                                        label="Mfd. Date (DD/MM/YYYY)"
+                                        label="Mfg. Date (DD/MM/YYYY)"
                                         type="text"
                                         variant="outlined"
                                         required

@@ -85,7 +85,7 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel, manua
                             <td>{commonLabel.part}</td>
                         </tr>
                         <tr>
-                            <td>MFD. DATE</td>
+                            <td>MFG. DATE</td>
                             <td>:</td>
                             <td>{manualLabel ? commonLabel.updatedAt : dayjs(commonLabel.updatedAt).format('DD/MM/YYYY') }</td>
                         </tr>
