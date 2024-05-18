@@ -52,7 +52,7 @@ const getOneProductionInsert = async (req, res) => {
 }
 
 const addProductionInsert = async (req, res) => {
-    const { name, boqId, qty, pack_size, desc, productLabelName, colorShade, part } = req.body;
+    const { name, boqId, qty, pack_size, desc, productLabelName, colorShade, part, mrp } = req.body;
     try {
         let boq = await boqMainModel.findById(boqId);
         if (!boq) {
@@ -70,7 +70,8 @@ const addProductionInsert = async (req, res) => {
             productLabelName,
             colorShade,
             part,
-            status: 'Start'
+            status: 'Start',
+            mrp
         });
 
         await production.save();
@@ -578,6 +579,7 @@ const getAllLabels = async (req, res) => { // only to get labels [GET]
             bucketDetails: reducedBktDetails,
             part: production.part,
             updatedAt: batch.updatedAt,
+            mrp: production.mrp ?? null
         })
     } catch (err) {
         res.status(500).json({

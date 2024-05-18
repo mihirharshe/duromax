@@ -353,6 +353,16 @@ export const Production = () => {
                             </Select>
                         </FormControl>
                         <TextField
+                            margin="dense"
+                            id="MRP"
+                            name="mrp"
+                            label="MRP (₹)"
+                            type="number"
+                            value={data.mrp}
+                            onChange={handleInputChange}
+                            fullWidth
+                        />
+                        <TextField
                             required
                             margin="dense"
                             id="Remarks"

@@ -20,6 +20,7 @@ const ShowLabels = ({ batchId }) => {
                 colorShade: res.data.colorShade,
                 batchNo: res.data.batchNo,
                 part: res.data.part,
+                mrp: res.data.mrp,
                 updatedAt: res.data.updatedAt
             });
             setIsLoaded(true);

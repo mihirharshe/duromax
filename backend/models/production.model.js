@@ -123,6 +123,10 @@ const productionSchema = Schema({
         enum: ['Start', 'Processing', 'Completed'],
         // default: 'Start',
         // required: true
+    },
+    mrp: {
+        type: Number,
+        required: false
     }
 }, { timestamps: true });
 

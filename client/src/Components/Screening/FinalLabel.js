@@ -14,6 +14,7 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel, manua
 
     const divStyle = {
         width: "407.88px",
+        height: "370.5px",
         backgroundColor: "white",
         margin: "0 auto",
         border: "1px solid black",
@@ -25,6 +26,8 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel, manua
         backgroundColor: "white",
         margin: "0 auto",
     }
+
+    const rowStyle = commonLabel.mrp ? { lineHeight: '1.25' } : {};
 
     // const { inputRef } = useBarcode({
     //     value: labelDetails.labelId
@@ -59,36 +62,43 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel, manua
             <div ref={componentRef} style={divStyle}>
                 <table style={tableStyle}>
                     <tbody>
-                        <tr>
+                        <tr style={rowStyle}>
                             <td>PRODUCT</td>
                             <td width="10%">:</td>
                             <td>{commonLabel.name}</td>
                         </tr>
-                        <tr>
+                        <tr style={rowStyle}>
                             <td>COLOUR SHADE</td>
                             <td>:</td>
                             <td>{commonLabel.colorShade}</td>
                         </tr>
-                        <tr>
+                        <tr style={rowStyle}>
                             <td>QUANTITY</td>
                             <td>:</td>
                             <td>{parseFloat(labelDetails.qtyKg)?.toFixed(3)} kg / {parseFloat(labelDetails.qtyL)?.toFixed(3)} ltr</td>
                         </tr>
-                        <tr>
+                        <tr style={rowStyle}>
                             <td>BATCH NO.</td>
                             <td>:</td>
                             <td>{commonLabel.batchNo}</td>
                         </tr>
-                        <tr>
+                        <tr style={rowStyle}>
                             <td>PART</td>
                             <td>:</td>
                             <td>{commonLabel.part}</td>
                         </tr>
-                        <tr>
+                        <tr style={rowStyle}>
                             <td>MFG. DATE</td>
                             <td>:</td>
                             <td>{manualLabel ? commonLabel.updatedAt : dayjs(commonLabel.updatedAt).format('DD/MM/YYYY') }</td>
                         </tr>
+                        {commonLabel.mrp &&
+                            <tr style={rowStyle}>
+                                <td>MRP</td>
+                                <td>:</td>
+                                <td>₹{commonLabel.mrp}</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
                 {/* <div style={barcodeStyle}>
