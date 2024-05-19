@@ -173,6 +173,7 @@ const GenerateLabel = () => {
                                         name="part"
                                         value={commonLabel.part}
                                         label="Part"
+                                        required
                                         onChange={e => handleCLChange(e)}
                                     >
                                         <MenuItem value="A">A</MenuItem>
@@ -196,6 +197,22 @@ const GenerateLabel = () => {
                                         variant="outlined"
                                         required
                                         value={commonLabel.updatedAt}
+                                        onChange={e => handleCLChange(e)}
+                                    />
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={3}>
+                                <Typography variant='h6'>MRP</Typography>
+                                <FormControl sx={{ m: 1 }}>
+                                    <TextField
+                                        // autoFocus="autoFocus"
+                                        key="mrp"
+                                        name="mrp"
+                                        id="mrp"
+                                        label="MRP (₹)"
+                                        type="number"
+                                        variant="outlined"
+                                        value={commonLabel.mrp}
                                         onChange={e => handleCLChange(e)}
                                     />
                                 </FormControl>

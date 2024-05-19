@@ -96,7 +96,7 @@ const FinalLabel = React.forwardRef(({ labelDetails, batchId, commonLabel, manua
                             <tr style={rowStyle}>
                                 <td>MRP</td>
                                 <td>:</td>
-                                <td>₹{commonLabel.mrp}</td>
+                                <td>₹{commonLabel.mrp}/-</td>
                             </tr>
                         }
                     </tbody>
