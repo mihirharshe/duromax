@@ -11,7 +11,7 @@ const materialDataSchema = Schema({
 }, { timestamps: true });
 
 const stockReportSchema = Schema({
-    customer: String,
+    customerId: String,
     materialData: [materialDataSchema],
     transactionId: String
 }, { timestamps: true });

@@ -8,6 +8,7 @@ router.get('/', function(req, res, next) {
 
 router.use('/rm', require('./rawMaterial'));
 router.use('/bkt', require('./bucket'));
+router.use('/customers', require('./customer'));
 router.use('/boq', require('./boqMain'));
 router.use('/adj-rm', require('./adjRM'));
 router.use('/adj-bkt', require('./adjBkt'));

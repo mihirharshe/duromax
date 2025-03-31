@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react'
-import { Container, Paper, FormControl, Grid, TextField, Box, InputLabel, Typography, Button, Select, MenuItem } from '@mui/material';
+import { Container, Paper, FormControl, Grid, TextField, Box, InputLabel, Typography, Button, Select, MenuItem, Autocomplete } from '@mui/material';
 import { CustomSnackbar } from '../Snackbar/CustomSnackbar';
 
 const StockOut = () => {
@@ -23,6 +23,24 @@ const StockOut = () => {
     const [isAvailableUnitsLoaded, setAvailableUnitsLoaded] = useState(false);
 
     const [scannedStocks, setScannedStocks] = useState([]);
+
+    const [customers, setCustomers] = useState([]);
+
+    useEffect(() => {
+        const fetchCustomers = async () => {
+            try {
+                const response = await axios.get(`${baseUrl}/api/v1/customers`);
+                setCustomers(response.data.customers);
+            } catch (err) {
+                setSnackbarParams({
+                    severity: 'error',
+                    message: err?.response?.data?.message || 'Failed to fetch customers'
+                });
+                setSbOpen(true);
+            }
+        };
+        fetchCustomers();
+    }, []);
 
     const handleChange = (e) => {
         setStockOutParams(prev => ({
@@ -116,7 +134,7 @@ const StockOut = () => {
             }));
             const res = await axios.post(`${baseUrl}/api/v1/stock-out`, {
                 scannedStocks: data,
-                customer: stockOutParams.soldTo
+                customerId: stockOutParams.soldTo
             });
             setSnackbarParams({
                 severity: 'success',
@@ -183,22 +201,38 @@ const StockOut = () => {
                         <>
                             <div>
                                 <Typography variant='h6'>Customer</Typography>
-                                <FormControl sx={{ m: 1 }}>
-                                    <TextField
-                                        name="soldTo"
-                                        id="soldTo"
-                                        label="Customer"
-                                        type="text"
-                                        variant="outlined"
-                                        // helperText=' '
-                                        required
-                                        defaultValue={stockOutParams.soldTo || ""}
-                                        onChange={handleChange}
+                                <FormControl sx={{ m: 1 }} fullWidth>
+                                    <Autocomplete
+                                        options={customers}
+                                        getOptionLabel={(option) => option.name}
+                                        onChange={(event, newValue) => {
+                                            setStockOutParams(prev => {
+                                                const updatedState = {
+                                                    ...prev,
+                                                    soldTo: newValue ? newValue._id : ''
+                                                };
+                                                return updatedState;
+                                            });
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="Search Customer"
+                                                required
+                                                variant="outlined"
+                                            />
+                                        )}
                                     />
                                 </FormControl>
                             </div>
                             <div>
-                                <Button type="submit" variant="contained">STOCK OUT</Button>
+                                <Button 
+                                    type="submit" 
+                                    variant="contained"
+                                    disabled={!stockOutParams.soldTo}
+                                >
+                                    STOCK OUT
+                                </Button>
                             </div>
                         </>
                     }

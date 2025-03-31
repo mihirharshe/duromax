@@ -298,8 +298,44 @@ const getBatchReport = async (req, res) => {
 
 const getStockReports = async (req, res) => {
     try {
-        const stockReports = await stockReportModel.find({});
-        if (!stockReports)
+        const stockReports = await stockReportModel.aggregate([
+            {
+                $addFields: {
+                    customerObjectId: {
+                        $toObjectId: "$customerId"
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'customers',
+                    localField: 'customerObjectId',
+                    foreignField: '_id',
+                    as: 'customerDetails'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$customerDetails',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    materialData: 1,
+                    transactionId: 1,
+                    createdAt: 1,
+                    customer: {
+                        name: '$customerDetails.name',
+                        address: '$customerDetails.address',
+                        email: '$customerDetails.email',
+                        contact: '$customerDetails.contact'
+                    }
+                }
+            }
+        ]);
+
+        if (!stockReports.length)
             throw new Error('No stock reports found');
         
         res.status(200).json({
@@ -315,10 +351,50 @@ const getStockReports = async (req, res) => {
 const getSingleStockReport = async (req, res) => {
     const { transactionId } = req.params;
     try {
-        const report = await stockReportModel.findOne({ transactionId });
+        const [report] = await stockReportModel.aggregate([
+            {
+                $match: { transactionId }
+            },
+            {
+                $addFields: {
+                    customerObjectId: {
+                        $toObjectId: "$customerId"
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'customers',
+                    localField: 'customerObjectId',
+                    foreignField: '_id', 
+                    as: 'customerDetails'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$customerDetails',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    materialData: 1,
+                    transactionId: 1,
+                    createdAt: 1,
+                    customer: {
+                        name: '$customerDetails.name',
+                        address: '$customerDetails.address',
+                        email: '$customerDetails.email',
+                        contact: '$customerDetails.contact'
+                    }
+                }
+            }
+        ]);
+
         if (!report) {
             throw new Error(`Stock report with transactionId: ${transactionId} not found`);
         }
+
         res.status(200).json({
             stockReport: report
         });

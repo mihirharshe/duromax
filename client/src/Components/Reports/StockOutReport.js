@@ -167,7 +167,7 @@ export const StockOutReport = React.forwardRef(({ }, ref) => {
                             <span style={transactionIdStyles}>Transaction ID: {stockReport?.transactionId}</span>
                         </div>
                         <div style={headerRightStyles}>
-                            <span style={customerStyles}>Customer: {stockReport?.customer}</span>
+                            <span style={customerStyles}>Customer: {stockReport?.customer?.name}</span>
                         </div>
                     </div>
                     <table style={stockTableStyles}>

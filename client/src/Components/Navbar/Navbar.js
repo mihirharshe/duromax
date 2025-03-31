@@ -7,7 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
 import CssBaseline from '@mui/material/CssBaseline';
 import Typography from '@mui/material/Typography';
-import { Tooltip } from '@mui/material';
+import { Tooltip, Collapse } from '@mui/material';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
@@ -19,10 +19,13 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ArticleIcon from '@mui/icons-material/Article';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Link, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 import { RawMaterial } from '../RawMaterial/RawMaterial';
 import { Bucket } from '../Bucket/Bucket';
+import { Customer } from '../Customer/Customer';
 import { Boq } from '../BOQ/Boq';
 import { AddBoq } from '../BOQ/AddBoq';
 import { EditBoq } from '../BOQ/EditBoq';
@@ -51,26 +54,45 @@ import GenerateLabel from '../ManualLabel/GenerateLabel';
 import StockOut from '../StockOut/StockOut';
 import StockOutReportsTable from '../Reports/StockOutReportsTable';
 import StockInventory from '../Reports/StockInventory';
+import { BucketSales } from '../Reports/BucketSales';
+import { Restock } from '../Restock/Restock';
 
 const drawerWidth = 240;
 
 const navigation = [
-    { name: 'Raw Material', icon: <ArticleIcon />, href: '/raw-material', allowedRoles: ['Admin'] },
-    { name: 'Bucket', icon: <ArticleIcon />, href: '/bucket', allowedRoles: ['Admin'] },
+    {
+        name: 'Master',
+        icon: <ArticleIcon />,
+        allowedRoles: ['Admin'],
+        subItems: [
+            { name: 'Raw Material', href: '/raw-material' },
+            { name: 'Bucket', href: '/bucket' },
+            { name: 'Customer', href: '/customer' }
+        ]
+    },
     { name: 'BOQ', icon: <ArticleIcon />, href: '/boq', allowedRoles: ['Admin'] },
     { name: 'Adjust Raw Material', icon: <ArticleIcon />, href: '/adjust-rm', allowedRoles: ['Admin', 'FactoryMain', 'Manager'] },
     { name: 'Adjust Bucket', icon: <ArticleIcon />, href: '/adjust-bkt', allowedRoles: ['Admin', 'FactoryMain', 'Manager'] },
     { name: 'Production', icon: <ArticleIcon />, href: '/production', allowedRoles: ['Admin', 'Manager'] },
     { name: 'Screening', icon: <ArticleIcon />, href: '/screen', allowedRoles: ['Admin', 'Factory', 'FactoryMain'] },
     { name: 'Bucket Inventory', icon: <ArticleIcon />, href: '/bucket-inventory', allowedRoles: ['Admin', 'Factory', 'FactoryMain', 'Manager'] },
+    { name: 'Bucket Sales', icon: <ArticleIcon />, href: '/bucket-sales', allowedRoles: ['Admin', 'Factory', 'FactoryMain', 'Manager'] },
     { name: 'Stock Inventory', icon: <ArticleIcon />, href: '/stock-inventory', allowedRoles: ['Admin', 'Factory', 'FactoryMain', 'Manager'] },
-    { name: 'Sales Report', icon: <ArticleIcon />, href: '/reports/sales', allowedRoles: ['Admin', 'Factory', 'FactoryMain', 'Manager'] },
-    { name: 'Batch Report', icon: <ArticleIcon />, href: '/reports/batch', allowedRoles: ['Admin', 'Factory', 'FactoryMain', 'Manager'] },
-    { name: 'RM Report', icon: <ArticleIcon />, href: '/reports/raw-materials', allowedRoles: ['Admin', 'Manager'] },
-    { name: 'Buckets Report', icon: <ArticleIcon />, href: '/reports/buckets', allowedRoles: ['Admin', 'Manager'] },
-    { name: 'Stock Out Report', icon: <ArticleIcon />, href: '/reports/stock-out', allowedRoles: ['Admin', 'Manager', 'Factory', 'FactoryMain'] },
+    {
+        name: 'Reports',
+        icon: <ArticleIcon />,
+        allowedRoles: ['Admin', 'Factory', 'FactoryMain', 'Manager'],
+        subItems: [
+            { name: 'Sales Report', href: '/reports/sales' },
+            { name: 'Batch Report', href: '/reports/batch' },
+            { name: 'RM Report', href: '/reports/raw-materials' },
+            { name: 'Buckets Report', href: '/reports/buckets' },
+            { name: 'Stock Out Report', href: '/reports/stock-out' }
+        ]
+    },
     { name: 'Stock Out', icon: <ArticleIcon />, href: '/stock-out', allowedRoles: ['Admin', 'Manager', 'Factory', 'FactoryMain'] },
     { name: 'Generate Label', icon: <ArticleIcon />, href: '/generate-label', allowedRoles: ['Admin', 'Manager', 'Factory', 'FactoryMain'] },
+    { name: 'Restock', icon: <ArticleIcon />, href: '/restock', allowedRoles: ['Admin', 'Manager', 'Factory', 'FactoryMain'] },
 ];
 
 const openedMixin = (theme) => ({
@@ -142,6 +164,7 @@ export default function Navbar() {
     const { auth } = useAuth();
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
+    const [subMenus, setSubMenus] = React.useState({});
     const logout = useLogout();
     const navigate = useNavigate();
 
@@ -157,6 +180,30 @@ export default function Navbar() {
         await logout();
         navigate('/');
     }
+
+    const toggleSubMenu = (itemName) => {
+        setSubMenus(prev => ({
+            ...prev,
+            [itemName]: !prev[itemName]
+        }));
+    };
+
+    // Add click event listener to close drawer when clicking outside
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            // Check if drawer is open and click is outside drawer and hamburger menu
+            if (open && 
+                !event.target.closest('.MuiDrawer-paper') && 
+                !event.target.closest('[aria-label="open drawer"]')) {
+                setOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [open]);
 
     return (
         <Box>
@@ -180,7 +227,6 @@ export default function Navbar() {
                     </Typography>
                     <Button variant="contained" color="info" onClick={handleLogout}>LOGOUT</Button>
                 </Toolbar>
-
             </AppBar>
             <Drawer variant="permanent" open={open}>
                 <DrawerHeader>
@@ -195,31 +241,68 @@ export default function Navbar() {
                             return item.allowedRoles.some(role => auth.roles.includes(role));
                         })
                         .map((item) => (
-                            <Link key={item.name} to={item.href} className="navLinks">
-                                <Tooltip title={item.name} arrow placement='right'>
-                                    <ListItem key={item.name} disablePadding sx={{ display: 'block' }}>
-                                        <ListItemButton
-                                            sx={{
-                                                minHeight: 48,
-                                                justifyContent: open ? 'initial' : 'center',
-                                                px: 2.5,
-                                            }}
-                                        >
-                                            <ListItemIcon
+                            <React.Fragment key={item.name}>
+                                {item.subItems ? (
+                                    <>
+                                        <ListItem disablePadding>
+                                            <ListItemButton onClick={() => toggleSubMenu(item.name)}
                                                 sx={{
-                                                    minWidth: 0,
-                                                    mr: open ? 3 : 'auto',
-                                                    justifyContent: 'center',
-                                                }}
-                                            >
-                                                {item.icon}
-                                                {/* {index % 2 === 0 ? <InboxIcon /> : <MailIcon />} */}
-                                            </ListItemIcon>
-                                            <ListItemText primary={item.name} sx={{ opacity: open ? 1 : 0 }} />
-                                        </ListItemButton>
-                                    </ListItem>
-                                </Tooltip>
-                            </Link>
+                                                    minHeight: 48,
+                                                    justifyContent: open ? 'initial' : 'center',
+                                                    px: 2.5,
+                                                }}>
+                                                <ListItemIcon
+                                                    sx={{
+                                                        minWidth: 0,
+                                                        mr: open ? 3 : 'auto',
+                                                        justifyContent: 'center',
+                                                    }}>
+                                                    {item.icon}
+                                                </ListItemIcon>
+                                                <ListItemText primary={item.name} sx={{ opacity: open ? 1 : 0 }} />
+                                                {open && (subMenus[item.name] ? <ExpandLess /> : <ExpandMore />)}
+                                            </ListItemButton>
+                                        </ListItem>
+                                        <Collapse in={subMenus[item.name] && open} timeout="auto" unmountOnExit>
+                                            <List component="div" disablePadding>
+                                                {item.subItems.map((subItem) => (
+                                                    <Link key={subItem.name} to={subItem.href} className="navLinks">
+                                                        <ListItemButton sx={{ pl: 4 }}>
+                                                            <ListItemIcon>
+                                                                <ArticleIcon />
+                                                            </ListItemIcon>
+                                                            <ListItemText primary={subItem.name} />
+                                                        </ListItemButton>
+                                                    </Link>
+                                                ))}
+                                            </List>
+                                        </Collapse>
+                                    </>
+                                ) : (
+                                    <Link to={item.href} className="navLinks">
+                                        <Tooltip title={item.name} arrow placement='right'>
+                                            <ListItem disablePadding sx={{ display: 'block' }}>
+                                                <ListItemButton
+                                                    sx={{
+                                                        minHeight: 48,
+                                                        justifyContent: open ? 'initial' : 'center',
+                                                        px: 2.5,
+                                                    }}>
+                                                    <ListItemIcon
+                                                        sx={{
+                                                            minWidth: 0,
+                                                            mr: open ? 3 : 'auto',
+                                                            justifyContent: 'center',
+                                                        }}>
+                                                        {item.icon}
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={item.name} sx={{ opacity: open ? 1 : 0 }} />
+                                                </ListItemButton>
+                                            </ListItem>
+                                        </Tooltip>
+                                    </Link>
+                                )}
+                            </React.Fragment>
                         ))}
                 </List>
             </Drawer>
@@ -236,6 +319,7 @@ export default function Navbar() {
 
                     <Route path="/reports/sales" element={<SalesReport />} />
                     <Route path="/bucket-inventory" element={<BucketInventory />} />
+                    <Route path="/bucket-sales" element={<BucketSales />} />
                     <Route path="/stock-inventory" element={<StockInventory />} />
                     <Route path="/reports/batch" element={<BatchReportsTable />} />
                     <Route path="/reports/batch/:id/:batchId" element={<BatchReportPrintHelper />} />
@@ -261,14 +345,16 @@ export default function Navbar() {
                     <Route element={<RequireAuth allowedRoles={['Admin']} />} >
                         <Route path="/raw-material" element={<RawMaterial />} />
                         <Route path="/bucket" element={<Bucket />} />
+                        <Route path="/customer" element={<Customer />} />
                         <Route path="/boq" element={<Boq />} />
                         <Route path="/boq/add" element={<AddBoq />} />
                         <Route path="/boq/edit/:id" element={<EditBoq />} />
                     </Route>
+
+                    <Route path="/restock" element={<Restock />} />
 
                 </Routes>
             </Box>
         </Box>
     );
 }
-

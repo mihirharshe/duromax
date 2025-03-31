@@ -182,6 +182,84 @@ const getNewStockInventory = async (req, res) => { // gets unsold entries
         });
     } catch (err) {
         console.log(err);
+        res.status(500).json({
+            message: err
+        })
+    }
+}
+
+const getSoldStockInventory = async (req, res) => {
+    try {
+        const aggregationPipeline = [
+            // Match sold items
+            {
+                $match: {
+                    sold: true
+                }
+            },
+            // Add ObjectId field for customer lookup
+            {
+                $addFields: {
+                    customerObjectId: {
+                        $toObjectId: "$customerId"
+                    }
+                }
+            },
+            // Lookup customer details
+            {
+                $lookup: {
+                    from: "customers",
+                    localField: "customerObjectId",
+                    foreignField: "_id",
+                    as: "customerDetails"
+                }
+            },
+            // Unwind customer array (converts array to object)
+            {
+                $unwind: {
+                    path: "$customerDetails",
+                    preserveNullAndEmptyArrays: true // keeps records even if no customer found
+                }
+            },
+            {
+                $sort: {
+                    soldTime: -1
+                }
+            },
+            // Project final fields
+            {
+                $project: {
+                    bktQty: 1,
+                    boqName: 1,
+                    prodName: 1,
+                    batchId: 1,
+                    labelId: 1,
+                    colorShade: 1,
+                    sold: 1,
+                    soldTime: 1,
+                    customer: {
+                        name: "$customerDetails.name",
+                        address: "$customerDetails.address",
+                        contact: "$customerDetails.contact",
+                        email: "$customerDetails.email"
+                    },
+                    transactionId: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ];
+
+        const soldBuckets = await stockInventoryBucketsModel.aggregate(aggregationPipeline);
+        res.status(200).json({
+            message: 'Successfully fetched sold stock buckets',
+            inventoryBuckets: soldBuckets
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: err
+        });
     }
 }
 
@@ -246,7 +324,7 @@ const getAvailableUnitsByLabelId = async (req, res) => {
 }
 
 const executeStockOut = async (req, res) => {
-    const { scannedStocks, customer } = req.body;
+    const { scannedStocks, customer, customerId } = req.body;
     try {
         for (const stock of scannedStocks) {
             const { units, labelId } = stock;
@@ -261,13 +339,14 @@ const executeStockOut = async (req, res) => {
                 doc.sold = true;
                 doc.soldTo = customer;
                 doc.soldTime = new Date();
+                doc.customerId = customerId;
                 await doc.save();
             }
         }
         // const labelIds = scannedStocks.map(obj => obj.labelId);
 
         await stockReportModel.create({
-            customer: customer,
+            customerId: customerId,
             materialData: scannedStocks,
             transactionId: crypto.randomUUID()
         })
@@ -283,4 +362,45 @@ const executeStockOut = async (req, res) => {
     }
 }
 
-module.exports = { saveStockInventory, getStockInventory, getNewStockInventory, sellBucket, getAvailableUnitsByLabelId, executeStockOut }
+const restockSealedBucket = async (req, res) => {
+    const { labelId } = req.params;
+    try {
+        // Find the most recently sold bucket with this labelId
+        const bucket = await stockInventoryBucketsModel.findOne({ 
+            labelId: labelId,
+            sold: true 
+        }).sort({ soldTime: -1 });
+
+        if (!bucket) {
+            return res.status(404).json({
+                message: `No sold bucket found with Label ID: ${labelId}`
+            });
+        }
+
+        bucket.restockDetails = {
+            previousCustomerId: bucket.customerId,
+            previousSoldTime: bucket.soldTime,
+            previousTransactionId: bucket.transactionId
+        }
+        bucket.isRestocked = true;
+        bucket.sold = false;
+        bucket.soldTime = null;
+        bucket.soldTo = null;
+        bucket.customerId = null;
+        bucket.transactionId = null;
+        
+        await bucket.save();
+
+        res.status(200).json({
+            message: `Bucket with Label ID ${labelId} was successfully restocked`,
+            updatedBucket: bucket
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: err
+        });
+    }
+}
+
+module.exports = { saveStockInventory, getStockInventory, getNewStockInventory, sellBucket, getAvailableUnitsByLabelId, executeStockOut, getSoldStockInventory, restockSealedBucket }

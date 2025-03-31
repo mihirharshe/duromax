@@ -19,6 +19,10 @@ router.get('/inventory-bkts', async (req, res) => {
     await stockController.getNewStockInventory(req, res);
 });
 
+router.get('/sold-inventory', async (req, res) => {
+    await stockController.getSoldStockInventory(req, res);
+});
+
 router.get('/stock-inventory', async (req, res) => {
     await reportController.getActualStockInventory(req, res);
 });

@@ -33,7 +33,18 @@ const stockInventoryBuckets = Schema({
     },
     soldTo: String,
     soldTime: Date,
-    transactionId: String
+    customerId: String,
+    transactionId: String,
+    isRestocked: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    restockDetails: {
+        previousCustomerId: String,
+        previousSoldTime: Date,
+        previousTransactionId: String
+    }
 }, { timestamps: true });
 
 const stockInventoryBucketsModel = mongoose.model('stockInventoryBuckets', stockInventoryBuckets);

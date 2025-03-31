@@ -10,4 +10,8 @@ router.post('/', async (req, res) => {
     await stockController.executeStockOut(req, res);
 });
 
+router.put('/restock/sealed/:labelId', async (req, res) => {
+    await stockController.restockSealedBucket(req, res);
+});
+
 module.exports = router;
