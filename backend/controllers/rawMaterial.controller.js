@@ -15,13 +15,13 @@ const getRawMaterial = async (req, res) => {
 }
 
 const addRawMaterial = async (req, res) => {
-    const { name, qty, alertQty } = req.body;
+    const { name, alertQty } = req.body;
     try {
         const rawMaterial = new rawMaterialModel({
             name,
-            qty,
+            qty: 0,
             alertQty,
-            initialQty: qty
+            initialQty: 0
         });
         await rawMaterial.save();
         res.status(200).json({

@@ -19,6 +19,7 @@ const rawMaterialSchema = Schema({
     },
     initialQty: { // initial + added -> total
         type: Number,
+        default: 0,
         required: true,
         min: 0
     },

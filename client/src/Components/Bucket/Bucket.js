@@ -72,7 +72,6 @@ export const Bucket = () => {
         }
         const data = {
             name: name,
-            qty: qty,
             capacity: capacity,
             alertQty: alertQty
         }
@@ -86,7 +85,7 @@ export const Bucket = () => {
     }
 
     const validationCheck = () => {
-        if (name === '' || qty === '' || alertQty === '' || capacity === '') {
+        if (name === '' || alertQty === '' || capacity === '') {
             return false;
         }
         return true;
@@ -227,18 +226,6 @@ export const Bucket = () => {
                         onChange={handleInputChange}
                         error={error && name === ''}
                         helperText={error && name === '' ? 'Please enter a name' : ''}
-                        fullWidth
-                    />
-                    <TextField
-                        required
-                        margin="dense"
-                        id="qty"
-                        label="Quantity"
-                        type="number"
-                        value={qty}
-                        onChange={handleInputChange}
-                        error={error && qty === ''}
-                        helperText={error && qty === '' ? 'Please enter a quantity' : ''}
                         fullWidth
                     />
                     <TextField 

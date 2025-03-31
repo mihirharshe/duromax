@@ -80,7 +80,6 @@ export const RawMaterial = () => {
         }
         const data = {
             name: name,
-            qty: qty,
             alertQty: alertQty
         }
         try {
@@ -99,7 +98,7 @@ export const RawMaterial = () => {
     }
 
     const validationCheck = () => {
-        if (name === '' || qty === '' || alertQty === '') {
+        if (name === '' || alertQty === '') {
             return false;
         }
         return true;
@@ -230,18 +229,6 @@ export const RawMaterial = () => {
                         <TextField
                             required
                             margin="dense"
-                            id="qty"
-                            label="Quantity"
-                            type="number"
-                            value={qty}
-                            onChange={handleInputChange}
-                            error={error && qty === ''}
-                            helperText={error && qty === '' ? 'Please enter a quantity' : ''}
-                            fullWidth
-                        />
-                        <TextField
-                            required
-                            margin="dense"
                             id="alertQty"
                             label="Alert Quantity"
                             type="number"
@@ -261,7 +248,6 @@ export const RawMaterial = () => {
                         </Button>
                     </DialogActions>
                 </Box>
-
             </Dialog>
             <Dialog open={editOpen} onClose={handleEditDialogClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Edit raw material</DialogTitle>

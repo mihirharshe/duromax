@@ -30,14 +30,14 @@ const getSingleBucket = async(req, res) => {
 }
 
 const addBucket = async (req, res) => {
-    const { name, qty, capacity, alertQty } = req.body;
+    const { name, capacity, alertQty } = req.body;
     try {
         const bucket = new bucketModel({
             name,
-            qty,
+            qty: 0,
             capacity,
             alertQty,
-            initialQty: qty
+            initialQty: 0
         });
         await bucket.save();
         res.status(200).json({
