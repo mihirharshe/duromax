@@ -126,17 +126,26 @@ export const Production = () => {
     }
 
     const checkMaterialAvailability = async (e) => {
-        let inputQty = e.target.value;
-        updatedBoqContent.map((rmContent) => {
-            let qtyRequiredKG = (rmContent.qty * inputQty) / 1000;
-            if (rmContent.availableQty - qtyRequiredKG < 0) {
-                setRMAvailableError(true);
-                setRMAvailableErrorText(`Insufficient quantity of ${rmContent.name}`);
-            } else {
-                setRMAvailableError(false);
-                setRMAvailableErrorText('');
+        const inputQty = e.target.value;
+        let errorFound = false;
+        let errorMessages = [];
+
+        // Find all materials with insufficient quantity
+        updatedBoqContent.forEach((rmContent) => {
+            const qtyRequiredKG = (rmContent.qty * inputQty) / 1000;
+            // console.log(`Checking ${rmContent.name}: Required=${qtyRequiredKG}, Available=${rmContent.availableQty}`);
+            if (rmContent.availableQty < qtyRequiredKG) {
+                errorFound = true;
+                errorMessages.push(rmContent.name);
             }
         });
+
+        setRMAvailableError(errorFound);
+        if (errorFound) {
+            setRMAvailableErrorText(`Insufficient quantity of: ${errorMessages.join(', ')}`);
+        } else {
+            setRMAvailableErrorText('');
+        }
     }
 
     const handleSelectBOQ = (e) => {
