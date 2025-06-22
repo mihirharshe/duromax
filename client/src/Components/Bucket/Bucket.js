@@ -279,7 +279,7 @@ export const Bucket = () => {
                         helperText={name === '' ? 'Please fill this field' : ''}
                         fullWidth
                     />
-                    <TextField
+                    {/* <TextField
                         required
                         margin="dense"
                         id="qty"
@@ -290,7 +290,7 @@ export const Bucket = () => {
                         error={qty === ''}
                         helperText={qty === '' ? 'Please fill this field' : ''}
                         fullWidth
-                    />
+                    /> */}
                     <TextField
                         required
                         margin="dense"

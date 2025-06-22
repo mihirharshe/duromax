@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
-import { Box, Menu, Select } from '@mui/material';
+import { Box, Menu, Select, Autocomplete } from '@mui/material';
 import axios from 'axios';
 import { Container } from '@mui/system';
 import MenuItem from '@mui/material/MenuItem';
@@ -180,7 +180,20 @@ export const Production = () => {
     }, []);
 
     const columns = useMemo(() => [
-        { field: 'name', type: 'string', headerName: 'Product Name', minWidth: 150, flex: 0.25, headerAlign: 'center', align: 'center' },
+        { 
+            field: 'name', 
+            type: 'string', 
+            headerName: 'Product Name', 
+            minWidth: 150, 
+            flex: 1, 
+            headerAlign: 'center', 
+            align: 'center',
+            renderCell: (params) => (
+                <Box sx={{ whiteSpace: 'normal', wordBreak: 'break-word', textAlign: 'center' }}>
+                    {params.value}
+                </Box>
+            ),
+        },
         { field: 'qty', type: 'number', headerName: 'Quantity (kg)', minWidth: 120, headerAlign: 'center', align: 'center' },
         { field: 'pack_size', type: 'number', headerName: 'Pack Size (kg)', minWidth: 120, headerAlign: 'center', align: 'center' },
         { field: 'desc', type: 'string', headerName: 'Remarks', flex: 1, headerAlign: 'center', align: 'center' },
@@ -199,7 +212,7 @@ export const Production = () => {
             field: 'status',
             type: 'string',
             headerName: 'Status',
-            flex: 1,
+            width: 200,
             headerAlign: 'center',
             align: 'center',
             valueFormatter: (params) => {
@@ -246,6 +259,7 @@ export const Production = () => {
                             pageSize={pageSize}
                             onPageSizeChange={(pageSize) => setPageSize(pageSize)}
                             rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                            sx={{ backgroundColor: 'white', '& .MuiDataGrid-cell': { padding: '8px 16px'} }}
                             initialState={{
                                 sorting: {
                                     sortModel: [{ field: 'createdAt', sort: 'desc' }],
@@ -257,6 +271,7 @@ export const Production = () => {
                                     }
                                 }
                             }}
+                            getRowHeight={() => 'auto'}
                         />
                     </Box>
                 </Box>
@@ -268,21 +283,32 @@ export const Production = () => {
                     <DialogContent>
                         <DialogContentText>Please enter the details of the production you want to insert</DialogContentText>
                         <FormControl sx={{ width: '100%', marginBottom: 0.5 }}>
-                            <InputLabel id="select-rm-label">Select Product</InputLabel>
-                            <Select
-                                required
-                                labelId='select-boq-label'
-                                id="select-boq-id"
-                                value={data.name}
-                                label="Select Product"
-                                onChange={(e) => { handleSelectBOQ(e) }}
-                                fullWidth
-                            >
-                                {allBoq.map((item) => (
-                                    <MenuItem key={item._id} value={item.name}>{item.name}</MenuItem>
-                                ))}
-
-                            </Select>
+                            <Autocomplete
+                                options={allBoq}
+                                getOptionLabel={(option) => option.name || ''}
+                                value={allBoq.find(item => item.name === data.name) || null}
+                                onChange={(event, newValue) => {
+                                    if (newValue) {
+                                        setSelectedBoq(newValue);
+                                        setData({
+                                            ...data,
+                                            name: newValue.name,
+                                            boqId: newValue._id.toString()
+                                        });
+                                    } else {
+                                        setSelectedBoq(undefined);
+                                        setData({
+                                            ...data,
+                                            name: '',
+                                            boqId: ''
+                                        });
+                                    }
+                                }}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Select Product" required fullWidth />
+                                )}
+                                isOptionEqualToValue={(option, value) => option._id === value._id}
+                            />
                         </FormControl>
 
                         <TextField

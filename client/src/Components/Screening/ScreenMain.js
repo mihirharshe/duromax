@@ -27,7 +27,20 @@ export const ScreenMain = () => {
     }, []);
 
     const columns = useMemo(() => [
-        { field: 'name', type: 'string', headerName: 'Product Name', minWidth: 150, flex: 0.25, headerAlign: 'center', align: 'center' },
+        { 
+            field: 'name', 
+            type: 'string', 
+            headerName: 'Product Name', 
+            minWidth: 150, 
+            flex: 1, 
+            headerAlign: 'center', 
+            align: 'center',
+            renderCell: (params) => (
+                <Box sx={{ whiteSpace: 'normal', wordBreak: 'break-word', textAlign: 'center' }}>
+                    {params.value}
+                </Box>
+            ),
+        },
         { field: 'qty', type: 'number', headerName: 'Quantity', minWidth: 100, headerAlign: 'center', align: 'center' },
         { field: 'pack_size', type: 'number', headerName: 'Pack Size', minWidth: 100, headerAlign: 'center', align: 'center' },
         { field: 'desc', type: 'string', headerName: 'Remarks', flex: 1, headerAlign: 'center', align: 'center' },
@@ -94,6 +107,7 @@ export const ScreenMain = () => {
                             pageSize={pageSize}
                             onPageSizeChange={(pageSize) => setPageSize(pageSize)}
                             rowsPerPageOptions={[5, 10, 20, 50, 100]}
+                            sx={{ backgroundColor: 'white', '& .MuiDataGrid-cell': { padding: '8px 16px'} }}
                             initialState={{
                                 sorting: {
                                     sortModel: [{ field: 'createdAt', sort: 'desc' }],
@@ -105,6 +119,7 @@ export const ScreenMain = () => {
                                     }
                                 }
                             }}
+                            getRowHeight={() => 'auto'}
                         />
                     </Box>
                 </Box>

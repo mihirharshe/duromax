@@ -43,6 +43,25 @@ export const ScreenProd = () => {
     const baseUrl = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
+        console.log(allBatches);
+        if (allBatches.length > 0 && allBatches[selectedBatch]?.stage != 'Screening' && allBatches[selectedBatch]?.stage != 'Finished') {
+            switch (allBatches[selectedBatch].stage) {
+                case 'QualityTesting':
+                    navigate(`/screen/${id}/test/${selectedBatch + 1}`);
+                    break;
+                case 'BucketFilling':
+                    navigate(`/screen/${id}/bktFill/${selectedBatch + 1}`);
+                    break;
+                case 'Labelling':
+                    navigate(`/screen/${id}/label/${selectedBatch + 1}`);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }, [allBatches]);
+
+    useEffect(() => {
         const fetchProd = async () => {
             try {
                 const res = await axios.get(`${baseUrl}/api/v1/prod/${id}`);
@@ -113,6 +132,7 @@ export const ScreenProd = () => {
 
     useEffect(() => {
         setAllBatches(batchArray);
+        console.log(batchArray);
         if (batchArray.length > 0) {
             const newIdx = batchArray[selectedBatch].currentIdx;
             setIdx(newIdx);
@@ -162,21 +182,98 @@ export const ScreenProd = () => {
         setCurrElement({ ...prodBoq.content[newBatchElementIdx], totalQty: (prodBoq.content[newBatchElementIdx]?.qty * batchQty).toFixed(2) });
     }
 
-    const handleCompletion = async () => { // ON COMPLETE ADD TO DB -> whole batchDetails array. Need to look into completedElements as well
-        if (allBatches[selectedBatch].stage === 'Screening') {
-            setCompletedElements([...completedElements, { ...currElement, batch: selectedBatch + 1, totalQty: formatDisplayNumber((currElement.qty * batchQty).toFixed(2)) }]);
-            setIdx(idx + 1);
-            await saveCompletedElements();
-            await updateSingleBatch();
-            handleSelectElement();
-            handleClose();
-            setSelectedProduct({ ...selectedProduct, completedMaterials: [...completedElements, { ...currElement, batch: selectedBatch + 1, totalQty: (currElement?.qty * batchQty).toFixed(2) }] })
-            if (allBatches[selectedBatch].currentIdx >= prodBoq.content.length) {
-                const updatedBatch = [...allBatches];
-                updatedBatch[selectedBatch] = { ...updatedBatch[selectedBatch], completed: false, currentIdx: idx, stage: 'QualityTesting' }
-                setAllBatches(updatedBatch);
-                navigate(`/screen/${id}/test/${selectedBatch + 1}`);
+    const handleCompletion = async () => {
+        // Ensure we are in the correct stage
+        if (allBatches[selectedBatch]?.stage !== 'Screening') {
+            console.warn("Completion triggered for non-Screening batch");
+            return;
+        }
+
+        const currentBatchIndex = selectedBatch;
+        const currentElement = { ...currElement }; // Capture current element state
+        const nextElementIndex = idx + 1;
+        const isLastElementInBatch = nextElementIndex >= prodBoq.content.length;
+
+        // Prepare data for API calls and state updates
+        const completedElementData = {
+            ...currentElement,
+            batch: currentBatchIndex + 1,
+            totalQty: currentElement.qty * batchQty // Use raw number for DB consistency
+        };
+
+        const nextStage = isLastElementInBatch ? 'QualityTesting' : 'Screening';
+
+        try {
+            // --- Perform Side Effects (API Calls) ---
+
+            // Use Promise.all for concurrent updates where possible
+            await Promise.all([
+                // 1. Save the completed element
+                axios.post(`${baseUrl}/api/v1/prod/completed/${id}`, {
+                    materials: completedElementData
+                }),
+                // 2. Update batch details (index and stage)
+                axios.post(`${baseUrl}/api/v1/prod/batch/${id}`, {
+                    batchIdx: currentBatchIndex,
+                    batchDetails: {
+                        // Assuming currentIdx stores the index of the *next* element to process
+                        currentIdx: nextElementIndex,
+                        stage: nextStage,
+                        completed: false // 'completed' might mean the whole batch lifecycle, set based on final stage? Needs clarification.
+                    }
+                }),
+                // 3. Update product status to 'Processing' if this is the first element ever completed
+                (completedElements.length === 0) ?
+                    axios.put(`${baseUrl}/api/v1/prod/status/${id}`, { status: 'Processing' })
+                    : Promise.resolve() // No-op if status doesn't need update
+            ]);
+
+            // --- Update Local State (after successful API calls) ---
+
+            // 1. Add formatted element to the completed list for display
+            setCompletedElements(prev => [...prev, {
+                ...completedElementData,
+                totalQty: formatDisplayNumber(completedElementData.totalQty.toFixed(2))
+            }]);
+
+            // 2. Update the index for the next element
+            setIdx(nextElementIndex);
+
+            // 3. Update the master list of all batches
+            setAllBatches(prevBatches => {
+                const newBatches = [...prevBatches];
+                newBatches[currentBatchIndex] = {
+                    ...newBatches[currentBatchIndex],
+                    currentIdx: nextElementIndex,
+                    stage: nextStage,
+                    // completed: newBatches[currentBatchIndex].completed // Keep existing completed status or update based on nextStage?
+                };
+                return newBatches;
+            });
+
+            // 4. Update the current element display if there are more elements in this batch
+            if (!isLastElementInBatch && prodBoq.content[nextElementIndex]) {
+                 setCurrElement({
+                    ...prodBoq.content[nextElementIndex],
+                    totalQty: (prodBoq.content[nextElementIndex].qty * batchQty).toFixed(2)
+                });
+            } else {
+                // Clear current element if batch screening is done
+                 setCurrElement({ name: '', qty: '', mixTime: '', _id: '', totalQty: '' });
             }
+
+            // --- Handle UI Changes ---
+            handleClose(); // Close the backdrop
+
+            if (isLastElementInBatch) {
+                // Navigate to the next stage for this batch
+                navigate(`/screen/${id}/test/${currentBatchIndex + 1}`);
+            }
+
+        } catch (error) {
+            console.error("Error handling completion:", error);
+            // Consider adding user feedback like a snackbar message
+            // Potentially revert optimistic UI updates or refetch state?
         }
     };
 

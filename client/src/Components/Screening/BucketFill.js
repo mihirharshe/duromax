@@ -35,7 +35,6 @@ export const BucketFill = () => {
     // });
 
     const [bucketData, setBucketData] = useState({});
-    let updates = [];
 
     useEffect(() => {
         const fetchBkts = async () => {
@@ -84,16 +83,25 @@ export const BucketFill = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        Object.entries(bucketData).map(data => {
-            if (!data[1]["bktNo"] || !data[1]["bktQty"] || data[1]["bktNo"] == 0 || data[1]["bktQty"] == 0) return;
-            let obj = {
-                bktId: data[0],
-                bktNo: parseInt(data[1]["bktNo"]),
-                bktQty: parseFloat(data[1]["bktQty"])
-            };
-            if (!updates.some(el => el.bktId === obj.bktId))
-                updates.push(obj);
-        });
+        const updates = Object.entries(bucketData)
+            .filter(([bktId, data]) => {
+                return data?.bktNo && data?.bktQty && data.bktNo != 0 && data.bktQty != 0;
+            })
+            .map(([bktId, data]) => ({
+                bktId: bktId,
+                bktNo: parseInt(data.bktNo, 10),
+                bktQty: parseFloat(data.bktQty)
+            }));
+
+        if (updates.length === 0) {
+            setSbParams({
+                severity: 'warning',
+                message: 'No valid bucket data entered.'
+            });
+            setOpen(true);
+            return;
+        }
+
         try {
             await axios.put(`${baseUrl}/api/v1/prod/add-bkts/${id}/${batchId}`, {
                 bucketDetails: updates,

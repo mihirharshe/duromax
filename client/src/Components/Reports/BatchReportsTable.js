@@ -22,8 +22,8 @@ const BatchReportsTable = () => {
     }, [])
 
     const columns = useMemo(() => [
-        { field: 'prodName', type: 'string', headerName: 'Product Name', flex: 0.25, headerAlign: 'center', align: 'center' },
-        { field: 'boqName', type: 'string', headerName: 'BOQ Name', flex: 0.25, headerAlign: 'center', align: 'center' },
+        { field: 'prodName', type: 'string', headerName: 'Product Name', flex: 1, headerAlign: 'center', align: 'center' },
+        { field: 'boqName', type: 'string', headerName: 'BOQ Name', flex: 1, headerAlign: 'center', align: 'center' },
         {
             field: 'updatedAt',
             type: 'date',
@@ -35,13 +35,25 @@ const BatchReportsTable = () => {
             headerAlign: 'center',
             align: 'center'
         },
-        { field: 'batch', type: 'number', headerName: 'Batch No.', minWidth: 100, headerAlign: 'center', align: 'center' },
+        { 
+            field: 'batch', 
+            type: 'number', 
+            headerName: 'Label ID', 
+            flex: 0.5,
+            headerAlign: 'center', 
+            align: 'center',
+            renderCell: (params) => (
+                <Box sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                    {params.value}
+                </Box>
+            ),
+        },
         { field: 'colorShade', type: 'string', headerName: 'Color Shade', width: 120, headerAlign: 'center', align: 'center' },
         {
             field: 'actions',
             type: 'actions',
             headerName: 'Actions',
-            width: 200,
+            width: 125,
             renderCell: (params) => {
                 const onClick = (e) => {
                     e.stopPropagation();
@@ -51,6 +63,7 @@ const BatchReportsTable = () => {
             }
         }
     ], []);
+
 
     return (
         <>
@@ -68,12 +81,13 @@ const BatchReportsTable = () => {
                             pageSize={pageSize}
                             onPageSizeChange={(pageSize) => setPageSize(pageSize)}
                             rowsPerPageOptions={[5, 10, 20, 50, 100]}
-                            sx={{ backgroundColor: 'white' }}
+                            sx={{ backgroundColor: 'white', '& .MuiDataGrid-cell': { padding: '8px 16px'} }}
                             initialState={{
                                 sorting: {
                                     sortModel: [{ field: 'updatedAt', sort: 'desc' }],
                                 }
                             }}
+                            getRowHeight={() => 'auto'}
                         />
                     </Box>
                 </Box>

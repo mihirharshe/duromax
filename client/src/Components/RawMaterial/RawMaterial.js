@@ -266,7 +266,7 @@ export const RawMaterial = () => {
                         fullWidth
                         disabled
                     />
-                    <TextField
+                    {/* <TextField
                         required
                         margin="dense"
                         id="qty"
@@ -277,7 +277,7 @@ export const RawMaterial = () => {
                         error={qty === ''}
                         helperText={qty === '' ? 'Please fill this field' : ''}
                         fullWidth
-                    />
+                    /> */}
                     <TextField
                         required
                         margin="dense"

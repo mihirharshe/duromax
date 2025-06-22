@@ -2,7 +2,6 @@ const { productionModel, batchModel, bucketDetailsModel } = require('../models/p
 const boqMainModel = require('../models/boqMain.model');
 const bucketModel = require("../models/bucket.model");
 const { generateUID } = require("../utils/generateUID");
-const { saveStockInventory } = require('./stockInventory.controller');
 const { stockInventoryBucketsModel } = require('../models/stockInventory.model');
 const rawMaterialModel = require('../models/rawMaterial.model');
 
@@ -375,6 +374,7 @@ const getCompletedMaterails = async (req, res) => {
 const addBucketDetails = async (req, res) => {
     const { id, batchId } = req.params;
     let { bucketDetails, stage } = req.body;
+    const { saveStockInventory } = require('./stockInventory.controller');
     try {
         // const production = await productionModel.findByIdAndUpdate(id, { $set: { bucketDetails } });
         if (!bucketDetails || bucketDetails.length == 0) throw new Error("Bucket details cannot be empty");
@@ -414,7 +414,9 @@ const addBucketDetails = async (req, res) => {
                     "boqName": production.name ?? null,
                     "prodName": production.productLabelName,
                     "colorShade": production.colorShade,
-                    "part": production.part
+                    "part": production.part,
+                    "productionId": production._id.toString(),
+                    "boqId": production.boqId,
                 }));
             }
         }
@@ -679,6 +681,77 @@ const getRawMaterialsQtyByBoqId = async (req, res) => {
 //     }
 // }
 
+// Function to create a new production specifically for restocking unsealed items
+const createRestockProduction = async (restockData) => {
+    const {
+        boqId,
+        name, // Original production name
+        qty, // New restock quantity
+        pack_size, // Original pack size
+        desc,
+        productLabelName,
+        colorShade,
+        part,
+        originalProductionId,
+        mrp // Carry over MRP
+    } = restockData;
+
+    try {
+        const boq = await boqMainModel.findById(boqId).select('batch_size').lean();
+        if (!boq || !boq.batch_size) {
+            throw new Error(`Could not find BoQ or batch size for boqId: ${boqId}`);
+        }
+
+        const batchCount = Math.ceil(qty / boq.batch_size);
+        const batches = [];
+        for (let i = 0; i < batchCount; i++) {
+            batches.push({
+                batch: i + 1,
+                productionId: null, // Will be set later when production is saved
+                currentIdx: 0,
+                completed: true,
+                stage: 'QualityTesting', // Start from Quality Testing
+                quality: null,
+                bucketDetails: [],
+                labelDetails: null
+            });
+        }
+
+        const newProduction = new productionModel({
+            name,
+            boqId,
+            qty, // Use the new restock quantity
+            pack_size, // Use original pack size
+            desc,
+            productLabelName,
+            colorShade,
+            part,
+            status: 'Processing', // Start directly in Processing
+            isRestock: true, // Mark as restock
+            batches: [], // Initialize as empty, will be populated below
+            completedMaterials: [], // Restock starts fresh
+            mrp
+        });
+
+        // Save the production first to get its _id
+        await newProduction.save();
+
+        // Update batches with the new productionId and save them
+        batches.forEach(batch => batch.productionId = newProduction._id.toString());
+        newProduction.batches = batches; 
+        await newProduction.save(); 
+
+        console.log(`Created new restock production ${newProduction._id} with ${batchCount} batches starting at QualityTesting.`);
+
+        return newProduction; // Return the newly created production document
+
+    } catch (error) {
+        console.error("Error in createRestockProduction:", error);
+        // We might want to throw the error so the calling function can handle it (e.g., revert the stock inventory update)
+        throw error; 
+    }
+};
+
 module.exports = {
     getAllProductionInserts,
     getOneProductionInsert,
@@ -700,5 +773,6 @@ module.exports = {
     getAllLabels,
     getRawMaterialsQtyByBoqId,
     getQualityTestDetails,
-    getBatchCount
+    getBatchCount,
+    createRestockProduction
 }

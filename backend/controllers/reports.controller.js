@@ -275,10 +275,13 @@ const getBatchReport = async (req, res) => {
                     boqName: {
                         $arrayElemAt: ["$res.name", 0],
                     },
-                    batch: 1,
-                    colorShade: "$labelDetails.colorShade",
-                    prodName:
-                        "$labelDetails.productLabelName",
+                    batch: "$labelDetails.labelId",
+                    colorShade: {
+                        $arrayElemAt: ["$res.colorShade", 0]
+                    },
+                    prodName: {
+                          $arrayElemAt: ["$res.productLabelName", 0]
+                    },
                     updatedAt: 1,
                     productionId: 1
                 },

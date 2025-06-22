@@ -1,5 +1,6 @@
 const { stockInventoryModel, stockInventoryBucketsModel } = require("../models/stockInventory.model");
 const { stockReportModel } = require("../models/stockReport.model");
+const { productionModel } = require("../models/production.model");
 const crypto = require('crypto');
 
 
@@ -403,4 +404,99 @@ const restockSealedBucket = async (req, res) => {
     }
 }
 
-module.exports = { saveStockInventory, getStockInventory, getNewStockInventory, sellBucket, getAvailableUnitsByLabelId, executeStockOut, getSoldStockInventory, restockSealedBucket }
+const restockUnsealedBucket = async (req, res) => {
+    const { labelId, quantity } = req.body;
+    // Moved require here to break circular dependency
+    const { createRestockProduction } = require("./production.controller"); 
+
+    try {
+        if (!labelId || quantity === undefined || quantity === null || quantity <= 0) {
+            return res.status(400).json({ message: 'Label ID and a valid positive quantity are required.' });
+        }
+
+        // Find the most recently sold bucket with this labelId to validate against
+        const originalBucket = await stockInventoryBucketsModel.findOne({
+            labelId: labelId,
+            sold: true
+        }).sort({ soldTime: -1 }).lean(); // Use lean for potentially faster read if we don't modify directly
+
+        if (!originalBucket) {
+            return res.status(404).json({
+                message: `No previously sold bucket found with Label ID: ${labelId} to restock against.`
+            });
+        }
+        
+        // // Check if it's already marked as restocked
+        // if (originalBucket.isRestocked) {
+        //      return res.status(400).json({
+        //          message: `Bucket with Label ID ${labelId} has already been restocked or is pending restock.`
+        //      });
+        // }
+
+        // Validate the requested restock quantity against the original bucket's quantity
+        if (quantity > originalBucket.bktQty) {
+            return res.status(400).json({
+                message: `Restock quantity (${quantity}kg) cannot exceed the original bucket quantity (${originalBucket.bktQty}kg).`
+            });
+        }
+        // Fetch original production details needed for the new one
+        // Since productionId is now reliably stored in stockInventoryBuckets, we can use it directly
+        const originalProdReference = await productionModel.findById(
+            originalBucket.productionId
+        ).select('desc part mrp pack_size').lean();
+
+        if (!originalProdReference) {
+            console.error(`Could not find reference production details for BoQ ID: ${originalBucket.boqId} and Product Name: ${originalBucket.prodName}`);
+            // Don't mark as restocked if we can't proceed
+            return res.status(500).json({ message: 'Could not find original production details necessary for restock.' });
+        }
+
+        // Mark the original bucket as restocked (but it remains sold=true)
+        // We need to update the actual document, not the lean object
+        await stockInventoryBucketsModel.updateOne({ _id: originalBucket._id }, {
+            $set: {
+                isRestocked: true,
+                restockDetails: {
+                    previousCustomerId: originalBucket.customerId,
+                    previousSoldTime: originalBucket.soldTime,
+                    previousTransactionId: originalBucket.transactionId,
+                    restockType: 'unsealed', // Mark the type
+                    restockedQuantity: quantity // Record the quantity being restocked
+                }
+            }
+        });
+
+        // Trigger the new production process
+        const newProductionData = {
+            boqId: originalBucket.boqId,
+            name: originalBucket.boqName, // Use boqName from bucket which seems to be the main product name
+            qty: quantity,
+            pack_size: originalProdReference.pack_size, // Use pack_size from reference production
+            desc: originalProdReference.desc,
+            productLabelName: originalBucket.prodName, // Use prodName from bucket
+            colorShade: originalBucket.colorShade,
+            part: originalProdReference.part,
+            originalProductionId: originalBucket.productionId, // Pass if available, otherwise null/undefined
+            mrp: originalProdReference.mrp
+        };
+
+        const newProduction = await createRestockProduction(newProductionData);
+
+        res.status(200).json({
+            message: `Unsealed restock process initiated for Label ID ${labelId} with quantity ${quantity}kg. New Production ID: ${newProduction._id}`,
+            originalBucketId: originalBucket._id,
+            newProductionId: newProduction._id
+        });
+
+    } catch (err) {
+        console.error("Error in restockUnsealedBucket:", err);
+        // If createRestockProduction failed, we should ideally revert the isRestocked flag on the original bucket
+        // This requires more complex transaction logic or cleanup steps.
+        // For now, just return the error.
+        res.status(500).json({
+            message: err.message || 'An error occurred during the unsealed restock process.'
+        });
+    }
+};
+
+module.exports = { saveStockInventory, getStockInventory, getNewStockInventory, sellBucket, getAvailableUnitsByLabelId, executeStockOut, getSoldStockInventory, restockSealedBucket, restockUnsealedBucket }

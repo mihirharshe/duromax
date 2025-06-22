@@ -127,6 +127,10 @@ const productionSchema = Schema({
     mrp: {
         type: Number,
         required: false
+    },
+    isRestock: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 

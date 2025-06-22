@@ -14,4 +14,9 @@ router.put('/restock/sealed/:labelId', async (req, res) => {
     await stockController.restockSealedBucket(req, res);
 });
 
+// Route for restocking unsealed buckets
+router.post('/restock/unsealed', async (req, res) => {
+    await stockController.restockUnsealedBucket(req, res);
+});
+
 module.exports = router;

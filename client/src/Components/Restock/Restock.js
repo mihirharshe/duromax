@@ -5,6 +5,7 @@ import { CustomSnackbar } from '../Snackbar/CustomSnackbar';
 
 export const Restock = () => {
     const [labelId, setLabelId] = useState('');
+    const [quantity, setQuantity] = useState('');
     const [bucketState, setBucketState] = useState('sealed');
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -26,12 +27,17 @@ export const Restock = () => {
                 });
                 setLabelId(''); // Clear input after successful restock
             } else {
-                // Handle unsealed bucket case in the future
+                const response = await axios.post(`${baseUrl}/api/v1/stock-out/restock/unsealed`, {
+                    labelId: labelId,
+                    quantity: parseFloat(quantity)
+                });
                 setSnackbar({
                     open: true,
-                    severity: 'info',
-                    message: 'Restocking unsealed buckets is not yet implemented'
+                    severity: 'success',
+                    message: response.data.message || 'Unsealed bucket restock process initiated.'
                 });
+                setLabelId('');
+                setQuantity('');
             }
         } catch (err) {
             setSnackbar({
@@ -52,7 +58,11 @@ export const Restock = () => {
                     <RadioGroup
                         row
                         value={bucketState}
-                        onChange={(e) => setBucketState(e.target.value)}
+                        onChange={(e) => {
+                            setBucketState(e.target.value);
+                            setLabelId('');
+                            setQuantity('');
+                        }}
                     >
                         <FormControlLabel value="sealed" control={<Radio />} label="Sealed" />
                         <FormControlLabel value="unsealed" control={<Radio />} label="Unsealed" />
@@ -68,12 +78,25 @@ export const Restock = () => {
                     required
                 />
 
-                <Button 
-                    type="submit" 
-                    variant="contained" 
+                {bucketState === 'unsealed' && (
+                    <TextField
+                        fullWidth
+                        label="Quantity (kg)"
+                        type="number"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                        margin="normal"
+                        required
+                        inputProps={{ step: "any" }}
+                    />
+                )}
+
+                <Button
+                    type="submit"
+                    variant="contained"
                     color="primary"
                     sx={{ mt: 2 }}
-                    disabled={!labelId}
+                    disabled={!labelId || (bucketState === 'unsealed' && !quantity)}
                 >
                     Restock Bucket
                 </Button>
