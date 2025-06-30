@@ -36,7 +36,7 @@ const BatchReportsTable = () => {
             align: 'center'
         },
         { 
-            field: 'batch', 
+            field: 'labelId', 
             type: 'number', 
             headerName: 'Label ID', 
             flex: 0.5,
